@@ -15,13 +15,17 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedWriter;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,97 +76,96 @@ public class WriteOPTILI {
     
     private String kelaTutkintokoodisto;
     
-    private static final String NAMEPREFIX = "RY.WYZ.SR.D";
-    
-    private static final String OPTILI = ".OPTILI";
-    
     private String fileName;
     
-    private final String datePattern = "ddMMyy";
-    
-    private static final String PADDING_RESERVE = "                               ";
+    private static final Charset LATIN1 = Charset.forName("ISO8859-1");
+    private static final String DATE_PATTERN = "ddMMyy";
+    private static final String NAMEPREFIX = "RY.WYZ.SR.D";
+    private static final String OPTILI = ".OPTILI";
     private static final String DEFAULT_DATE = "01.01.0001";
-    private static final String ALKUTIETUE = "0000000000ALKU";
-    private static final String LOPPUTIETUE = "9999999999LOPPU??????";
+    private static final String ALKUTIETUE = "0000000000ALKU\n";
+    private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
     
     public WriteOPTILI() {
-        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
         fileName =  NAMEPREFIX + sdf.format(new Date()) + OPTILI; 
     }
     
     public WriteOPTILI(String path) {
-        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
         fileName = path + NAMEPREFIX + sdf.format(new Date()) + OPTILI; 
     }
     
     public void writeFile() throws IOException {
         FileWriter fstream = new FileWriter(fileName);
-        BufferedWriter out = new BufferedWriter(fstream);   
-        out.write(ALKUTIETUE);
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos.write(toLatin1(ALKUTIETUE));
         HaeHakukohteetKyselyTyyppi kysely = new HaeHakukohteetKyselyTyyppi();
         HaeHakukohteetVastausTyyppi vastaus = tarjontaService.haeHakukohteet(kysely);
         for (HakukohdeTulos curTulos : vastaus.getHakukohdeTulos()) {
-            out.write(createRecord(curTulos, out));
+            bos.write(toLatin1(createRecord(curTulos)));
         }
-        out.write(LOPPUTIETUE);
-        out.flush();
-        out.close();
+        bos.write(toLatin1(LOPPUTIETUE));
+        bos.flush();
+        bos.close();
     }
 
-    private String createRecord(HakukohdeTulos curTulos, BufferedWriter out) {
-        return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //51 fields
+    private String createRecord(HakukohdeTulos curTulos) {
+        String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
+        OrganisaatioDTO organisaatio = organisaatioService.findByOid(tarjoajaOid);
+        return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //51 fields + line ending
                 getHakukohdeId(curTulos),//Sisainen koodi
-                getOppilaitosnumero(curTulos),//OPPIL_NRO
-                getOpetuspisteenJarjNro(curTulos),//OPJNO
-                getPadding(12),//Op. linjan tai koulutuksen jarjestysnro
+                getOppilaitosnumero(curTulos, organisaatio),//OPPIL_NRO
+                getOpetuspisteenJarjNro(curTulos, organisaatio),//OPJNO
+                StringUtils.leftPad("",12),//Op. linjan tai koulutuksen jarjestysnro
                 getKoulutuslaji(),//Koulutuslaji
-                getPadding(2),//Opintolinjan kieli
-                getPadding(2),//OPL_LASPER
-                getPadding(2),//Valintakoeryhma
-                getPadding(10),//Kokeilun yksiloiva tunniste
-                getPadding(5), //OPL_SUUNT
+                StringUtils.leftPad("",2),//Opintolinjan kieli
+                StringUtils.leftPad("",2),//OPL_LASPER
+                StringUtils.leftPad("",2),//Valintakoeryhma
+                StringUtils.leftPad("",10),//Kokeilun yksiloiva tunniste
+                StringUtils.leftPad("",5), //OPL_SUUNT
                 getTutkintotunniste(curTulos),//TUT_ID 
                 getHakukohdeKoodi(curTulos),//YHLINJA
-                getPadding(3), //OPL_OTTOALUE
-                getPadding(3), //Opetusmuoto
-                getPadding(10), //Pohjakoulutusvaat. yksiloiva tunniste
-                getPadding(2), //Koulutustyyppi
-                getPadding(3), //OPL-EKASITTELY
-                getPadding(2), //Koul. rahoitusmuoto
-                getPadding(2), //OPL_PKR_TUNNUS
-                getPadding(2), //OPL_VKOEJAR
-                getPadding(2), //OPL_VKOEKUT
-                getPadding(7), //Alinkeskiarvo
-                getPadding(12), //Koulutuksen kesto
-                getPadding(3), //OPL_KKERROIN
-                getPadding(10), //Keston yksikko
+                StringUtils.leftPad("",3), //OPL_OTTOALUE
+                StringUtils.leftPad("",3), //Opetusmuoto
+                StringUtils.leftPad("",10), //Pohjakoulutusvaat. yksiloiva tunniste
+                StringUtils.leftPad("",2), //Koulutustyyppi
+                StringUtils.leftPad("",3), //OPL-EKASITTELY
+                StringUtils.leftPad("",2), //Koul. rahoitusmuoto
+                StringUtils.leftPad("",2), //OPL_PKR_TUNNUS
+                StringUtils.leftPad("",2), //OPL_VKOEJAR
+                StringUtils.leftPad("",2), //OPL_VKOEKUT
+                StringUtils.leftPad("",7), //Alinkeskiarvo
+                StringUtils.leftPad("",12), //Koulutuksen kesto
+                StringUtils.leftPad("",3), //OPL_KKERROIN
+                StringUtils.leftPad("",10), //Keston yksikko
                 getAlkupvm(), //Alkupaiva, voimassaolon alku
-                getPadding(10), //Loppupaiva
-                getPadding(10), //Viimeisin paivityspaiva
-                getPadding(30), //Viimeisin paivittaja
-                getPadding(7), //Opiskelijamaksu
-                getPadding(7), //Lahiopetusta
-                getPadding(6), //OPL_LAHIOP.YKS
-                getPadding(2), //OPL_ERITYISVAL
-                getPadding(12), //OPL_KOULUTUS-AIKA
-                getPadding(6), //OPL_KOULUTUSAI-KAYKSIKKO
-                getPadding(6), //El-harpis
+                StringUtils.leftPad("",10), //Loppupaiva
+                StringUtils.leftPad("",10), //Viimeisin paivityspaiva
+                StringUtils.leftPad("",30), //Viimeisin paivittaja
+                StringUtils.leftPad("",7), //Opiskelijamaksu
+                StringUtils.leftPad("",7), //Lahiopetusta
+                StringUtils.leftPad("",6), //OPL_LAHIOP.YKS
+                StringUtils.leftPad("",2), //OPL_ERITYISVAL
+                StringUtils.leftPad("",12), //OPL_KOULUTUS-AIKA
+                StringUtils.leftPad("",6), //OPL_KOULUTUSAI-KAYKSIKKO
+                StringUtils.leftPad("",6), //El-harpis
                 getAlkamiskausi(curTulos), //ALKUKAUSI
                 getTila(), //TILA
                 getVuosi(curTulos), //VUOSI 
                 DEFAULT_DATE, //Alkupaiva, voimassaolon alku
                 DEFAULT_DATE, //Loppupaiva, voimassaolon loppu
-                getPadding(1), //OPL_TULOSTUS
-                getPadding(15), //OPL_OMISTAJA
-                getPadding(3), //OPL_KUNTA
-                getPadding(3), //OPL_PAINOALUE
-                getPadding(1), //OPL_TYOHONSIJOITUSSEUR
-                getPadding(1), //OPL_LYHYTKESTO
-                getPadding(2), //OPL_MAKSUKER.
-                getPadding(10), //OPL_SOSIAALISETEDUT
-                getPadding(10), //OPL_SOPIMUSNRO
-                getPadding(14) //Tyhjaa
-                );
+                StringUtils.leftPad("",1), //OPL_TULOSTUS
+                StringUtils.leftPad("",15), //OPL_OMISTAJA
+                StringUtils.leftPad("",3), //OPL_KUNTA
+                StringUtils.leftPad("",3), //OPL_PAINOALUE
+                StringUtils.leftPad("",1), //OPL_TYOHONSIJOITUSSEUR
+                StringUtils.leftPad("",1), //OPL_LYHYTKESTO
+                StringUtils.leftPad("",2), //OPL_MAKSUKER.
+                StringUtils.leftPad("",10), //OPL_SOSIAALISETEDUT
+                StringUtils.leftPad("",10), //OPL_SOPIMUSNRO
+                StringUtils.leftPad("",14), //Tyhjaa
+                "\n");
         
     }
     
@@ -186,7 +189,7 @@ public class WriteOPTILI {
     private Object getHakukohdeKoodi(HakukohdeTulos curTulos) {
         String koodiUri = curTulos.getHakukohde().getKoodistoNimi();
         List<KoodiType> koodis = this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
-        return (koodis.isEmpty()) ? this.getPadding(3) : koodis.get(0).getKoodiArvo();
+        return (koodis.isEmpty()) ? StringUtils.leftPad("", 3) : koodis.get(0).getKoodiArvo();
     }
     
     
@@ -203,8 +206,7 @@ public class WriteOPTILI {
             koulutuskoodi = koodis.get(0);
         }
         KoodiType kelaKoodi = getRelatedKelakoodi(koulutuskoodi);
-        
-        return (kelaKoodi == null) ? getPadding(10) : kelaKoodi.getKoodiArvo();
+        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : kelaKoodi.getKoodiArvo();
     }
     
     private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
@@ -239,37 +241,39 @@ public class WriteOPTILI {
         return " n";
     }
 
-    private String getOpetuspisteenJarjNro(HakukohdeTulos curTulos) {
-        Organisaatio organisaatio = hakukohdeDAO.findOrganisaatioByOid(curTulos.getHakukohde().getTarjoaja().getTarjoajaOid());
-        return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
+    private String getOpetuspisteenJarjNro(HakukohdeTulos curTulos, OrganisaatioDTO organisaatio) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+            return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
+        } 
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+            Organisaatio organisaatioE = hakukohdeDAO.findFirstChildOrganisaatio(curTulos.getHakukohde().getTarjoaja().getTarjoajaOid());
+            return (organisaatioE != null && organisaatioE.getOpetuspisteenJarjNro() != null) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
+        }
+        return "01";
     }
 
-    private String getOppilaitosnumero(HakukohdeTulos curTulos) {
-        String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
-        OrganisaatioDTO organisaatio = organisaatioService.findByOid(tarjoajaOid);
+    private String getOppilaitosnumero(HakukohdeTulos curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return String.format("%s", organisaatio.getOppilaitosKoodi());
         } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             return String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
         }
-        return "     ";
+        return StringUtils.leftPad("", 5);
     }
 
     private String getHakukohdeId(HakukohdeTulos curTulos) {
         Hakukohde hakukE = hakukohdeDAO.findHakukohdeByOid(curTulos.getHakukohde().getOid());
         String hakukohdeId = String.format("%s", hakukE.getId());
-        String paddingReserve = "          ";
-        String actualPadding = paddingReserve.substring(0, 10 - hakukohdeId.length());
-        return String.format("%s%s", actualPadding, hakukohdeId);
-    }
-    
-    private String getPadding(int length) {
-        return PADDING_RESERVE.substring(0, length);
+        return StringUtils.leftPad(hakukohdeId, 10);
     }
 
 
     @Value("${koodisto-uris.tutkintokela}")
     public void setKelaTutkintokoodisto(String kelaTutkintokoodisto) {
         this.kelaTutkintokoodisto = kelaTutkintokoodisto;
+    }
+    
+    private byte[] toLatin1(String text) {
+        return text.getBytes(LATIN1);
     }
 }

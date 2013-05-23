@@ -26,7 +26,7 @@ public class WriteOPTILITest {
     @Test
     public void testWriteOptiliHappyPath() {
         try {
-            //WriteOPTILI optiliWriter = new WriteOPTILI("");
+            
             optiliWriter.writeFile();
         } catch (Exception ex) {
             ex.printStackTrace();

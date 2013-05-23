@@ -36,6 +36,8 @@ public class Organisaatio {
     @Column(name = "oid")
     private String oid;
     
+    @Column(name = "parentoidpath")
+    private String parentOidPath;
     
     public String getOid() {
         return oid;

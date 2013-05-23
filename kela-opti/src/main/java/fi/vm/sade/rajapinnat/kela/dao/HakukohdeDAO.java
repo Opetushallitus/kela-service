@@ -27,5 +27,7 @@ public interface HakukohdeDAO {
     Hakukohde findHakukohdeByOid(String oid);
     
     Organisaatio findOrganisaatioByOid(String oid);
+    
+    Organisaatio findFirstChildOrganisaatio(String oid);
 
 }

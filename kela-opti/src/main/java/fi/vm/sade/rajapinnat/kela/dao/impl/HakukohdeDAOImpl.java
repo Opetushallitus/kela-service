@@ -55,4 +55,11 @@ public class HakukohdeDAOImpl implements HakukohdeDAO {
                                 .getSingleResult();
     }
 
+    @Override
+    public Organisaatio findFirstChildOrganisaatio(String oid) {
+        return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
+                .setParameter(1, oid)
+                .getSingleResult();
+    }
+
 }
