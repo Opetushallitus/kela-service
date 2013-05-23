@@ -11,5 +11,6 @@
   
   <modules>
   	<module>kela-integration</module>
+	<module>kela-opti</module>
   </modules>
 </project>

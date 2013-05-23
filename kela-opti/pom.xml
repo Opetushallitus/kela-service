@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>fi.vm.sade.rajapinnat</groupId>
+    <artifactId>kela</artifactId>
+    <version>5.0-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>kela-opti</artifactId>
+  <name>Rajapinnat :: KELA :: Kela OPTI - ${version}</name>
+  <packaging>jar</packaging>
+  <description>Kelan OPTI-tiedonsiirrot</description>
+  
+  <properties>
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
+      <organisaatio.api.version>5.0-SNAPSHOT</organisaatio.api.version>
+      <authentication.api.version>5.0-SNAPSHOT</authentication.api.version>
+      <generic.version>5.0-SNAPSHOT</generic.version>
+      <koodisto.api.version>5.0-SNAPSHOT</koodisto.api.version>
+      <tarjonta.api.version>5.0-SNAPSHOT</tarjonta.api.version>
+  </properties>
+
+  <dependencies>
+
+        <dependency>
+            <groupId>fi.vm.sade.tarjonta</groupId>
+            <artifactId>tarjonta-api</artifactId>
+            <version>${tarjonta.api.version}</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>fi.vm.sade.koodisto</groupId>
+            <artifactId>koodisto-api</artifactId>
+            <version>${koodisto.api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>fi.vm.sade.organisaatio</groupId>
+            <artifactId>organisaatio-api</artifactId>
+            <version>${organisaatio.api.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>fi.vm.sade.generic</groupId>
+            <artifactId>generic-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fi.vm.sade.generic</groupId>
+            <artifactId>generic-common</artifactId>
+            <version>${generic.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fi.vm.sade.generic</groupId>
+            <artifactId>dependencies-service</artifactId>
+            <version>${generic.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>    
+</project>
