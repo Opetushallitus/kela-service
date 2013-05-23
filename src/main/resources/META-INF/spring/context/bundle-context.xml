@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd 
+        http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd ">
+
+    <!-- Turn on AspectJ @Configurable support -->
+    <context:spring-configured />
+    <context:annotation-config />
+    <context:component-scan base-package="fi.vm.sade.rajapinnat.kela" />
+    
+    <!-- Turn on @Autowired, @PostConstruct etc support -->
+    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
+
+    <context:property-placeholder
+        location="classpath:kela.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela.properties"
+        ignore-resource-not-found="true" />
+
+    <jaxws:client id="koodiPublicService"
+                serviceClass="fi.vm.sade.koodisto.service.KoodiService"
+                address="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}"/>
+
+    <jaxws:client id="koodistoPublicService"
+                  serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
+                  address="${koodisto.public.webservice.url.backend:http://NO_KOODISTO_WEBSERVICE_URL_CONFIGURED}"/>
+
+    <jaxws:client id="tarjontaPublicService"
+                  serviceClass="fi.vm.sade.tarjonta.service.TarjontaPublicService"
+                  address="${tarjonta.public.webservice.url.backend:http://NO_TARJONTA_PUBLIC_WEBSERVICE_URL_CONFIGURED}"/>
+
+    <jaxws:client id="organisaatioService"
+                  serviceClass="fi.vm.sade.organisaatio.api.model.OrganisaatioService"
+                  address="${organisaatio.webservice.url.backend:http://NO_ORGANISAATIO_WEBSERVICE_URL_CONFIGURED}"/>
+
+</beans>
