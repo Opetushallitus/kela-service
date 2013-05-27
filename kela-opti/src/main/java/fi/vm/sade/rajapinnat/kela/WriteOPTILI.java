@@ -18,35 +18,23 @@ package fi.vm.sade.rajapinnat.kela;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 import fi.vm.sade.tarjonta.service.types.HaeHakukohteetKyselyTyyppi;
 import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi;
 import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi.HakukohdeTulos;
 import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetKyselyTyyppi;
 import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi;
 import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi.KoulutusTulos;
-import fi.vm.sade.koodisto.service.KoodiService;
-import fi.vm.sade.koodisto.service.KoodistoService;
-import fi.vm.sade.koodisto.service.types.SearchKoodisCriteriaType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
@@ -57,47 +45,24 @@ import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
  */
 @Component
 @Configurable
-public class WriteOPTILI {
+public class WriteOPTILI extends AbstractOPTIWriter {
     
-    @Autowired
-    private TarjontaPublicService tarjontaService;
-    
-    @Autowired
-    private OrganisaatioService organisaatioService;
-    
-    @Autowired
-    private KoodiService koodiService;
-    
-    @Autowired
-    private KoodistoService koodistoService;
-    
-    @Autowired
-    private HakukohdeDAO hakukohdeDAO;
-    
-    private String kelaTutkintokoodisto;
-    
-    private String fileName;
-    
-    private static final Charset LATIN1 = Charset.forName("ISO8859-1");
-    private static final String DATE_PATTERN = "ddMMyy";
-    private static final String NAMEPREFIX = "RY.WYZ.SR.D";
     private static final String OPTILI = ".OPTILI";
-    private static final String DEFAULT_DATE = "01.01.0001";
     private static final String ALKUTIETUE = "0000000000ALKU\n";
     private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
     
     public WriteOPTILI() {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
-        fileName =  NAMEPREFIX + sdf.format(new Date()) + OPTILI; 
+        super();
+        createFileName("", OPTILI);
     }
     
     public WriteOPTILI(String path) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
-        fileName = path + NAMEPREFIX + sdf.format(new Date()) + OPTILI; 
+        super();
+        createFileName(path, OPTILI);
     }
     
+    @Override
     public void writeFile() throws IOException {
-        FileWriter fstream = new FileWriter(fileName);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         HaeHakukohteetKyselyTyyppi kysely = new HaeHakukohteetKyselyTyyppi();
@@ -188,7 +153,7 @@ public class WriteOPTILI {
     
     private Object getHakukohdeKoodi(HakukohdeTulos curTulos) {
         String koodiUri = curTulos.getHakukohde().getKoodistoNimi();
-        List<KoodiType> koodis = this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
+        List<KoodiType> koodis = getKoodisByUriAndVersio(koodiUri);
         return (koodis.isEmpty()) ? StringUtils.leftPad("", 3) : koodis.get(0).getKoodiArvo();
     }
     
@@ -200,7 +165,7 @@ public class WriteOPTILI {
         HaeKoulutuksetVastausTyyppi vastaus = tarjontaService.haeKoulutukset(kysely);
         KoulutusTulos tulos = vastaus.getKoulutusTulos().get(0);
         String koodiUri = tulos.getKoulutus().getKoulutuskoodi().getUri();
-        List<KoodiType> koodis = this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
+        List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
         KoodiType koulutuskoodi = null;
         if (!koodis.isEmpty()) {
             koulutuskoodi = koodis.get(0);
@@ -208,21 +173,7 @@ public class WriteOPTILI {
         KoodiType kelaKoodi = getRelatedKelakoodi(koulutuskoodi);
         return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : kelaKoodi.getKoodiArvo();
     }
-    
-    private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
-        SearchKoodisCriteriaType criteria = new SearchKoodisCriteriaType();
-        int versio = -1;
-        if (koodiUri.contains("#")) {
-            int endIndex = koodiUri.lastIndexOf('#');
-            versio = Integer.parseInt(koodiUri.substring(endIndex + 1));
-            koodiUri = koodiUri.substring(0, endIndex);
-        }
-        criteria.getKoodiUris().add(koodiUri);
-        if (versio > -1) {
-            criteria.setKoodiVersio(versio);
-        }
-        return criteria;
-    }
+
 
     private KoodiType getRelatedKelakoodi(KoodiType koulutuskoodi) {
         KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
@@ -268,12 +219,5 @@ public class WriteOPTILI {
     }
 
 
-    @Value("${koodisto-uris.tutkintokela}")
-    public void setKelaTutkintokoodisto(String kelaTutkintokoodisto) {
-        this.kelaTutkintokoodisto = kelaTutkintokoodisto;
-    }
-    
-    private byte[] toLatin1(String text) {
-        return text.getBytes(LATIN1);
-    }
+
 }

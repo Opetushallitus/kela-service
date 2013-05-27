@@ -15,7 +15,11 @@
  */
 package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.*;
+
 
 /**
  * 
@@ -39,6 +43,30 @@ public class Organisaatio {
     @Column(name = "parentoidpath")
     private String parentOidPath;
     
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "nimi_mkt")
+    private MonikielinenTeksti nimi;
+    
+    @ElementCollection
+    @CollectionTable(name = "organisaatio_kielet", joinColumns = @JoinColumn(name = "organisaatio_id"))
+    private List<String> kielet = new ArrayList<String>();
+    
+    public List<String> getKielet() {
+        return kielet;
+    }
+
+    public void setKielet(List<String> kielet) {
+        this.kielet = kielet;
+    }
+
+    public MonikielinenTeksti getNimi() {
+        return nimi;
+    }
+
+    public void setNimi(MonikielinenTeksti nimi) {
+        this.nimi = nimi;
+    }
+
     public String getOid() {
         return oid;
     }
