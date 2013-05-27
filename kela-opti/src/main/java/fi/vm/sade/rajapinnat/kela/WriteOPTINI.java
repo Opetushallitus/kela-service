@@ -183,14 +183,6 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         return "";
     }
 
-    private String getOppilaitosNro(OrganisaatioPerustietoType curOrganisaatio) {
-        String opnro = "";
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            opnro = curOrganisaatio.getOppilaitosKoodi();
-        }
-        return StringUtils.leftPad(opnro, 5);
-    }
-
     private String getOpPisteenJarjNro(Organisaatio orgE) {
         String opPisteenJarjNro = "";
         if (orgE.getOpetuspisteenJarjNro() != null) {
@@ -225,29 +217,4 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         
         return koodit != null && !koodit.isEmpty();
     }
-    
-    private boolean isOppilaitosWritable(OrganisaatioPerustietoType curOppilaitos) {
-        return isOppilaitosInKoodisto(curOppilaitos) 
-                && isOppilaitosToinenAste(curOppilaitos);
-    }
-    
-    private boolean isOppilaitosInKoodisto(OrganisaatioPerustietoType curOppilaitos) {
-        String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
-        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(oppilaitoskoodi, oppilaitosnumerokoodisto);
-        return koodit != null && !koodit.isEmpty();
-    }
-
-    private boolean isOppilaitosToinenAste(
-            OrganisaatioPerustietoType curOppilaitos) {
-        String opTyyppi = curOppilaitos.getOppilaitostyyppi();
-        return  opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
-                || opTyyppiAmmatillisetErikoisoppilaitokset.equals(opTyyppi)
-                || opTyyppiAmmatillisetOppilaitokset.equals(opTyyppi)
-                || opTyyppiAmmattillisetErityisoppilaitokset.equals(opTyyppi)
-                || opTyyppiKansanopistot.equals(opTyyppi)
-                || opTyyppiLukiot.equals(opTyyppi)
-                || opTyyppiLukiotJaPeruskoulut.equals(opTyyppi)
-                || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
-    }
-
 }

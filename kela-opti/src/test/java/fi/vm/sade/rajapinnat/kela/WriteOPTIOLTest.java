@@ -15,6 +15,8 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.BufferedReader;
@@ -38,8 +40,6 @@ import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 
-import static org.junit.Assert.*;
-
 @ContextConfiguration(locations = "classpath:spring/test-context.xml")
 @TestExecutionListeners(listeners = {
         DependencyInjectionTestExecutionListener.class,
@@ -47,18 +47,16 @@ import static org.junit.Assert.*;
         TransactionalTestExecutionListener.class
     })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class WriteOPTINITest {
+public class WriteOPTIOLTest {
     
     @Autowired
-    private WriteOPTINI optiniWriter;
-
+    private WriteOPTIOL optiolWriter;
+    
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
     
     private TestDataGenerator generator;
-    
-
     
     @Before
     public void initialize() {
@@ -66,9 +64,9 @@ public class WriteOPTINITest {
         organisaatioServiceMock = mock(OrganisaatioService.class);
         
         hakukohdeDaoMock = mock(HakukohdeDAO.class);
-        optiniWriter.setOrganisaatioService(organisaatioServiceMock);
-        optiniWriter.setTarjontaService(tarjontaServiceMock);
-        optiniWriter.setHakukohdeDAO(hakukohdeDaoMock);
+        optiolWriter.setOrganisaatioService(organisaatioServiceMock);
+        optiolWriter.setTarjontaService(tarjontaServiceMock);
+        optiolWriter.setHakukohdeDAO(hakukohdeDaoMock);
         
         generator = new TestDataGenerator();
         generator.setHakukohdeDaoMock(hakukohdeDaoMock);
@@ -80,12 +78,12 @@ public class WriteOPTINITest {
     }
     
     @Test
-    public void testWriteOptiniHappyPath() {
+    public void testWriteOptiolHappyPath() {
         try {
             
-            optiniWriter.writeFile();
+            optiolWriter.writeFile();
             
-            FileInputStream fstream = new FileInputStream(optiniWriter.getFileName());
+            FileInputStream fstream = new FileInputStream(optiolWriter.getFileName());
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
@@ -93,30 +91,24 @@ public class WriteOPTINITest {
             int lineCount = 0;
             while ((strLine = br.readLine()) != null)   {
                 if (lineCount == 1) {
-                    assertTrue(strLine.contains(" Harman lukio "));
-                    assertTrue(strLine.contains(TestDataGenerator.OLKOODI1));
+                    assertTrue(strLine.startsWith(TestDataGenerator.OLKOODI1));
+                    assertTrue(strLine.contains(generator.getCurrentDateStr()));
                 } else if (lineCount == 2) {
-                    assertTrue(strLine.contains(" Alajarven lukio "));
-                    assertTrue(strLine.contains(TestDataGenerator.OLKOODI2));
-                } else if (lineCount == 3) {
-                    assertTrue(strLine.contains(" Harman lukio "));
-                } else if (lineCount == 4) {
-                    assertTrue(strLine.contains(" Alajarven lukio "));
+                    assertTrue(strLine.startsWith(TestDataGenerator.OLKOODI2));
+                    assertTrue(strLine.contains(generator.getCurrentDateStr()));
                 }
-                else if (lineCount > 5){
+                else if (lineCount > 3){
                     fail();
                 }
                 ++lineCount;
             }
-            assertTrue(lineCount == 6);
+            assertTrue(lineCount == 4);
             
             in.close();
+            
         } catch (Exception ex) {
             ex.printStackTrace();
-            fail();
         }
     }
     
-    
-
 }

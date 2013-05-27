@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
 
 /**
  * 
@@ -34,6 +35,8 @@ public class HakukohdeDAOImpl implements HakukohdeDAO {
     
     private EntityManager tarjontaEm;
     private EntityManager organisaatioEm;
+    
+    private static final String KAYNTIOSOITE = "kaynti";
     
     @PostConstruct
     public void initEntityManagers () {
@@ -59,6 +62,14 @@ public class HakukohdeDAOImpl implements HakukohdeDAO {
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                 .setParameter(1, oid)
+                .getSingleResult();
+    }
+
+    @Override
+    public Long getKayntiosoiteIdForOrganisaatio(Long id) {
+        return (Long) organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ")
+                .setParameter(1, id)
+                .setParameter(2, KAYNTIOSOITE)
                 .getSingleResult();
     }
 

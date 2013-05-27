@@ -170,22 +170,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         if (!koodis.isEmpty()) {
             koulutuskoodi = koodis.get(0);
         }
-        KoodiType kelaKoodi = getRelatedKelakoodi(koulutuskoodi);
-        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : kelaKoodi.getKoodiArvo();
-    }
-
-
-    private KoodiType getRelatedKelakoodi(KoodiType koulutuskoodi) {
-        KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
-        uriAndVersio.setKoodiUri(koulutuskoodi.getKoodiUri());
-        uriAndVersio.setVersio(koulutuskoodi.getVersio());
-        List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.RINNASTEINEN);
-        for (KoodiType curKoodi : relatedKoodis) {
-            if (curKoodi.getKoodisto().getKoodistoUri().equals(kelaTutkintokoodisto)) {
-                return curKoodi;
-            }
-        }
-        return null;
+        KoodiType kelaKoodi = getRelatedKelakoodi(koulutuskoodi, kelaTutkintokoodisto);
+        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
     }
 
     private String getKoulutuslaji() {

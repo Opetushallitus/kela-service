@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,11 +34,15 @@ import fi.vm.sade.koodisto.service.types.SearchKoodistosCriteriaType;
 import fi.vm.sade.koodisto.service.types.common.KieliType;
 import fi.vm.sade.koodisto.service.types.common.KoodiMetadataType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
+import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.KoodistoType;
+import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 import fi.vm.sade.koodisto.util.KoodiServiceSearchCriteriaBuilder;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
 import fi.vm.sade.koodisto.util.KoodistoServiceSearchCriteriaBuilder;
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 
@@ -49,7 +54,8 @@ import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 public abstract class AbstractOPTIWriter {
 
     protected static final Charset LATIN1 = Charset.forName("ISO8859-1");
-    protected static final String DATE_PATTERN = "ddMMyy";
+    protected static final String DATE_PATTERN_FILE = "ddMMyy";
+    protected static final String DATE_PATTERN_RECORD = "dd.MM.yyyy";
     protected static final String NAMEPREFIX = "RY.WYZ.SR.D";
     protected static final String DEFAULT_DATE = "01.01.0001";
     
@@ -87,12 +93,14 @@ public abstract class AbstractOPTIWriter {
     
     //USED KOODISTO URIS
     protected String kelaTutkintokoodisto;
+    protected String kelaOppilaitostyyppikoodisto;
     protected String oppilaitosnumerokoodisto;
     protected String toimipistekoodisto;
     
     
+    
     protected void createFileName(String path, String name) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
         fileName =  path + NAMEPREFIX + sdf.format(new Date()) + name; 
     }
     
@@ -119,6 +127,11 @@ public abstract class AbstractOPTIWriter {
     @Value("${koodisto-uris.tutkintokela}")
     public void setKelaTutkintokoodisto(String kelaTutkintokoodisto) {
         this.kelaTutkintokoodisto = kelaTutkintokoodisto;
+    }
+    
+    @Value("${koodisto-uris.oppilaitostyyppikela}")
+    public void setKelaOppilaitostyyppikoodisto(String kelaOppilaitostyyppikoodisto) {
+        this.kelaOppilaitostyyppikoodisto = kelaOppilaitostyyppikoodisto;
     }
     
     @Value("${koodisto-uris.oppilaitosnumero}")
@@ -198,6 +211,62 @@ public abstract class AbstractOPTIWriter {
     
     protected List<KoodiType> getKoodisByUriAndVersio(String koodiUri) {
         return this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
+    }
+    
+
+    protected KoodiType getRelatedKelakoodi(KoodiType koulutuskoodi, String targetKoodisto) {
+        KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
+        uriAndVersio.setKoodiUri(koulutuskoodi.getKoodiUri());
+        uriAndVersio.setVersio(koulutuskoodi.getVersio());
+        List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.RINNASTEINEN);
+        for (KoodiType curKoodi : relatedKoodis) {
+            if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
+                return curKoodi;
+            }
+        }
+        return null;
+    }
+    
+    protected boolean isOppilaitosWritable(OrganisaatioPerustietoType curOppilaitos) {
+        return isOppilaitosInKoodisto(curOppilaitos) 
+                && isOppilaitosToinenAste(curOppilaitos);
+    }
+    
+    protected boolean isOppilaitosInKoodisto(OrganisaatioPerustietoType curOppilaitos) {
+        String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
+        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(oppilaitoskoodi, oppilaitosnumerokoodisto);
+        return koodit != null && !koodit.isEmpty();
+    }
+
+    protected boolean isOppilaitosToinenAste(
+            OrganisaatioPerustietoType curOppilaitos) {
+        String opTyyppi = curOppilaitos.getOppilaitostyyppi();
+        return  opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
+                || opTyyppiAmmatillisetErikoisoppilaitokset.equals(opTyyppi)
+                || opTyyppiAmmatillisetOppilaitokset.equals(opTyyppi)
+                || opTyyppiAmmattillisetErityisoppilaitokset.equals(opTyyppi)
+                || opTyyppiKansanopistot.equals(opTyyppi)
+                || opTyyppiLukiot.equals(opTyyppi)
+                || opTyyppiLukiotJaPeruskoulut.equals(opTyyppi)
+                || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
+    }
+    
+
+    protected String getOppilaitosNro(OrganisaatioPerustietoType curOrganisaatio) {
+        String opnro = "";
+        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+            opnro = curOrganisaatio.getOppilaitosKoodi();
+        }
+        return StringUtils.leftPad(opnro, 5);
+    }
+    
+    protected String gateDateStrOrDefault(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_RECORD);
+        String dateStr = DEFAULT_DATE;
+        if (date != null) {
+            dateStr = sdf.format(date);
+        }
+        return StringUtils.leftPad(dateStr, 10);
     }
     
     /**

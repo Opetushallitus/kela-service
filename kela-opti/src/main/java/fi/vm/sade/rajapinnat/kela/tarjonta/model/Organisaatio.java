@@ -29,6 +29,7 @@ import javax.persistence.*;
 @Table(name="organisaatio")
 public class Organisaatio {
 
+
     @Id
     @Column(name = "id", unique = true, nullable = false)
     @GeneratedValue
@@ -50,6 +51,9 @@ public class Organisaatio {
     @ElementCollection
     @CollectionTable(name = "organisaatio_kielet", joinColumns = @JoinColumn(name = "organisaatio_id"))
     private List<String> kielet = new ArrayList<String>();
+
+    @Column(name="kotipaikka")
+    private String kotipaikka;
     
     public List<String> getKielet() {
         return kielet;
@@ -89,6 +93,22 @@ public class Organisaatio {
 
     public void setOpetuspisteenJarjNro(String opetuspisteenJarjNro) {
         this.opetuspisteenJarjNro = opetuspisteenJarjNro;
+    }
+
+    public String getParentOidPath() {
+        return parentOidPath;
+    }
+
+    public void setParentOidPath(String parentOidPath) {
+        this.parentOidPath = parentOidPath;
+    }
+
+    public String getKotipaikka() {
+        return kotipaikka;
+    }
+
+    public void setKotipaikka(String kotipaikka) {
+        this.kotipaikka = kotipaikka;
     }
     
 }

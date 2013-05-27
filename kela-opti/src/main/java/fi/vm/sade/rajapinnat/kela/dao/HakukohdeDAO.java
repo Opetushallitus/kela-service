@@ -29,5 +29,7 @@ public interface HakukohdeDAO {
     Organisaatio findOrganisaatioByOid(String oid);
     
     Organisaatio findFirstChildOrganisaatio(String oid);
+    
+    Long getKayntiosoiteIdForOrganisaatio(Long id);
 
 }
