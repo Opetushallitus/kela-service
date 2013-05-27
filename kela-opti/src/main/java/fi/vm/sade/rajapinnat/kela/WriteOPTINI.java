@@ -112,7 +112,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
                 StringUtils.leftPad(DEFAULT_DATE, 10),//Alkupaiva, voimassaolon alku
                 StringUtils.leftPad(DEFAULT_DATE, 10),//Loppupaiva, voimassaolon loppu
                 "\n");
-        System.out.println("\nRecord: " + record + "\n");
+        
         return record;
     }
     
@@ -212,14 +212,17 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     }
 
     private String getSisainenKoodi(Organisaatio orgE) {
-        System.out.println("getSisainenKoodi: " + orgE.getNimi());
+        
         return StringUtils.leftPad(String.format("%s", orgE.getNimi().getId()), 10);
     }
 
     private boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
+        
         Organisaatio toimipisteE = hakukohdeDAO.findOrganisaatioByOid(curToimipiste.getOid());
-        String toimipistearvo = String.format("%s%s", toimipisteE.getOpetuspisteenJarjNro(), oppilaitosoidOppilaitosnumeroMap.get(curToimipiste.getParentOid()));
-        List<KoodiType> koodit = this.getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
+        
+        String toimipistearvo = String.format("%s%s", oppilaitosoidOppilaitosnumeroMap.get(curToimipiste.getParentOid()), toimipisteE.getOpetuspisteenJarjNro());
+        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
+        
         return koodit != null && !koodit.isEmpty();
     }
     
