@@ -37,7 +37,7 @@ import fi.vm.sade.tarjonta.service.types.TarjoajaTyyppi;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@ContextConfiguration(locations = "classpath:META-INF/spring/context/bundle-context.xml")
+@ContextConfiguration(locations = "classpath:spring/test-context.xml")
 @TestExecutionListeners(listeners = {
         DependencyInjectionTestExecutionListener.class,
         DirtiesContextTestExecutionListener.class,
