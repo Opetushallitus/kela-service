@@ -20,6 +20,7 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 
 /**
@@ -75,6 +77,8 @@ public abstract class AbstractOPTIWriter {
     protected HakukohdeDAO hakukohdeDAO; 
 
     protected String fileName;
+    
+    protected Map<String,OrganisaatioPerustietoType> oppilaitosoidOppilaitosMap;
 
 
     //TOINEN ASTE KOODI URIS
@@ -96,6 +100,7 @@ public abstract class AbstractOPTIWriter {
     protected String kelaOppilaitostyyppikoodisto;
     protected String oppilaitosnumerokoodisto;
     protected String toimipistekoodisto;
+    protected String yhKoulukoodiKoodisto;
     
     
     
@@ -190,6 +195,13 @@ public abstract class AbstractOPTIWriter {
         this.opTyyppiMusiikkioppilaitokset = opTyyppiMusiikkioppilaitokset;
     }
     
+
+    @Value("${koodisto-uris.yhteishaunkoulukoodi}")
+    public void setYhKoulukoodiKoodisto(
+            String yhKoulukoodiKoodisto) {
+        this.yhKoulukoodiKoodisto = yhKoulukoodiKoodisto;
+    }
+    
     protected List<KoodiType> getKoodisByArvoAndKoodisto(String arvo, String koodistoUri) {
         try {
             SearchKoodistosCriteriaType koodistoSearchCriteria = KoodistoServiceSearchCriteriaBuilder.latestKoodistoByUri(koodistoUri);
@@ -227,6 +239,22 @@ public abstract class AbstractOPTIWriter {
         return null;
     }
     
+    protected KoodiType getSisaltyvaKelakoodi(KoodiType sourcekoodi, String targetKoodisto) {
+        KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
+        uriAndVersio.setKoodiUri(sourcekoodi.getKoodiUri());
+        uriAndVersio.setVersio(sourcekoodi.getVersio());
+        List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.SISALTYY);
+        if (relatedKoodis == null || relatedKoodis.isEmpty()) {
+            System.out.println("\n\n NO RELATED KOODIS!!! " + sourcekoodi.getKoodiArvo() + "\n\n");
+        }
+        for (KoodiType curKoodi : relatedKoodis) {
+            if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
+                return curKoodi;
+            }
+        }
+        return null;
+    }
+    
     protected boolean isOppilaitosWritable(OrganisaatioPerustietoType curOppilaitos) {
         return isOppilaitosInKoodisto(curOppilaitos) 
                 && isOppilaitosToinenAste(curOppilaitos);
@@ -251,6 +279,25 @@ public abstract class AbstractOPTIWriter {
                 || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
     }
     
+    protected boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
+        
+        Organisaatio toimipisteE = hakukohdeDAO.findOrganisaatioByOid(curToimipiste.getOid());
+        
+        if (curToimipiste.getParentOid() == null) {
+            return false;
+        }
+        
+        OrganisaatioPerustietoType parentToimipiste = oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid());
+        if (parentToimipiste == null) {
+            return false;
+        }
+        
+        String toimipistearvo = String.format("%s%s", parentToimipiste.getOppilaitosKoodi(), toimipisteE.getOpetuspisteenJarjNro());
+        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
+        
+        return koodit != null && !koodit.isEmpty();
+    }
+    
 
     protected String getOppilaitosNro(OrganisaatioPerustietoType curOrganisaatio) {
         String opnro = "";
@@ -258,6 +305,32 @@ public abstract class AbstractOPTIWriter {
             opnro = curOrganisaatio.getOppilaitosKoodi();
         }
         return StringUtils.leftPad(opnro, 5);
+    }
+
+    protected String getOpPisteenOppilaitosnumero(
+            OrganisaatioPerustietoType curOrganisaatio) {
+        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
+                && !curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+            return StringUtils.leftPad(this.oppilaitosoidOppilaitosMap.get(curOrganisaatio.getParentOid()).getOppilaitosKoodi(), 5);
+        } 
+        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+            return StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
+        }
+        return StringUtils.leftPad("", 5);
+    }
+    
+
+    protected String getOpPisteenJarjNro(Organisaatio orgE) {
+        String opPisteenJarjNro = "";
+        if (orgE.getOpetuspisteenJarjNro() != null) {
+            opPisteenJarjNro = orgE.getOpetuspisteenJarjNro();
+        }
+        return StringUtils.leftPad(opPisteenJarjNro, 2);
+    }
+    
+
+    protected String getYhteystietojenTunnus(Organisaatio orgE) {
+        return StringUtils.leftPad(String.format("%s", hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
     }
     
     protected String gateDateStrOrDefault(Date date) {
@@ -267,6 +340,27 @@ public abstract class AbstractOPTIWriter {
             dateStr = sdf.format(date);
         }
         return StringUtils.leftPad(dateStr, 10);
+    }
+    
+
+    protected String getOppilaitostyyppitunnus(
+            OrganisaatioPerustietoType curOppilaitos) {
+        List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
+        KoodiType olTyyppiKoodi = null;
+        if (!koodis.isEmpty()) {
+            olTyyppiKoodi = koodis.get(0);
+        }
+        KoodiType kelaKoodi = getRelatedKelakoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
+        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
+    }
+
+    protected String getKotikunta(Organisaatio orgE) {
+        List<KoodiType> koodit = getKoodisByUriAndVersio(orgE.getKotipaikka());
+        String kotikuntaArvo = "";
+        if (koodit != null && !koodit.isEmpty()) {
+            kotikuntaArvo = koodit.get(0).getKoodiArvo();
+        }
+        return StringUtils.leftPad(kotikuntaArvo, 3);
     }
     
     /**

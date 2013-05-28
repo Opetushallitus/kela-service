@@ -36,8 +36,6 @@ import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetKyselyTyyppi;
 import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi;
 import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi.KoulutusTulos;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
-import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 
 /**
  * 
@@ -203,7 +201,4 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         String hakukohdeId = String.format("%s", hakukE.getId());
         return StringUtils.leftPad(hakukohdeId, 10);
     }
-
-
-
 }

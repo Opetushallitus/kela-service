@@ -15,8 +15,7 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 import java.io.BufferedReader;
@@ -47,10 +46,10 @@ import fi.vm.sade.tarjonta.service.TarjontaPublicService;
         TransactionalTestExecutionListener.class
     })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class WriteOPTIOLTest {
+public class WriteOPTIOPTest {
     
     @Autowired
-    private WriteOPTIOL optiolWriter;
+    private WriteOPTIOP optiopWriter;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
@@ -64,9 +63,9 @@ public class WriteOPTIOLTest {
         organisaatioServiceMock = mock(OrganisaatioService.class);
         
         hakukohdeDaoMock = mock(HakukohdeDAO.class);
-        optiolWriter.setOrganisaatioService(organisaatioServiceMock);
-        optiolWriter.setTarjontaService(tarjontaServiceMock);
-        optiolWriter.setHakukohdeDAO(hakukohdeDaoMock);
+        optiopWriter.setOrganisaatioService(organisaatioServiceMock);
+        optiopWriter.setTarjontaService(tarjontaServiceMock);
+        optiopWriter.setHakukohdeDAO(hakukohdeDaoMock);
         
         generator = new TestDataGenerator();
         generator.setHakukohdeDaoMock(hakukohdeDaoMock);
@@ -76,14 +75,14 @@ public class WriteOPTIOLTest {
         generator.createOrganisaatioData();
         
     }
-    
+
     @Test
-    public void testWriteOptiolHappyPath() {
+    public void testWriteOptiopHappyPath() {
         try {
             
-            optiolWriter.writeFile();
+            optiopWriter.writeFile();
             
-            FileInputStream fstream = new FileInputStream(optiolWriter.getFileName());
+            FileInputStream fstream = new FileInputStream(optiopWriter.getFileName());
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
@@ -91,11 +90,13 @@ public class WriteOPTIOLTest {
             int lineCount = 0;
             while ((strLine = br.readLine()) != null)   {
                 if (lineCount == 1) {
-                    assertTrue(strLine.startsWith(TestDataGenerator.OLKOODI1));
-                    assertTrue(strLine.contains(generator.getCurrentDateStr()));
+                    assertTrue(strLine.startsWith(TestDataGenerator.OLKOODI1));//OPPIL_NRO
+                    assertTrue(strLine.contains(generator.getCurrentDateStr()));//alkupvm
+                    assertTrue(strLine.contains("1750"));//YHKoodi
                 } else if (lineCount == 2) {
-                    assertTrue(strLine.startsWith(TestDataGenerator.OLKOODI2));
-                    assertTrue(strLine.contains(generator.getCurrentDateStr()));
+                    assertTrue(strLine.startsWith(TestDataGenerator.OLKOODI2));//OPPIL_NRO
+                    assertTrue(strLine.contains(generator.getCurrentDateStr()));//alkupvm
+                    assertTrue(strLine.contains("1751"));//YHKoodi
                 }
                 else if (lineCount > 3){
                     fail();
@@ -105,10 +106,12 @@ public class WriteOPTIOLTest {
             assertTrue(lineCount == 4);
             
             in.close();
+        
+            
             
         } catch (Exception ex) {
+            ex.printStackTrace();
             fail();
         }
     }
-    
 }

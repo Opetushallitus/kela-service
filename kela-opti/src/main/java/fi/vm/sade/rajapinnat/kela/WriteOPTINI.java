@@ -48,7 +48,6 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     
     private static final String ALKUTIETUE = "0000000000ALKU\n";
     private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
-    private Map<String,String> oppilaitosoidOppilaitosnumeroMap;
     
     
     public WriteOPTINI() {
@@ -66,20 +65,20 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        oppilaitosoidOppilaitosnumeroMap = new HashMap<String, String>(); 
+        oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>(); 
         OrganisaatioSearchCriteriaDTO criteria = new OrganisaatioSearchCriteriaDTO();
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
         List<OrganisaatioPerustietoType> oppilaitokset = organisaatioService.searchBasicOrganisaatios(criteria);
         for (OrganisaatioPerustietoType curOppilaitos : oppilaitokset) {
             if (isOppilaitosWritable(curOppilaitos)) {
-                oppilaitosoidOppilaitosnumeroMap.put(curOppilaitos.getOid(), curOppilaitos.getOppilaitosKoodi());
+                oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
                 bos.write(toLatin1(createRecord(curOppilaitos)));   
                 bos.flush();
             }
         }
         
         criteria = new OrganisaatioSearchCriteriaDTO();
-        criteria.getOidResctrictionList().addAll(oppilaitosoidOppilaitosnumeroMap.keySet());
+        criteria.getOidResctrictionList().addAll(oppilaitosoidOppilaitosMap.keySet());
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
         
         List<OrganisaatioPerustietoType> toimipisteet = organisaatioService.searchBasicOrganisaatios(criteria);
@@ -183,38 +182,10 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         return "";
     }
 
-    private String getOpPisteenJarjNro(Organisaatio orgE) {
-        String opPisteenJarjNro = "";
-        if (orgE.getOpetuspisteenJarjNro() != null) {
-            opPisteenJarjNro = orgE.getOpetuspisteenJarjNro();
-        }
-        return StringUtils.leftPad(opPisteenJarjNro, 2);
-    }
 
-    private String getOpPisteenOppilaitosnumero(
-            OrganisaatioPerustietoType curOrganisaatio) {
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
-                && !curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            return StringUtils.leftPad(this.oppilaitosoidOppilaitosnumeroMap.get(curOrganisaatio.getParentOid()), 5);
-        } 
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
-            return StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
-        }
-        return StringUtils.leftPad("", 5);
-    }
 
     private String getSisainenKoodi(Organisaatio orgE) {
         
         return StringUtils.leftPad(String.format("%s", orgE.getNimi().getId()), 10);
-    }
-
-    private boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
-        
-        Organisaatio toimipisteE = hakukohdeDAO.findOrganisaatioByOid(curToimipiste.getOid());
-        
-        String toimipistearvo = String.format("%s%s", oppilaitosoidOppilaitosnumeroMap.get(curToimipiste.getParentOid()), toimipisteE.getOpetuspisteenJarjNro());
-        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
-        
-        return koodit != null && !koodit.isEmpty();
     }
 }

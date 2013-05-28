@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
@@ -100,32 +99,8 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
         return record;
     }
 
-    private String getKotikunta(Organisaatio orgE) {
-        List<KoodiType> koodit = getKoodisByUriAndVersio(orgE.getKotipaikka());
-        String kotikuntaArvo = "";
-        if (koodit != null && !koodit.isEmpty()) {
-            kotikuntaArvo = koodit.get(0).getKoodiArvo();
-        }
-        return StringUtils.leftPad(kotikuntaArvo, 3);
-    }
-
     private String getZeros() {
         return "0000000000";
-    }
-
-    private String getOppilaitostyyppitunnus(
-            OrganisaatioPerustietoType curOppilaitos) {
-        List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
-        KoodiType olTyyppiKoodi = null;
-        if (!koodis.isEmpty()) {
-            olTyyppiKoodi = koodis.get(0);
-        }
-        KoodiType kelaKoodi = getRelatedKelakoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
-        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
-    }
-
-    private String getYhteystietojenTunnus(Organisaatio orgE) {
-        return StringUtils.leftPad(String.format("%s", hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
     }
 
 }
