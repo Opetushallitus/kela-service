@@ -138,7 +138,4 @@ public class TestDataGenerator {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
         return sdf.format(curCal.getTime());
     }
-
-    
-
 }

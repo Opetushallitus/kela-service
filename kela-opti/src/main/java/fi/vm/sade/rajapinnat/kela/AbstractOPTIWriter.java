@@ -101,6 +101,9 @@ public abstract class AbstractOPTIWriter {
     protected String oppilaitosnumerokoodisto;
     protected String toimipistekoodisto;
     protected String yhKoulukoodiKoodisto;
+    protected String koulutuskoodisto;
+    protected String kelaOpintoalakoodisto;
+    protected String kelaKoulutusastekoodisto;
     
     
     
@@ -190,16 +193,29 @@ public abstract class AbstractOPTIWriter {
     }
 
     @Value("${musiikkioppilaitokset-uri}")
-    public void setOpTyyppiMusiikkioppilaitokset(
-            String opTyyppiMusiikkioppilaitokset) {
+    public void setOpTyyppiMusiikkioppilaitokset(String opTyyppiMusiikkioppilaitokset) {
         this.opTyyppiMusiikkioppilaitokset = opTyyppiMusiikkioppilaitokset;
     }
     
 
     @Value("${koodisto-uris.yhteishaunkoulukoodi}")
-    public void setYhKoulukoodiKoodisto(
-            String yhKoulukoodiKoodisto) {
+    public void setYhKoulukoodiKoodisto(String yhKoulukoodiKoodisto) {
         this.yhKoulukoodiKoodisto = yhKoulukoodiKoodisto;
+    }
+    
+    @Value("${koodisto-uris.koulutus}")
+    public void setKoulutuskoodisto(String koulutuskoodisto) {
+        this.koulutuskoodisto = koulutuskoodisto;
+    }
+    
+    @Value("${koodisto-uris.opintoalakela}")
+    public void setKelaOpintoalakoodisto(String kelaOpintoalakoodisto) {
+        this.kelaOpintoalakoodisto = kelaOpintoalakoodisto;
+    }
+    
+    @Value("${koodisto-uris.koulutusastekela}")
+    public void setKelaKoulutusastekoodisto(String kelaKoulutusastekoodisto) {
+        this.kelaKoulutusastekoodisto = kelaKoulutusastekoodisto;
     }
     
     protected List<KoodiType> getKoodisByArvoAndKoodisto(String arvo, String koodistoUri) {
@@ -226,27 +242,34 @@ public abstract class AbstractOPTIWriter {
     }
     
 
-    protected KoodiType getRelatedKelakoodi(KoodiType koulutuskoodi, String targetKoodisto) {
+    protected KoodiType getRinnasteinenKoodi(KoodiType koulutuskoodi, String targetKoodisto) {
         KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
         uriAndVersio.setKoodiUri(koulutuskoodi.getKoodiUri());
         uriAndVersio.setVersio(koulutuskoodi.getVersio());
         List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.RINNASTEINEN);
+        KoodiType targetKoodi = null;
         for (KoodiType curKoodi : relatedKoodis) {
             if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
-                return curKoodi;
+                targetKoodi = curKoodi;
             }
         }
-        return null;
+        if (targetKoodi == null) {
+            relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, true, SuhteenTyyppiType.RINNASTEINEN);
+            for (KoodiType curKoodi : relatedKoodis) {
+                if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
+                    targetKoodi = curKoodi;
+                }
+            }
+        }
+        
+        return targetKoodi;
     }
     
-    protected KoodiType getSisaltyvaKelakoodi(KoodiType sourcekoodi, String targetKoodisto) {
+    protected KoodiType getSisaltyvaKoodi(KoodiType sourcekoodi, String targetKoodisto) {
         KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
         uriAndVersio.setKoodiUri(sourcekoodi.getKoodiUri());
         uriAndVersio.setVersio(sourcekoodi.getVersio());
         List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.SISALTYY);
-        if (relatedKoodis == null || relatedKoodis.isEmpty()) {
-            System.out.println("\n\n NO RELATED KOODIS!!! " + sourcekoodi.getKoodiArvo() + "\n\n");
-        }
         for (KoodiType curKoodi : relatedKoodis) {
             if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
                 return curKoodi;
@@ -333,7 +356,7 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad(String.format("%s", hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
     }
     
-    protected String gateDateStrOrDefault(Date date) {
+    protected String getDateStrOrDefault(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_RECORD);
         String dateStr = DEFAULT_DATE;
         if (date != null) {
@@ -350,7 +373,7 @@ public abstract class AbstractOPTIWriter {
         if (!koodis.isEmpty()) {
             olTyyppiKoodi = koodis.get(0);
         }
-        KoodiType kelaKoodi = getRelatedKelakoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
+        KoodiType kelaKoodi = getRinnasteinenKoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
         return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
     }
 

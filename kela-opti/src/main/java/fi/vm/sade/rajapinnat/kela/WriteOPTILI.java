@@ -168,7 +168,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         if (!koodis.isEmpty()) {
             koulutuskoodi = koodis.get(0);
         }
-        KoodiType kelaKoodi = getRelatedKelakoodi(koulutuskoodi, kelaTutkintokoodisto);
+        KoodiType kelaKoodi = getRinnasteinenKoodi(koulutuskoodi, kelaTutkintokoodisto);
         return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
     }
 

@@ -87,8 +87,8 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
                 getKotikunta(orgE),//Oppilaitoksen kotikunta
                 DEFAULT_DATE,//01.01.0001-merkkijono
                 DEFAULT_DATE,//01.01.0001-merkkijono
-                gateDateStrOrDefault(curOppilaitos.getAlkuPvm()),//Oppilaitoksen perustamisajankohta
-                gateDateStrOrDefault(curOppilaitos.getLakkautusPvm()),//Oppilaitoksen lakkauttamisajankohta
+                getDateStrOrDefault(curOppilaitos.getAlkuPvm()),//Oppilaitoksen perustamisajankohta
+                getDateStrOrDefault(curOppilaitos.getLakkautusPvm()),//Oppilaitoksen lakkauttamisajankohta
                 DEFAULT_DATE,//Viimeinen paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
                 StringUtils.leftPad("", 15),//Tyhjaa
