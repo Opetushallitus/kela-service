@@ -39,7 +39,7 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 @Configurable
 public class WriteOPTITU extends AbstractOPTIWriter {
 
-private static final String OPTITU = ".OPTITU";
+    private static final String OPTITU = ".OPTITU";
     
     private static final String ALKUTIETUE = "0000000000ALKU\n";
     private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
