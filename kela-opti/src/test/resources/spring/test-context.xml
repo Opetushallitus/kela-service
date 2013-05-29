@@ -3,9 +3,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context" 
        xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
         http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd 
         http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd ">
 
     <!-- Turn on AspectJ @Configurable support -->
@@ -36,5 +38,14 @@
     <jaxws:client id="organisaatioService"
                   serviceClass="fi.vm.sade.organisaatio.api.model.OrganisaatioService"
                   address="${organisaatio.webservice.url.backend:http://NO_ORGANISAATIO_WEBSERVICE_URL_CONFIGURED}"/>
+                  
+    <jaxrs:client id="organisaatioResource"
+                  address="${organisaatio.api.rest.url}"
+                  serviceClass="fi.vm.sade.organisaatio.resource.OrganisaatioResource"
+                  inheritHeaders="true">
+        <jaxrs:providers>
+            <bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+        </jaxrs:providers>
+    </jaxrs:client>
 
 </beans>

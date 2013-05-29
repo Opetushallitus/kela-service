@@ -31,24 +31,18 @@ import org.springframework.stereotype.Component;
 @Configurable
 public class WriteOPTIYH extends AbstractOPTIWriter {
 
-private static final String OPTIYH = ".OPTIYH";
+    private static final String OPTIYH = ".OPTIYH";
     
     private static final String ALKUTIETUE = "0000000000ALKU\n";
     private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
     
     public WriteOPTIYH() {
-        super();
-        this.createFileName("", OPTIYH);
-    }
-    
-    public WriteOPTIYH(String path) {
-        super();
-        this.createFileName(path, OPTIYH);
+        super();  
     }
     
     @Override
     public void writeFile() throws IOException {
-        
+        this.createFileName("", OPTIYH);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         

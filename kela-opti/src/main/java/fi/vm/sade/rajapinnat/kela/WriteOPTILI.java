@@ -51,16 +51,11 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     
     public WriteOPTILI() {
         super();
-        createFileName("", OPTILI);
-    }
-    
-    public WriteOPTILI(String path) {
-        super();
-        createFileName(path, OPTILI);
     }
     
     @Override
     public void writeFile() throws IOException {
+        createFileName("", OPTILI);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         HaeHakukohteetKyselyTyyppi kysely = new HaeHakukohteetKyselyTyyppi();

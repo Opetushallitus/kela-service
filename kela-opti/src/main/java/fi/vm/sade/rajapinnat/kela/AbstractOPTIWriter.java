@@ -44,6 +44,7 @@ import fi.vm.sade.koodisto.util.KoodistoServiceSearchCriteriaBuilder;
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
@@ -60,6 +61,7 @@ public abstract class AbstractOPTIWriter {
     protected static final String DATE_PATTERN_RECORD = "dd.MM.yyyy";
     protected static final String NAMEPREFIX = "RY.WYZ.SR.D";
     protected static final String DEFAULT_DATE = "01.01.0001";
+    protected static final String DIR_SEPARATOR = "/";
     
     @Autowired
     protected TarjontaPublicService tarjontaService;
@@ -76,10 +78,14 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected HakukohdeDAO hakukohdeDAO; 
 
+    protected OrganisaatioResource organisaatioResource;
+
+
     protected String fileName;
     
     protected Map<String,OrganisaatioPerustietoType> oppilaitosoidOppilaitosMap;
 
+    protected String path;
 
     //TOINEN ASTE KOODI URIS
     protected String opTyyppiLukiot;
@@ -106,15 +112,22 @@ public abstract class AbstractOPTIWriter {
     protected String kelaKoulutusastekoodisto;
     
     
-    
     protected void createFileName(String path, String name) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
-        fileName =  path + NAMEPREFIX + sdf.format(new Date()) + name; 
+        if (StringUtils.isEmpty(path)) {
+            path = this.path + DIR_SEPARATOR;
+        }
+        fileName =  path + NAMEPREFIX + sdf.format(new Date()) + name;
     }
     
     
     protected byte[] toLatin1(String text) {
         return text.getBytes(LATIN1);
+    }
+    
+    @Value("${exportdir}")
+    public void setPath(String path) {
+        this.path = path;
     }
     
     @Value("$fi-uri}")
@@ -418,7 +431,10 @@ public abstract class AbstractOPTIWriter {
     public void setHakukohdeDAO(HakukohdeDAO hakukohdeDAO) {
         this.hakukohdeDAO = hakukohdeDAO;
     }
-    
+
+    public void setOrganisaatioResource(OrganisaatioResource organisaatioResource) {
+        this.organisaatioResource = organisaatioResource;
+    }
     
    public String getFileName() {
        return fileName;

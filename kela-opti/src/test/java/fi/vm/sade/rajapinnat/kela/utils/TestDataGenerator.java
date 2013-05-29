@@ -21,12 +21,16 @@ import static org.mockito.Mockito.when;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
+import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.MonikielinenTeksti;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
@@ -46,13 +50,37 @@ public class TestDataGenerator {
     public static final String KOTIPAIKKA = "kunta_091";
     public static final String KIELI = "kielivalikoima_fi";
     public static final String KAYNTIOSOITE = "kaynti";
+    public static final String POSTIOSOITE = "posti";
     public static final String OID_PREFIX = "oid:";
     public static final String DATE_PATTERN = "dd.MM.yyyy";
+    public static final String KAYNTI_POSTINUMERO = "posti_62501";
+    public static final String KAYNTI_KATUOSOITE = "Kayntikatu 1";
+    
+    public static final String POSTI_POSTINUMERO = "posti_02100";
+    public static final String POSTI_KATUOSOITE = "postikatu 1";
+    
+    
+    public static final String OL_PUHELIN_PREFIX = "050";
+    public static final String OL_FAX_PREFIX = "019";
+    public static final String OP_PUHELIN_PREFIX = "044";
+    public static final String OP_FAX_PREFIX = "05";
+    public static final String EMAIL_SUFFIX = "@oph.fi";
+    public static final String OL_WWW_PREFIX = "http://oppilaitos.fi/";
+    public static final String OP_WWW_PREFIX = "http://opetuspiste.fi/";
+    
+    
+    public static final String OSOITETYYPPI_FIELD = "osoiteTyyppi";
+    public static final String POSTINUMERO_FIELD = "postinumeroUri";
+    public static final String KATUOSOITE_FIELD = "osoite";
+    
+    
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
-    
+    private OrganisaatioResource orgRMock;
+
+
     Calendar curCal = Calendar.getInstance();
 
     public List<OrganisaatioPerustietoType> createOrganisaatiot() {
@@ -100,6 +128,36 @@ public class TestDataGenerator {
         yt.setOsoiteTyyppi(KAYNTIOSOITE);
         when(hakukohdeDaoMock.getKayntiosoiteIdForOrganisaatio(orgE.getId())).thenReturn(orgE.getId() + 5);
         
+        OrganisaatioRDTO orgR = new OrganisaatioRDTO();
+        orgR.setOid(oid);
+        Map<String,String> kayntiOsoite = new HashMap<String,String>();
+        kayntiOsoite.put(OSOITETYYPPI_FIELD, KAYNTIOSOITE);
+        kayntiOsoite.put(KATUOSOITE_FIELD, KAYNTI_KATUOSOITE + id);
+        kayntiOsoite.put(POSTINUMERO_FIELD, KAYNTI_POSTINUMERO);
+        orgR.setKayntiosoite(kayntiOsoite);
+        
+        Map<String,String> postiOsoite = new HashMap<String,String>();
+        postiOsoite.put(OSOITETYYPPI_FIELD, POSTIOSOITE);
+        postiOsoite.put(KATUOSOITE_FIELD, POSTI_KATUOSOITE + id);
+        postiOsoite.put(POSTINUMERO_FIELD, POSTI_POSTINUMERO);
+        orgR.setPostiosoite(postiOsoite);
+        
+        
+        
+        if (olkoodi != null) {
+            orgR.setFaksinumero(OL_FAX_PREFIX + " " + olkoodi);
+            orgR.setPuhelinnumero(OL_PUHELIN_PREFIX + " " + olkoodi);
+            orgR.setWwwOsoite(OL_WWW_PREFIX + olkoodi);
+            orgR.setEmailOsoite(olkoodi + EMAIL_SUFFIX);
+        } else {
+            orgR.setFaksinumero(OP_FAX_PREFIX + " " + OPETUSPISTENRO + id);
+            orgR.setPuhelinnumero(OP_PUHELIN_PREFIX + " " + OPETUSPISTENRO + id);
+            orgR.setWwwOsoite(OP_WWW_PREFIX + OPETUSPISTENRO  + id);
+            orgR.setEmailOsoite(OPETUSPISTENRO + id + EMAIL_SUFFIX);
+        }
+        
+        when(orgRMock.getOrganisaatioByOID(oid)).thenReturn(orgR);
+        
         return ol1;
     }
     
@@ -126,6 +184,15 @@ public class TestDataGenerator {
     
     public void setTarjontaServiceMock(TarjontaPublicService tarjontaServiceMock) {
         this.tarjontaServiceMock = tarjontaServiceMock;
+    }
+    
+    
+    public OrganisaatioResource getOrgRMock() {
+        return orgRMock;
+    }
+
+    public void setOrgRMock(OrganisaatioResource orgRMock) {
+        this.orgRMock = orgRMock;
     }
 
     public void createOrganisaatioData() {

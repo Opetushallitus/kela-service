@@ -46,16 +46,11 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     
     public WriteOPTITU() {
         super();
-        this.createFileName("", OPTITU);
-    }
-    
-    public WriteOPTITU(String path) {
-        super();
-        this.createFileName(path, OPTITU);
     }
     
     @Override
     public void writeFile() throws IOException {
+        this.createFileName("", OPTITU);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();

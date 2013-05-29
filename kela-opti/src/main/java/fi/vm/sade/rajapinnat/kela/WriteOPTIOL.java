@@ -45,16 +45,12 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
     
     public WriteOPTIOL() {
         super();
-        this.createFileName("", OPTIOL);
-    }
-    
-    public WriteOPTIOL(String path) {
-        super();
-        this.createFileName(path, OPTIOL);
+        
     }
     
     @Override
     public void writeFile() throws IOException {
+        this.createFileName("", OPTIOL);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         

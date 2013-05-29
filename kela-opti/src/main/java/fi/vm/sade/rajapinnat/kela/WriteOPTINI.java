@@ -52,16 +52,12 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     
     public WriteOPTINI() {
         super();
-        this.createFileName("", OPTINI);
-    }
-    
-    public WriteOPTINI(String path) {
-        super();
-        this.createFileName(path, OPTINI);
+       
     }
     
     @Override
     public void writeFile() throws IOException {
+        this.createFileName("", OPTINI);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         

@@ -67,7 +67,7 @@ public class HakukohdeDAOImpl implements HakukohdeDAO {
 
     @Override
     public Long getKayntiosoiteIdForOrganisaatio(Long id) {
-        return (Long) organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ")
+        return (Long) organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ?")
                 .setParameter(1, id)
                 .setParameter(2, KAYNTIOSOITE)
                 .getSingleResult();

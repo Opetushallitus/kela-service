@@ -46,18 +46,12 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
     private static final String LOPPUTIETUE = "99999LOPPU??????\n";
     
     public WriteOPTIOP() {
-        super();
-        this.createFileName("", OPTIOP);
-    }
-    
-    public WriteOPTIOP(String path) {
-        super();
-        this.createFileName(path, OPTIOP);
+        super();  
     }
 
     @Override
     public void writeFile() throws IOException {
-        
+        createFileName("", OPTIOP);
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
