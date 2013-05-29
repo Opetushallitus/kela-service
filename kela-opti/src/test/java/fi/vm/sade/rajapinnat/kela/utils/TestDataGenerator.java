@@ -26,16 +26,28 @@ import java.util.List;
 import java.util.Map;
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.MonikielinenTeksti;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
+import fi.vm.sade.tarjonta.service.types.HaeHakukohteetKyselyTyyppi;
+import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi;
+import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetKyselyTyyppi;
+import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi;
+import fi.vm.sade.tarjonta.service.types.HakukohdeListausTyyppi;
+import fi.vm.sade.tarjonta.service.types.KoodistoKoodiTyyppi;
+import fi.vm.sade.tarjonta.service.types.KoulutusListausTyyppi;
+import fi.vm.sade.tarjonta.service.types.TarjoajaTyyppi;
+import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi.HakukohdeTulos;
+import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi.KoulutusTulos;
 
 /**
  * 
@@ -72,6 +84,13 @@ public class TestDataGenerator {
     public static final String OSOITETYYPPI_FIELD = "osoiteTyyppi";
     public static final String POSTINUMERO_FIELD = "postinumeroUri";
     public static final String KATUOSOITE_FIELD = "osoite";
+    
+    
+    private static final String TARJOAJA_OID = "oid:tarjoaja1";
+    private static final String TARJOAJA_OLKOODI = "12345";
+    private static final String TARJOAJA_OPJARJNRO = "01";
+    private static final String KOULUTUSKOODI = "koulutus_301000";
+    private static final String ALKAMISKAUSI_KEVAT = "KEVAT";
     
     
     
@@ -159,6 +178,57 @@ public class TestDataGenerator {
         when(orgRMock.getOrganisaatioByOID(oid)).thenReturn(orgR);
         
         return ol1;
+    }
+    
+
+    public void generateTarjontaData() {
+        HaeHakukohteetVastausTyyppi vastaus = new HaeHakukohteetVastausTyyppi();
+        vastaus.getHakukohdeTulos().add(createHakukohdetulos("hakukohteet_000#1", 0));
+        vastaus.getHakukohdeTulos().add(createHakukohdetulos("hakukohteet_011#1", 1));
+        when(tarjontaServiceMock.haeHakukohteet((HaeHakukohteetKyselyTyyppi)anyObject())).thenReturn(vastaus);
+    }
+    
+    private HakukohdeTulos createHakukohdetulos(String koodistonimi, long id) {
+        HakukohdeTulos hakukohdeT = new HakukohdeTulos();
+        HakukohdeListausTyyppi hakukohde = new HakukohdeListausTyyppi();
+        hakukohde.setOid(koodistonimi);
+        hakukohde.setKoodistoNimi(koodistonimi);
+        hakukohde.setKoulutuksenAlkamiskausiUri(ALKAMISKAUSI_KEVAT);
+        
+        TarjoajaTyyppi tarjoaja = new TarjoajaTyyppi();
+        tarjoaja.setTarjoajaOid(TARJOAJA_OID);
+        hakukohde.setTarjoaja(tarjoaja);
+        
+        OrganisaatioDTO tarjoajaDTO = new OrganisaatioDTO();
+        tarjoajaDTO.setOid(TARJOAJA_OID);
+        tarjoajaDTO.getTyypit().add(OrganisaatioTyyppi.OPETUSPISTE);
+        tarjoajaDTO.getTyypit().add(OrganisaatioTyyppi.OPPILAITOS);
+        tarjoajaDTO.setOpetuspisteenJarjNro(TARJOAJA_OPJARJNRO);
+        tarjoajaDTO.setOppilaitosKoodi(TARJOAJA_OLKOODI);
+        
+        when(organisaatioServiceMock.findByOid(TARJOAJA_OID)).thenReturn(tarjoajaDTO);
+        
+        Hakukohde hakukE = new Hakukohde();
+        hakukE.setId(Long.valueOf(id));
+        
+        when(hakukohdeDaoMock.findHakukohdeByOid(koodistonimi)).thenReturn(hakukE);
+        
+        HaeKoulutuksetVastausTyyppi koulutusVastaus = new HaeKoulutuksetVastausTyyppi();
+        KoulutusTulos koulutusTulos = new KoulutusTulos();
+        KoulutusListausTyyppi koulutus = new KoulutusListausTyyppi();
+        
+        KoodistoKoodiTyyppi koodiT = new KoodistoKoodiTyyppi();
+        koodiT.setUri(KOULUTUSKOODI);
+        koodiT.setVersio(1);
+        koulutus.setKoulutuskoodi(koodiT);
+        koulutusTulos.setKoulutus(koulutus);
+        koulutusVastaus.getKoulutusTulos().add(koulutusTulos);
+        
+        when(tarjontaServiceMock.haeKoulutukset((HaeKoulutuksetKyselyTyyppi)anyObject())).thenReturn(koulutusVastaus);
+        
+        hakukohdeT.setHakukohde(hakukohde);
+        
+        return hakukohdeT;
     }
     
     public OrganisaatioService getOrganisaatioServiceMock() {

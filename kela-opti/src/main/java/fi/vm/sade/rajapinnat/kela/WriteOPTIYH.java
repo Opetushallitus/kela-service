@@ -43,7 +43,7 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
     @Override
     public void writeFile() throws IOException {
         this.createFileName("", OPTIYH);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
         bos.write(toLatin1(LOPPUTIETUE));

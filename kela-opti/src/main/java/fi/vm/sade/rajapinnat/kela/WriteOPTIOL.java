@@ -50,8 +50,8 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
     
     @Override
     public void writeFile() throws IOException {
-        this.createFileName("", OPTIOL);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        createFileName("", OPTIOL);
+        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
         OrganisaatioSearchCriteriaDTO criteria = new OrganisaatioSearchCriteriaDTO();

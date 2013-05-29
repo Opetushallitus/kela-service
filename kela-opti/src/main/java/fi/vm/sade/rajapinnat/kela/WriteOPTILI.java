@@ -56,7 +56,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     @Override
     public void writeFile() throws IOException {
         createFileName("", OPTILI);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         HaeHakukohteetKyselyTyyppi kysely = new HaeHakukohteetKyselyTyyppi();
         HaeHakukohteetVastausTyyppi vastaus = tarjontaService.haeHakukohteet(kysely);

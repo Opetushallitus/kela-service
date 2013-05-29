@@ -15,6 +15,10 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -32,12 +36,10 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
+import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @ContextConfiguration(locations = "classpath:spring/test-context.xml")
 @TestExecutionListeners(listeners = {
@@ -46,67 +48,96 @@ import static org.mockito.Mockito.*;
         TransactionalTestExecutionListener.class
     })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class WriteOPTILITest {
-    
+public class KelaGeneratorTest {
+
     @Autowired
-    WriteOPTILI optiliWriter;
+    private WriteOPTILI optiliWriter;
+    @Autowired
+    private WriteOPTINI optiniWriter;
+    @Autowired
+    private WriteOPTIOL optiolWriter;
+    @Autowired
+    private WriteOPTIOP optiopWriter;
+    @Autowired
+    private WriteOPTITU optituWriter;
+    @Autowired
+    private WriteOPTIYH optiyhWriter;
+    @Autowired
+    private WriteOPTIYT optiytWriter;
+    @Autowired
+    private KelaGenerator kelaGenerator;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
+    private OrganisaatioResource orgRMock;
     
-    private TestDataGenerator generator;
-
-    
+    private TestDataGenerator testDataGenerator;
     
     @Before
     public void initialize() {
+        
         tarjontaServiceMock = mock(TarjontaPublicService.class);
         organisaatioServiceMock = mock(OrganisaatioService.class);
-        
+        orgRMock = mock(OrganisaatioResource.class);   
         hakukohdeDaoMock = mock(HakukohdeDAO.class);
-        optiliWriter.setOrganisaatioService(organisaatioServiceMock);
-        optiliWriter.setTarjontaService(tarjontaServiceMock);
-        optiliWriter.setHakukohdeDAO(hakukohdeDaoMock);
         
-        generator = new TestDataGenerator();
-        generator.setHakukohdeDaoMock(hakukohdeDaoMock);
-        generator.setOrganisaatioServiceMock(organisaatioServiceMock);
-        generator.setTarjontaServiceMock(tarjontaServiceMock);
+        setMockServices(optiliWriter);
+        setMockServices(optiniWriter);
+        setMockServices(optiolWriter);
+        setMockServices(optiopWriter);
+        setMockServices(optituWriter);
+        setMockServices(optiyhWriter);
+        setMockServices(optiytWriter);
         
-        generator.generateTarjontaData();
+        testDataGenerator = new TestDataGenerator();
+        testDataGenerator.setHakukohdeDaoMock(hakukohdeDaoMock);
+        testDataGenerator.setOrganisaatioServiceMock(organisaatioServiceMock);
+        testDataGenerator.setTarjontaServiceMock(tarjontaServiceMock);
+        testDataGenerator.setOrgRMock(orgRMock);
+        
+        testDataGenerator.generateTarjontaData();
+        testDataGenerator.createOrganisaatioData();
         
     }
     
     @Test
-    public void testWriteOptiliHappyPath() {
+    public void testGenerateKelaFilesHappyPath() {
+        kelaGenerator.generateKelaFiles();
+        verifyKelaFile(optiliWriter, 4);
+        verifyKelaFile(optiniWriter, 6);
+        verifyKelaFile(optiolWriter, 4);
+        verifyKelaFile(optiopWriter, 4);
+        verifyKelaFile(optituWriter, 62);
+        verifyKelaFile(optiyhWriter, 2);
+        verifyKelaFile(optiytWriter, 6);
+    }
+    
+    private void verifyKelaFile(AbstractOPTIWriter kelaWriter, int fileLength) {
         try {
-         
-            optiliWriter.writeFile();
-            
-            FileInputStream fstream = new FileInputStream(optiliWriter.getFileName());
+            FileInputStream fstream = new FileInputStream(kelaWriter.getFileName());
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String strLine;
-            
+
             int lineCount = 0;
-            while ((strLine = br.readLine()) != null)   {
-                if (lineCount == 1) {
-                    assertTrue(strLine.contains(" 000 "));
-                } else if (lineCount == 2) {
-                    assertTrue(strLine.contains(" 011 "));
-                } else if (lineCount > 3){
-                    fail();
-                }
+            while (br.readLine() != null)   {
                 ++lineCount;
             }
-            
+
+            assertTrue(lineCount == fileLength);
+
             in.close();
-            
         } catch (Exception ex) {
-           fail();
+            fail();
         }
     }
-
+    
+    private void setMockServices(AbstractOPTIWriter kelaWriter) {
+        kelaWriter.setOrganisaatioService(organisaatioServiceMock);
+        kelaWriter.setTarjontaService(tarjontaServiceMock);
+        kelaWriter.setHakukohdeDAO(hakukohdeDaoMock);
+        kelaWriter.setOrganisaatioResource(orgRMock);
+    }
+    
 
 }

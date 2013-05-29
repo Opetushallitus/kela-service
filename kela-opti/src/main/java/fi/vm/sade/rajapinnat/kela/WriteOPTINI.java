@@ -57,8 +57,8 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     
     @Override
     public void writeFile() throws IOException {
-        this.createFileName("", OPTINI);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        createFileName("", OPTINI);
+        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>(); 

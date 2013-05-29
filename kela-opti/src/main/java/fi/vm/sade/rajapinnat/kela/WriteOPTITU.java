@@ -51,7 +51,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     @Override
     public void writeFile() throws IOException {
         this.createFileName("", OPTITU);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();
         criteria.setKoodistoUri(kelaTutkintokoodisto);

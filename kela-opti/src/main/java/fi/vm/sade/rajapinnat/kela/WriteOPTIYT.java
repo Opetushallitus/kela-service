@@ -64,11 +64,11 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
     
     @Override
     public void writeFile() throws IOException {
-        this.createFileName("", OPTIYT);
+        createFileName("", OPTIYT);
         if (organisaatioResource == null) {
             organisaatioResource = (OrganisaatioResource)appContext.getBean("organisaatioResource"); //@Autowired did not work
         }
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>(); 

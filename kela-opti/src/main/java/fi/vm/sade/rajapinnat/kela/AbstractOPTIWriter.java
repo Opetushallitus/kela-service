@@ -15,6 +15,7 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -86,6 +87,9 @@ public abstract class AbstractOPTIWriter {
     protected Map<String,OrganisaatioPerustietoType> oppilaitosoidOppilaitosMap;
 
     protected String path;
+    
+    protected BufferedOutputStream bos;
+
 
     //TOINEN ASTE KOODI URIS
     protected String opTyyppiLukiot;
@@ -438,6 +442,10 @@ public abstract class AbstractOPTIWriter {
     
    public String getFileName() {
        return fileName;
+   }
+   
+   public BufferedOutputStream getBos() {
+       return bos;
    }
     
     private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
