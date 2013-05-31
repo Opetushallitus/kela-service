@@ -43,16 +43,44 @@ public class KelaGenerator {
     private WriteOPTIYH optiyhWriter;
     @Autowired
     private WriteOPTIYT optiytWriter;
-    
+    @Autowired
+    private OrganisaatioContainer orgContainer;
 
     public void generateKelaFiles() {
+        System.out.println("Fetching organisaatiot");
+        long time = System.currentTimeMillis();
+        orgContainer.fetchOrgnaisaatiot();
+        System.out.println("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        
+        System.out.println("Generating optili");
+        time = System.currentTimeMillis();
         writeKelaFile(optiliWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        System.out.println("Generating optini");
         writeKelaFile(optiniWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        System.out.println("Generating optiol");
         writeKelaFile(optiolWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        System.out.println("Generating optiop");
         writeKelaFile(optiopWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        System.out.println("Generating optitu");
         writeKelaFile(optituWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        System.out.println("Generating optiyh");
         writeKelaFile(optiyhWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        System.out.println("Generating optiyt");
         writeKelaFile(optiytWriter);
+        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        System.out.println("All files generated");
     }
     
     private void writeKelaFile(AbstractOPTIWriter kelaWriter) {

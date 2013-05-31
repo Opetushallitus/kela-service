@@ -52,6 +52,8 @@ public class WriteOPTINITest {
     
     @Autowired
     private WriteOPTINI optiniWriter;
+    @Autowired
+    OrganisaatioContainer orgContainer;
 
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
@@ -78,6 +80,9 @@ public class WriteOPTINITest {
         generator.setTarjontaServiceMock(tarjontaServiceMock);
         generator.setOrgRMock(orgRMock);
         
+        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setOrganisaatioService(organisaatioServiceMock);
+        
         generator.createOrganisaatioData();
         
     }
@@ -85,7 +90,7 @@ public class WriteOPTINITest {
     @Test
     public void testWriteOptiniHappyPath() {
         try {
-            
+            orgContainer.fetchOrgnaisaatiot();
             optiniWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiniWriter.getFileName());

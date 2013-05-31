@@ -31,8 +31,6 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
@@ -71,31 +69,14 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>(); 
-        OrganisaatioSearchCriteriaDTO criteria = new OrganisaatioSearchCriteriaDTO();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
-        List<OrganisaatioPerustietoType> oppilaitokset = organisaatioService.searchBasicOrganisaatios(criteria);
-        
-        for (OrganisaatioPerustietoType curOppilaitos : oppilaitokset) {
-            if (isOppilaitosWritable(curOppilaitos)) {
-                oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
+        for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
                 bos.write(toLatin1(createRecord(curOppilaitos)));   
                 bos.flush();
-            }
         }
         
-        criteria = new OrganisaatioSearchCriteriaDTO();
-        
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
-        criteria.getOidResctrictionList().addAll(oppilaitosoidOppilaitosMap.keySet());
-        
-        List<OrganisaatioPerustietoType> opetuspisteet = organisaatioService.searchBasicOrganisaatios(criteria);
-        
-        for (OrganisaatioPerustietoType curToimipiste : opetuspisteet) {
-            if (isToimipisteWritable(curToimipiste)) {
+        for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
                 bos.write(toLatin1(createRecord(curToimipiste)));
                 bos.flush();
-            }
         }
         
         bos.write(toLatin1(LOPPUTIETUE));

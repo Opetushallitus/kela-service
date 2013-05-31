@@ -61,28 +61,13 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>(); 
-        OrganisaatioSearchCriteriaDTO criteria = new OrganisaatioSearchCriteriaDTO();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
-        List<OrganisaatioPerustietoType> oppilaitokset = organisaatioService.searchBasicOrganisaatios(criteria);
-        for (OrganisaatioPerustietoType curOppilaitos : oppilaitokset) {
-            if (isOppilaitosWritable(curOppilaitos)) {
-                oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
+        for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
                 bos.write(toLatin1(createRecord(curOppilaitos)));   
                 bos.flush();
-            }
         }
-        
-        criteria = new OrganisaatioSearchCriteriaDTO();
-        criteria.getOidResctrictionList().addAll(oppilaitosoidOppilaitosMap.keySet());
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
-        
-        List<OrganisaatioPerustietoType> toimipisteet = organisaatioService.searchBasicOrganisaatios(criteria);
-        for (OrganisaatioPerustietoType curToimipiste : toimipisteet) {
-            if (isToimipisteWritable(curToimipiste)) {
+        for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
                 bos.write(toLatin1(createRecord(curToimipiste)));
                 bos.flush();
-            }
         }
         
         bos.write(toLatin1(LOPPUTIETUE));
@@ -117,10 +102,10 @@ public class WriteOPTINI extends AbstractOPTIWriter {
             OrganisaatioPerustietoType curOrganisaatio, Organisaatio orgE, List<String> kielet) {
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            koodit = getKoodisByArvoAndKoodisto(curOrganisaatio.getOppilaitosKoodi(), oppilaitosnumerokoodisto);
+            koodit = orgContainer.getKoodisByArvoAndKoodisto(curOrganisaatio.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);
         } else if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             String opArvo = String.format("%s%s", getOpPisteenOppilaitosnumero(curOrganisaatio), getOpPisteenJarjNro(orgE));
-            koodit = getKoodisByArvoAndKoodisto(opArvo, toimipistekoodisto);
+            koodit = orgContainer.getKoodisByArvoAndKoodisto(opArvo, orgContainer.toimipistekoodisto);
         }
         String lyhytNimi = "";
         if (koodit != null && !koodit.isEmpty()) {

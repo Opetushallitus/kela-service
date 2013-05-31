@@ -51,6 +51,8 @@ public class WriteOPTIOPTest {
     
     @Autowired
     private WriteOPTIOP optiopWriter;
+    @Autowired
+    OrganisaatioContainer orgContainer;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
@@ -77,6 +79,9 @@ public class WriteOPTIOPTest {
         generator.setTarjontaServiceMock(tarjontaServiceMock);
         generator.setOrgRMock(orgRMock);
         
+        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setOrganisaatioService(organisaatioServiceMock);
+        
         generator.createOrganisaatioData();
         
     }
@@ -84,7 +89,7 @@ public class WriteOPTIOPTest {
     @Test
     public void testWriteOptiopHappyPath() {
         try {
-            
+            orgContainer.fetchOrgnaisaatiot();
             optiopWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiopWriter.getFileName());

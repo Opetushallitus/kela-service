@@ -36,6 +36,8 @@ public class WriteOPTIYTTest {
     
     @Autowired
     private WriteOPTIYT optiytWriter;
+    @Autowired
+    OrganisaatioContainer orgContainer;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
@@ -62,6 +64,9 @@ public class WriteOPTIYTTest {
         generator.setTarjontaServiceMock(tarjontaServiceMock);
         generator.setOrgRMock(orgRMock);
         
+        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setOrganisaatioService(organisaatioServiceMock);
+        
         generator.createOrganisaatioData();
         
     }
@@ -69,6 +74,7 @@ public class WriteOPTIYTTest {
     @Test
     public void testWriteOPTIYTHappyPath() {
         try {
+            orgContainer.fetchOrgnaisaatiot();
             optiytWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiytWriter.getFileName());

@@ -66,6 +66,8 @@ public class KelaGeneratorTest {
     private WriteOPTIYT optiytWriter;
     @Autowired
     private KelaGenerator kelaGenerator;
+    @Autowired
+    private OrganisaatioContainer orgContainer;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
@@ -90,6 +92,10 @@ public class KelaGeneratorTest {
         setMockServices(optiyhWriter);
         setMockServices(optiytWriter);
         
+        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setOrganisaatioService(organisaatioServiceMock);
+        
+        
         testDataGenerator = new TestDataGenerator();
         testDataGenerator.setHakukohdeDaoMock(hakukohdeDaoMock);
         testDataGenerator.setOrganisaatioServiceMock(organisaatioServiceMock);
@@ -103,6 +109,7 @@ public class KelaGeneratorTest {
     
     @Test
     public void testGenerateKelaFilesHappyPath() {
+        
         kelaGenerator.generateKelaFiles();
         verifyKelaFile(optiliWriter, 4);
         verifyKelaFile(optiniWriter, 6);

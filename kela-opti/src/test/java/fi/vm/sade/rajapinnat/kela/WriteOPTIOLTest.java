@@ -52,6 +52,8 @@ public class WriteOPTIOLTest {
     
     @Autowired
     private WriteOPTIOL optiolWriter;
+    @Autowired
+    OrganisaatioContainer orgContainer;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
@@ -78,6 +80,9 @@ public class WriteOPTIOLTest {
         generator.setTarjontaServiceMock(tarjontaServiceMock);
         generator.setOrgRMock(orgRMock);
         
+        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setOrganisaatioService(organisaatioServiceMock);
+        
         generator.createOrganisaatioData();
         
     }
@@ -85,7 +90,7 @@ public class WriteOPTIOLTest {
     @Test
     public void testWriteOptiolHappyPath() {
         try {
-            
+            orgContainer.fetchOrgnaisaatiot();
             optiolWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiolWriter.getFileName());

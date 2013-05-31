@@ -32,6 +32,7 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
+import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
@@ -50,38 +51,47 @@ public class WriteOPTILITest {
     
     @Autowired
     WriteOPTILI optiliWriter;
+    @Autowired
+    OrganisaatioContainer orgContainer;
     
     private OrganisaatioService organisaatioServiceMock;
     private HakukohdeDAO hakukohdeDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
+    private OrganisaatioResource orgRMock;
     
-    private TestDataGenerator generator;
+    private TestDataGenerator testDataGenerator;
 
     
     
     @Before
     public void initialize() {
+        
+        
         tarjontaServiceMock = mock(TarjontaPublicService.class);
         organisaatioServiceMock = mock(OrganisaatioService.class);
-        
+        orgRMock = mock(OrganisaatioResource.class);   
         hakukohdeDaoMock = mock(HakukohdeDAO.class);
-        optiliWriter.setOrganisaatioService(organisaatioServiceMock);
-        optiliWriter.setTarjontaService(tarjontaServiceMock);
-        optiliWriter.setHakukohdeDAO(hakukohdeDaoMock);
         
-        generator = new TestDataGenerator();
-        generator.setHakukohdeDaoMock(hakukohdeDaoMock);
-        generator.setOrganisaatioServiceMock(organisaatioServiceMock);
-        generator.setTarjontaServiceMock(tarjontaServiceMock);
+        setMockServices(optiliWriter);
         
-        generator.generateTarjontaData();
+        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setOrganisaatioService(organisaatioServiceMock);
         
+        
+        testDataGenerator = new TestDataGenerator();
+        testDataGenerator.setHakukohdeDaoMock(hakukohdeDaoMock);
+        testDataGenerator.setOrganisaatioServiceMock(organisaatioServiceMock);
+        testDataGenerator.setTarjontaServiceMock(tarjontaServiceMock);
+        testDataGenerator.setOrgRMock(orgRMock);
+        
+        testDataGenerator.generateTarjontaData();
+        testDataGenerator.createOrganisaatioData();
     }
     
     @Test
     public void testWriteOptiliHappyPath() {
         try {
-         
+            orgContainer.fetchOrgnaisaatiot();
             optiliWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiliWriter.getFileName());
@@ -107,6 +117,14 @@ public class WriteOPTILITest {
            fail();
         }
     }
+    
+    private void setMockServices(AbstractOPTIWriter kelaWriter) {
+        kelaWriter.setOrganisaatioService(organisaatioServiceMock);
+        kelaWriter.setTarjontaService(tarjontaServiceMock);
+        kelaWriter.setHakukohdeDAO(hakukohdeDaoMock);
+        kelaWriter.setOrganisaatioResource(orgRMock);
+    }
+    
 
 
 }

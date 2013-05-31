@@ -55,6 +55,17 @@ public class Organisaatio {
     @Column(name="kotipaikka")
     private String kotipaikka;
     
+    @Column(name="oppilaitostyyppi")
+    private String oppilaitosTyyppi;
+    
+    public String getOppilaitosTyyppi() {
+        return oppilaitosTyyppi;
+    }
+
+    public void setOppilaitosTyyppi(String oppilaitosTyyppi) {
+        this.oppilaitosTyyppi = oppilaitosTyyppi;
+    }
+
     public List<String> getKielet() {
         return kielet;
     }

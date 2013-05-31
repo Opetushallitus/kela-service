@@ -19,7 +19,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,8 +27,6 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
 /**
@@ -55,29 +52,9 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>(); 
-        OrganisaatioSearchCriteriaDTO criteria = new OrganisaatioSearchCriteriaDTO();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
-        List<OrganisaatioPerustietoType> oppilaitokset = organisaatioService.searchBasicOrganisaatios(criteria);
-        
-        for (OrganisaatioPerustietoType curOppilaitos : oppilaitokset) {
-            if (isOppilaitosWritable(curOppilaitos)) {
-                oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
-            }
-        }
-        
-        criteria = new OrganisaatioSearchCriteriaDTO();
-        
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
-        criteria.getOidResctrictionList().addAll(oppilaitosoidOppilaitosMap.keySet());
-        
-        List<OrganisaatioPerustietoType> opetuspisteet = organisaatioService.searchBasicOrganisaatios(criteria);
-        
-        for (OrganisaatioPerustietoType curToimipiste : opetuspisteet) {
-            if (isToimipisteWritable(curToimipiste)) {
+        for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
                 bos.write(toLatin1(createRecord(curToimipiste)));
                 bos.flush();
-            }
         }
 
         bos.write(toLatin1(LOPPUTIETUE));
@@ -94,7 +71,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 5),//Koulutuksen jarjestajan tunnus
                 getYhteystietojenTunnus(orgE),//Yhteystietojen tunnus
                 getOpetuspisteenKieli(curToimipiste),//Opetuspisteen kieli
-                getOppilaitostyyppitunnus(oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid())),//OTY_ID
+                getOppilaitostyyppitunnus(orgContainer.getOppilaitosoidOppilaitosMap().get(curToimipiste.getParentOid())),//OTY_ID
                 getKotikunta(orgE),//Oppilaitoksen kotikunta
                 StringUtils.leftPad("", 2),//OPE_ETEHTAVA
                 StringUtils.leftPad("", 4),//Tyhjaa
@@ -102,7 +79,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
                 getDateStrOrDefault(curToimipiste.getLakkautusPvm()),//Op.pisteen lakkauttamispaiva LAKKPVM
                 StringUtils.leftPad("", 1),//Tyhjaa
                 StringUtils.leftPad("", 1),//Opetuspisteen kaikille koulutukselle jarjestetaan kielikoe
-                getYhkoodi(oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid())),//YH_KOULU
+                getYhkoodi(orgContainer.getOppilaitosoidOppilaitosMap().get(curToimipiste.getParentOid())),//YH_KOULU
                 DEFAULT_DATE,//Viimeisin paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
                 StringUtils.leftPad("", 15),//Tyhjaa
@@ -113,7 +90,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
 
     private String getYhkoodi(
             OrganisaatioPerustietoType curOppilaitos) {
-        List<KoodiType> koodis = getKoodisByArvoAndKoodisto(curOppilaitos.getOppilaitosKoodi(), oppilaitosnumerokoodisto);        
+        List<KoodiType> koodis = orgContainer.getKoodisByArvoAndKoodisto(curOppilaitos.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);        
         KoodiType opNroKoodi = null;
         if (!koodis.isEmpty()) {
             opNroKoodi = koodis.get(0);

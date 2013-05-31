@@ -21,7 +21,6 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +29,13 @@ import org.springframework.beans.factory.annotation.Value;
 
 import fi.vm.sade.koodisto.service.KoodiService;
 import fi.vm.sade.koodisto.service.KoodistoService;
-import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoCriteriaType;
 import fi.vm.sade.koodisto.service.types.SearchKoodisCriteriaType;
-import fi.vm.sade.koodisto.service.types.SearchKoodistosCriteriaType;
 import fi.vm.sade.koodisto.service.types.common.KieliType;
 import fi.vm.sade.koodisto.service.types.common.KoodiMetadataType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
-import fi.vm.sade.koodisto.service.types.common.KoodistoType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
-import fi.vm.sade.koodisto.util.KoodiServiceSearchCriteriaBuilder;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
-import fi.vm.sade.koodisto.util.KoodistoServiceSearchCriteriaBuilder;
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
@@ -78,28 +72,20 @@ public abstract class AbstractOPTIWriter {
     
     @Autowired
     protected HakukohdeDAO hakukohdeDAO; 
+    
+    @Autowired
+    protected OrganisaatioContainer orgContainer;
 
     protected OrganisaatioResource organisaatioResource;
 
 
     protected String fileName;
-    
-    protected Map<String,OrganisaatioPerustietoType> oppilaitosoidOppilaitosMap;
 
     protected String path;
     
     protected BufferedOutputStream bos;
-
-
-    //TOINEN ASTE KOODI URIS
-    protected String opTyyppiLukiot;
-    protected String opTyyppiLukiotJaPeruskoulut;
-    protected String opTyyppiAmmatillisetOppilaitokset;
-    protected String opTyyppiAmmattillisetErityisoppilaitokset;
-    protected String opTyyppiAmmatillisetErikoisoppilaitokset;
-    protected String opTyyppiAmmatillisetAikuiskoulutuseskukset;
-    protected String opTyyppiKansanopistot;
-    protected String opTyyppiMusiikkioppilaitokset;
+    
+    protected List<OrganisaatioPerustietoType> organisaatiot;
 
     protected String kieliFi;
     protected String kieliSv;
@@ -108,8 +94,6 @@ public abstract class AbstractOPTIWriter {
     //USED KOODISTO URIS
     protected String kelaTutkintokoodisto;
     protected String kelaOppilaitostyyppikoodisto;
-    protected String oppilaitosnumerokoodisto;
-    protected String toimipistekoodisto;
     protected String yhKoulukoodiKoodisto;
     protected String koulutuskoodisto;
     protected String kelaOpintoalakoodisto;
@@ -158,62 +142,6 @@ public abstract class AbstractOPTIWriter {
     public void setKelaOppilaitostyyppikoodisto(String kelaOppilaitostyyppikoodisto) {
         this.kelaOppilaitostyyppikoodisto = kelaOppilaitostyyppikoodisto;
     }
-    
-    @Value("${koodisto-uris.oppilaitosnumero}")
-    public void setOppilaitosnumerokoodisto(String oppilaitosnumerokoodisto) {
-        this.oppilaitosnumerokoodisto = oppilaitosnumerokoodisto;
-    }
-    
-    
-    @Value("${koodisto-uris.opetuspisteet}")
-    public void setToimipistekoodisto(String toimipistekoodisto) {
-        this.toimipistekoodisto = toimipistekoodisto;
-    }
-    
-    @Value("${lukiot-uri}")
-    public void setOpTyyppiLukiot(String opTyyppiLukiot) {
-        this.opTyyppiLukiot = opTyyppiLukiot;
-    }
-
-    @Value("${lukiotjaperuskoulut-uri}")
-    public void setOpTyyppiLukiotJaPeruskoulut(String opTyyppiLukiotJaPeruskoulut) {
-        this.opTyyppiLukiotJaPeruskoulut = opTyyppiLukiotJaPeruskoulut;
-    }
-    
-    @Value("${ammatillisetoppilaitokset-uri}")
-    public void setOpTyyppiAmmatillisetOppilaitokset(
-            String opTyyppiAmmatillisetOppilaitokset) {
-        this.opTyyppiAmmatillisetOppilaitokset = opTyyppiAmmatillisetOppilaitokset;
-    }
-
-    @Value("${ammatilliseterityisoppilaitokset-uri}")
-    public void setOpTyyppiAmmattillisetErityisoppilaitokset(
-            String opTyyppiAmmattillisetErityisoppilaitokset) {
-        this.opTyyppiAmmattillisetErityisoppilaitokset = opTyyppiAmmattillisetErityisoppilaitokset;
-    }
-
-    @Value("${ammatilliseterikoisoppilaitokset-uri}")
-    public void setOpTyyppiAmmatillisetErikoisoppilaitokset(
-            String opTyyppiAmmatillisetErikoisoppilaitokset) {
-        this.opTyyppiAmmatillisetErikoisoppilaitokset = opTyyppiAmmatillisetErikoisoppilaitokset;
-    }
-
-    @Value("${ammatillisetaikuiskoulutuskeskukset-uri}")
-    public void setOpTyyppiAmmatillisetAikuiskoulutuseskukset(
-            String opTyyppiAmmatillisetAikuiskoulutuseskukset) {
-        this.opTyyppiAmmatillisetAikuiskoulutuseskukset = opTyyppiAmmatillisetAikuiskoulutuseskukset;
-    }
-
-    @Value("${kansanopistot-uri}")
-    public void setOpTyyppiKansanopistot(String opTyyppiKansanopistot) {
-        this.opTyyppiKansanopistot = opTyyppiKansanopistot;
-    }
-
-    @Value("${musiikkioppilaitokset-uri}")
-    public void setOpTyyppiMusiikkioppilaitokset(String opTyyppiMusiikkioppilaitokset) {
-        this.opTyyppiMusiikkioppilaitokset = opTyyppiMusiikkioppilaitokset;
-    }
-    
 
     @Value("${koodisto-uris.yhteishaunkoulukoodi}")
     public void setYhKoulukoodiKoodisto(String yhKoulukoodiKoodisto) {
@@ -233,25 +161,6 @@ public abstract class AbstractOPTIWriter {
     @Value("${koodisto-uris.koulutusastekela}")
     public void setKelaKoulutusastekoodisto(String kelaKoulutusastekoodisto) {
         this.kelaKoulutusastekoodisto = kelaKoulutusastekoodisto;
-    }
-    
-    protected List<KoodiType> getKoodisByArvoAndKoodisto(String arvo, String koodistoUri) {
-        try {
-            SearchKoodistosCriteriaType koodistoSearchCriteria = KoodistoServiceSearchCriteriaBuilder.latestKoodistoByUri(koodistoUri);
-
-            List<KoodistoType> koodistoResult = koodistoService.searchKoodistos(koodistoSearchCriteria);
-            if(koodistoResult.size() != 1) {
-                // FIXME: Throw something other than RuntimeException?
-                throw new RuntimeException("No koodisto found for koodisto URI " + koodistoUri);
-            }
-            KoodistoType koodisto = koodistoResult.get(0);
-
-            SearchKoodisByKoodistoCriteriaType koodiSearchCriteria = KoodiServiceSearchCriteriaBuilder.koodisByArvoAndKoodistoUriAndKoodistoVersio(arvo,
-                    koodistoUri, koodisto.getVersio());
-            return koodiService.searchKoodisByKoodisto(koodiSearchCriteria);
-        } catch (Exception exp) {
-            return null;
-        }
     }
     
     protected List<KoodiType> getKoodisByUriAndVersio(String koodiUri) {
@@ -295,48 +204,7 @@ public abstract class AbstractOPTIWriter {
         return null;
     }
     
-    protected boolean isOppilaitosWritable(OrganisaatioPerustietoType curOppilaitos) {
-        return isOppilaitosInKoodisto(curOppilaitos) 
-                && isOppilaitosToinenAste(curOppilaitos);
-    }
     
-    protected boolean isOppilaitosInKoodisto(OrganisaatioPerustietoType curOppilaitos) {
-        String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
-        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(oppilaitoskoodi, oppilaitosnumerokoodisto);
-        return koodit != null && !koodit.isEmpty();
-    }
-
-    protected boolean isOppilaitosToinenAste(
-            OrganisaatioPerustietoType curOppilaitos) {
-        String opTyyppi = curOppilaitos.getOppilaitostyyppi();
-        return  opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
-                || opTyyppiAmmatillisetErikoisoppilaitokset.equals(opTyyppi)
-                || opTyyppiAmmatillisetOppilaitokset.equals(opTyyppi)
-                || opTyyppiAmmattillisetErityisoppilaitokset.equals(opTyyppi)
-                || opTyyppiKansanopistot.equals(opTyyppi)
-                || opTyyppiLukiot.equals(opTyyppi)
-                || opTyyppiLukiotJaPeruskoulut.equals(opTyyppi)
-                || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
-    }
-    
-    protected boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
-        
-        Organisaatio toimipisteE = hakukohdeDAO.findOrganisaatioByOid(curToimipiste.getOid());
-        
-        if (curToimipiste.getParentOid() == null) {
-            return false;
-        }
-        
-        OrganisaatioPerustietoType parentToimipiste = oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid());
-        if (parentToimipiste == null) {
-            return false;
-        }
-        
-        String toimipistearvo = String.format("%s%s", parentToimipiste.getOppilaitosKoodi(), toimipisteE.getOpetuspisteenJarjNro());
-        List<KoodiType> koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
-        
-        return koodit != null && !koodit.isEmpty();
-    }
     
 
     protected String getOppilaitosNro(OrganisaatioPerustietoType curOrganisaatio) {
@@ -351,7 +219,9 @@ public abstract class AbstractOPTIWriter {
             OrganisaatioPerustietoType curOrganisaatio) {
         if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
                 && !curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            return StringUtils.leftPad(this.oppilaitosoidOppilaitosMap.get(curOrganisaatio.getParentOid()).getOppilaitosKoodi(), 5);
+            return StringUtils.leftPad(
+                    this.orgContainer.getOppilaitosoidOppilaitosMap().get(
+                            curOrganisaatio.getParentOid()).getOppilaitosKoodi(), 5);
         } 
         if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             return StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
@@ -403,6 +273,8 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad(kotikuntaArvo, 3);
     }
     
+    
+    
     /**
      * Get koodi metadata by locale with language fallback to FI
      *
@@ -446,6 +318,10 @@ public abstract class AbstractOPTIWriter {
    
    public BufferedOutputStream getBos() {
        return bos;
+   }
+
+   public void setOrganisaatiot(List<OrganisaatioPerustietoType> organisaatiot) {
+       this.organisaatiot = organisaatiot;
    }
     
     private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {

@@ -86,7 +86,7 @@ public class TestDataGenerator {
     public static final String KATUOSOITE_FIELD = "osoite";
     
     
-    private static final String TARJOAJA_OID = "oid:tarjoaja1";
+    private static final String TARJOAJA_OID = OID_PREFIX + OLKOODI1;
     private static final String TARJOAJA_OLKOODI = "12345";
     private static final String TARJOAJA_OPJARJNRO = "01";
     private static final String KOULUTUSKOODI = "koulutus_301000";
@@ -205,6 +205,7 @@ public class TestDataGenerator {
         tarjoajaDTO.getTyypit().add(OrganisaatioTyyppi.OPPILAITOS);
         tarjoajaDTO.setOpetuspisteenJarjNro(TARJOAJA_OPJARJNRO);
         tarjoajaDTO.setOppilaitosKoodi(TARJOAJA_OLKOODI);
+        tarjoajaDTO.setOppilaitosTyyppi(OLTYYPPI);
         
         when(organisaatioServiceMock.findByOid(TARJOAJA_OID)).thenReturn(tarjoajaDTO);
         

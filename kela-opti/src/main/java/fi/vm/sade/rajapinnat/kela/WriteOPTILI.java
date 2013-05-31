@@ -48,6 +48,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     private static final String OPTILI = ".OPTILI";
     private static final String ALKUTIETUE = "0000000000ALKU\n";
     private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
+    private static final String KOULUTUSLAJI = " N";
     
     public WriteOPTILI() {
         super();
@@ -61,20 +62,26 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         HaeHakukohteetKyselyTyyppi kysely = new HaeHakukohteetKyselyTyyppi();
         HaeHakukohteetVastausTyyppi vastaus = tarjontaService.haeHakukohteet(kysely);
         for (HakukohdeTulos curTulos : vastaus.getHakukohdeTulos()) {
-            bos.write(toLatin1(createRecord(curTulos)));
+            String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
+            OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
+            if (isHakukohdeToinenaste(tarjoajaOid)) {
+                bos.write(toLatin1(createRecord(curTulos, organisaatioDTO)));
+            }
         }
         bos.write(toLatin1(LOPPUTIETUE));
         bos.flush();
         bos.close();
     }
 
-    private String createRecord(HakukohdeTulos curTulos) {
-        String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
-        OrganisaatioDTO organisaatio = organisaatioService.findByOid(tarjoajaOid);
+    private boolean isHakukohdeToinenaste(String tarjoajaOid) {
+        return this.orgContainer.getOrgOidList().contains(tarjoajaOid);
+    }
+
+    private String createRecord(HakukohdeTulos curTulos, OrganisaatioDTO organisaatioDTO) {
         return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //51 fields + line ending
                 getHakukohdeId(curTulos),//Sisainen koodi
-                getOppilaitosnumero(curTulos, organisaatio),//OPPIL_NRO
-                getOpetuspisteenJarjNro(curTulos, organisaatio),//OPJNO
+                getOppilaitosnumero(curTulos, organisaatioDTO),//OPPIL_NRO
+                getOpetuspisteenJarjNro(curTulos, organisaatioDTO),//OPJNO
                 StringUtils.leftPad("",12),//Op. linjan tai koulutuksen jarjestysnro
                 getKoulutuslaji(),//Koulutuslaji
                 StringUtils.leftPad("",2),//Opintolinjan kieli
@@ -137,7 +144,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     private String getAlkamiskausi(HakukohdeTulos curTulos) {
         String kausi = curTulos.getHakukohde().getKoulutuksenAlkamiskausiUri();
-        return kausi.substring(0, 1);
+        kausi = kausi.substring(0, 1);
+        return StringUtils.leftPad(kausi, 12);
     }
 
     private String getAlkupvm() {
@@ -168,7 +176,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
 
     private String getKoulutuslaji() {
-        return " n";
+        return KOULUTUSLAJI;
     }
 
     private String getOpetuspisteenJarjNro(HakukohdeTulos curTulos, OrganisaatioDTO organisaatio) {
