@@ -38,7 +38,7 @@ import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
 /**
@@ -55,7 +55,7 @@ public class OrganisaatioContainer {
 
 
     @Autowired
-    protected HakukohdeDAO hakukohdeDAO;
+    protected KelaDAO kelaDAO;
     
     @Autowired
     protected KoodiService koodiService;
@@ -127,8 +127,8 @@ public class OrganisaatioContainer {
     
     public boolean hasOppilaitosIntactYhteystiedot(
             OrganisaatioPerustietoType curOppilaitos) {
-        Organisaatio orgE = hakukohdeDAO.findOrganisaatioByOid(curOppilaitos.getOid());
-        return hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()) != null;
+        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
+        return kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()) != null;
     }
 
 
@@ -171,7 +171,7 @@ public class OrganisaatioContainer {
             return false;
         }
         
-        Organisaatio toimipisteE = hakukohdeDAO.findOrganisaatioByOid(curToimipiste.getOid());
+        Organisaatio toimipisteE = kelaDAO.findOrganisaatioByOid(curToimipiste.getOid());
         
         
         List<KoodiType> koodit = new ArrayList<KoodiType>();
@@ -180,7 +180,7 @@ public class OrganisaatioContainer {
             koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
         }
         
-        return koodit != null && !koodit.isEmpty() && (hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId()) != null);
+        return koodit != null && !koodit.isEmpty() && (kelaDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId()) != null);
     }
     
     public List<OrganisaatioPerustietoType> getOppilaitokset() {
@@ -276,8 +276,8 @@ public class OrganisaatioContainer {
         this.organisaatioService = organisaatioService;
     }
 
-    public void setHakukohdeDAO(HakukohdeDAO hakukohdeDAO) {
-        this.hakukohdeDAO = hakukohdeDAO;
+    public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
+        this.kelaDAO = hakukohdeDAO;
     }
 
     public void setKoodiService(KoodiService koodiService) {

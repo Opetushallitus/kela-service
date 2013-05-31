@@ -40,7 +40,7 @@ import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 
@@ -71,7 +71,7 @@ public abstract class AbstractOPTIWriter {
     protected KoodistoService koodistoService;
     
     @Autowired
-    protected HakukohdeDAO hakukohdeDAO; 
+    protected KelaDAO kelaDAO; 
     
     @Autowired
     protected OrganisaatioContainer orgContainer;
@@ -240,7 +240,7 @@ public abstract class AbstractOPTIWriter {
     
 
     protected String getYhteystietojenTunnus(Organisaatio orgE) {
-        return StringUtils.leftPad(String.format("%s", hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
+        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
     }
     
     protected String getDateStrOrDefault(Date date) {
@@ -304,8 +304,8 @@ public abstract class AbstractOPTIWriter {
         this.organisaatioService = organisaatioService;
     }
         
-    public void setHakukohdeDAO(HakukohdeDAO hakukohdeDAO) {
-        this.hakukohdeDAO = hakukohdeDAO;
+    public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
+        this.kelaDAO = hakukohdeDAO;
     }
 
     public void setOrganisaatioResource(OrganisaatioResource organisaatioResource) {

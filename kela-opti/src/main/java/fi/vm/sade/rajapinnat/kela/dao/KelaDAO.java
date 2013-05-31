@@ -22,7 +22,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
  * 
  * @author Markus
  */
-public interface HakukohdeDAO {
+public interface KelaDAO {
 
     Hakukohde findHakukohdeByOid(String oid);
     

@@ -77,7 +77,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     
     
     private String createRecord(OrganisaatioPerustietoType curOrganisaatio) {
-        Organisaatio orgE = hakukohdeDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
+        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
                 getSisainenKoodi(orgE),//Sisainen koodi
                 getOpPisteenOppilaitosnumero(curOrganisaatio),//OPE_OPPILNRO

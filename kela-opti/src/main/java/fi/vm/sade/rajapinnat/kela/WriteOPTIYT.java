@@ -19,7 +19,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -127,8 +126,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
     }
 
     private String getYhtId(OrganisaatioPerustietoType organisaatio) {
-        Organisaatio orgE = hakukohdeDAO.findOrganisaatioByOid(organisaatio.getOid());
-        return StringUtils.leftPad(String.format("%s", hakukohdeDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
+        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
+        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
     }
 
 }

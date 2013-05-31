@@ -64,7 +64,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
     }
 
     private String createRecord(OrganisaatioPerustietoType curToimipiste) {
-        Organisaatio orgE = hakukohdeDAO.findOrganisaatioByOid(curToimipiste.getOid());
+        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curToimipiste.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//18 fields + EOL
                 getOpPisteenOppilaitosnumero(curToimipiste),//OPPIL_NRO
                 getOpPisteenJarjNro(orgE),//OPJNO

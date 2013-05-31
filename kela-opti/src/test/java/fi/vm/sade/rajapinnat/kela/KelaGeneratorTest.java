@@ -37,7 +37,7 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 
@@ -70,7 +70,7 @@ public class KelaGeneratorTest {
     private OrganisaatioContainer orgContainer;
     
     private OrganisaatioService organisaatioServiceMock;
-    private HakukohdeDAO hakukohdeDaoMock;
+    private KelaDAO kelaDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
     private OrganisaatioResource orgRMock;
     
@@ -82,7 +82,7 @@ public class KelaGeneratorTest {
         tarjontaServiceMock = mock(TarjontaPublicService.class);
         organisaatioServiceMock = mock(OrganisaatioService.class);
         orgRMock = mock(OrganisaatioResource.class);   
-        hakukohdeDaoMock = mock(HakukohdeDAO.class);
+        kelaDaoMock = mock(KelaDAO.class);
         
         setMockServices(optiliWriter);
         setMockServices(optiniWriter);
@@ -92,12 +92,12 @@ public class KelaGeneratorTest {
         setMockServices(optiyhWriter);
         setMockServices(optiytWriter);
         
-        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setHakukohdeDAO(kelaDaoMock);
         orgContainer.setOrganisaatioService(organisaatioServiceMock);
         
         
         testDataGenerator = new TestDataGenerator();
-        testDataGenerator.setHakukohdeDaoMock(hakukohdeDaoMock);
+        testDataGenerator.setHakukohdeDaoMock(kelaDaoMock);
         testDataGenerator.setOrganisaatioServiceMock(organisaatioServiceMock);
         testDataGenerator.setTarjontaServiceMock(tarjontaServiceMock);
         testDataGenerator.setOrgRMock(orgRMock);
@@ -142,7 +142,7 @@ public class KelaGeneratorTest {
     private void setMockServices(AbstractOPTIWriter kelaWriter) {
         kelaWriter.setOrganisaatioService(organisaatioServiceMock);
         kelaWriter.setTarjontaService(tarjontaServiceMock);
-        kelaWriter.setHakukohdeDAO(hakukohdeDaoMock);
+        kelaWriter.setHakukohdeDAO(kelaDaoMock);
         kelaWriter.setOrganisaatioResource(orgRMock);
     }
     

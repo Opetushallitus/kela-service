@@ -184,7 +184,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            Organisaatio organisaatioE = hakukohdeDAO.findFirstChildOrganisaatio(curTulos.getHakukohde().getTarjoaja().getTarjoajaOid());
+            Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(curTulos.getHakukohde().getTarjoaja().getTarjoajaOid());
             return (organisaatioE != null && organisaatioE.getOpetuspisteenJarjNro() != null) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
         }
         return "01";
@@ -200,7 +200,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
 
     private String getHakukohdeId(HakukohdeTulos curTulos) {
-        Hakukohde hakukE = hakukohdeDAO.findHakukohdeByOid(curTulos.getHakukohde().getOid());
+        Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getHakukohde().getOid());
         String hakukohdeId = String.format("%s", hakukE.getId());
         return StringUtils.leftPad(hakukohdeId, 10);
     }

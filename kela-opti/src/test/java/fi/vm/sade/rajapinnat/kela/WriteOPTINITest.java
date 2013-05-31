@@ -35,7 +35,7 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 
@@ -56,7 +56,7 @@ public class WriteOPTINITest {
     OrganisaatioContainer orgContainer;
 
     private OrganisaatioService organisaatioServiceMock;
-    private HakukohdeDAO hakukohdeDaoMock;
+    private KelaDAO kelaDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
     private OrganisaatioResource orgRMock;
     
@@ -68,19 +68,19 @@ public class WriteOPTINITest {
         organisaatioServiceMock = mock(OrganisaatioService.class);
         orgRMock = mock(OrganisaatioResource.class);
         
-        hakukohdeDaoMock = mock(HakukohdeDAO.class);
+        kelaDaoMock = mock(KelaDAO.class);
         optiniWriter.setOrganisaatioService(organisaatioServiceMock);
         optiniWriter.setTarjontaService(tarjontaServiceMock);
-        optiniWriter.setHakukohdeDAO(hakukohdeDaoMock);
+        optiniWriter.setHakukohdeDAO(kelaDaoMock);
         optiniWriter.setOrganisaatioResource(orgRMock);
         
         generator = new TestDataGenerator();
-        generator.setHakukohdeDaoMock(hakukohdeDaoMock);
+        generator.setHakukohdeDaoMock(kelaDaoMock);
         generator.setOrganisaatioServiceMock(organisaatioServiceMock);
         generator.setTarjontaServiceMock(tarjontaServiceMock);
         generator.setOrgRMock(orgRMock);
         
-        orgContainer.setHakukohdeDAO(hakukohdeDaoMock);
+        orgContainer.setHakukohdeDAO(kelaDaoMock);
         orgContainer.setOrganisaatioService(organisaatioServiceMock);
         
         generator.createOrganisaatioData();

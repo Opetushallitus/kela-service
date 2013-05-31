@@ -32,7 +32,7 @@ import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.MonikielinenTeksti;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
@@ -95,7 +95,7 @@ public class TestDataGenerator {
     
     
     private OrganisaatioService organisaatioServiceMock;
-    private HakukohdeDAO hakukohdeDaoMock;
+    private KelaDAO kelaDaoMock;
     private TarjontaPublicService tarjontaServiceMock;
     private OrganisaatioResource orgRMock;
 
@@ -139,13 +139,13 @@ public class TestDataGenerator {
         MonikielinenTeksti nimiE = new MonikielinenTeksti();
         nimiE.setId(id);
         orgE.setNimi(nimiE);
-        when(hakukohdeDaoMock.findOrganisaatioByOid(oid)).thenReturn(orgE);
+        when(kelaDaoMock.findOrganisaatioByOid(oid)).thenReturn(orgE);
         
         Yhteystieto yt = new Yhteystieto();
         yt.setId(orgE.getId() + 5);
         yt.setOrganisaatioId(orgE.getId());
         yt.setOsoiteTyyppi(KAYNTIOSOITE);
-        when(hakukohdeDaoMock.getKayntiosoiteIdForOrganisaatio(orgE.getId())).thenReturn(orgE.getId() + 5);
+        when(kelaDaoMock.getKayntiosoiteIdForOrganisaatio(orgE.getId())).thenReturn(orgE.getId() + 5);
         
         OrganisaatioRDTO orgR = new OrganisaatioRDTO();
         orgR.setOid(oid);
@@ -212,7 +212,7 @@ public class TestDataGenerator {
         Hakukohde hakukE = new Hakukohde();
         hakukE.setId(Long.valueOf(id));
         
-        when(hakukohdeDaoMock.findHakukohdeByOid(koodistonimi)).thenReturn(hakukE);
+        when(kelaDaoMock.findHakukohdeByOid(koodistonimi)).thenReturn(hakukE);
         
         HaeKoulutuksetVastausTyyppi koulutusVastaus = new HaeKoulutuksetVastausTyyppi();
         KoulutusTulos koulutusTulos = new KoulutusTulos();
@@ -241,12 +241,12 @@ public class TestDataGenerator {
         this.organisaatioServiceMock = organisaatioServiceMock;
     }
     
-    public HakukohdeDAO getHakukohdeDaoMock() {
-        return hakukohdeDaoMock;
+    public KelaDAO getHakukohdeDaoMock() {
+        return kelaDaoMock;
     }
     
-    public void setHakukohdeDaoMock(HakukohdeDAO hakukohdeDaoMock) {
-        this.hakukohdeDaoMock = hakukohdeDaoMock;
+    public void setHakukohdeDaoMock(KelaDAO hakukohdeDaoMock) {
+        this.kelaDaoMock = hakukohdeDaoMock;
     }
     
     public TarjontaPublicService getTarjontaServiceMock() {

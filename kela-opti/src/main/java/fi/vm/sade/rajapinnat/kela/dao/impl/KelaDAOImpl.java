@@ -21,7 +21,7 @@ import javax.persistence.Persistence;
 
 import org.springframework.stereotype.Repository;
 
-import fi.vm.sade.rajapinnat.kela.dao.HakukohdeDAO;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
@@ -31,7 +31,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
  * @author Markus
  */
 @Repository
-public class HakukohdeDAOImpl implements HakukohdeDAO { 
+public class KelaDAOImpl implements KelaDAO { 
     
     private EntityManager tarjontaEm;
     private EntityManager organisaatioEm;
