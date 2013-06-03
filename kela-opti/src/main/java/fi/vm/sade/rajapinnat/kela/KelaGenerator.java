@@ -52,6 +52,7 @@ public class KelaGenerator {
     private OrganisaatioContainer orgContainer;
     
     private String protocol;
+
     private String host;
     private String username;
     private String password;
@@ -97,6 +98,7 @@ public class KelaGenerator {
     
     public void transferFiles() throws Exception {
         CamelContext context = new DefaultCamelContext();
+        System.out.println("\n\nTarget path: " + targetPath + "\n\n");
         try {
 
             context.addRoutes(new RouteBuilder() {
@@ -117,7 +119,7 @@ public class KelaGenerator {
             });
             context.start();
         
-            Thread.sleep(60000);
+            Thread.sleep(10000);
         
         } finally {
             context.stop();
@@ -162,9 +164,34 @@ public class KelaGenerator {
         this.targetPath = targetPath;
     }
     
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getSourcePath() {
+        return sourcePath;
+    }
+
+    public String getTargetPath() {
+        return targetPath;
+    }
+    
     public static void main (String[] args) {
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
         kelaGenerator.generateKelaFiles();
     }
+
 }

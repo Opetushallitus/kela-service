@@ -27,6 +27,11 @@ import java.io.InputStreamReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockftpserver.fake.FakeFtpServer;
+import org.mockftpserver.fake.UserAccount;
+import org.mockftpserver.fake.filesystem.DirectoryEntry;
+import org.mockftpserver.fake.filesystem.FileSystem;
+import org.mockftpserver.fake.filesystem.WindowsFakeFileSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -78,6 +83,11 @@ public class KelaGeneratorTest {
     
     private TestDataGenerator testDataGenerator;
     
+    private static final String FILEPATH = "c:\\";
+    private static final int FTPPORT = 8919;
+    private static final String FTPHOST = "127.0.0.1";
+    private static final String PROTOCOL = "ftp";
+    
     @Before
     public void initialize() {
         
@@ -107,6 +117,8 @@ public class KelaGeneratorTest {
         testDataGenerator.generateTarjontaData();
         testDataGenerator.createOrganisaatioData();
         
+        
+        
     }
     
     @Test
@@ -122,11 +134,23 @@ public class KelaGeneratorTest {
         verifyKelaFile(optiytWriter, 6);
     }
     
-    @Ignore
     @Test
     public void gestTransferFiles() {
         try {
+            FakeFtpServer fakeFtpServer = new FakeFtpServer();
+            fakeFtpServer.addUserAccount(new UserAccount(kelaGenerator.getUsername(), kelaGenerator.getPassword(), FILEPATH));
+            FileSystem fileSystem = new WindowsFakeFileSystem();
+            fileSystem.add(new DirectoryEntry(FILEPATH));
+            fakeFtpServer.setFileSystem(fileSystem);
+            
+            fakeFtpServer.setServerControlPort(FTPPORT);
+            fakeFtpServer.start();
+            kelaGenerator.setTargetPath("");
+            kelaGenerator.setHost(FTPHOST + ":" + FTPPORT);
+            kelaGenerator.setProtocol(PROTOCOL);
+            
             kelaGenerator.transferFiles();
+            
         } catch (Exception ex) {
             ex.printStackTrace();
             fail();
