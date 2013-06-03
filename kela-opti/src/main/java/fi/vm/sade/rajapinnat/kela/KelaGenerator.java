@@ -15,8 +15,13 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -45,6 +50,13 @@ public class KelaGenerator {
     private WriteOPTIYT optiytWriter;
     @Autowired
     private OrganisaatioContainer orgContainer;
+    
+    private String protocol;
+    private String host;
+    private String username;
+    private String password;
+    private String sourcePath;
+    private String targetPath;
 
     public void generateKelaFiles() {
         System.out.println("Fetching organisaatiot");
@@ -83,12 +95,71 @@ public class KelaGenerator {
         System.out.println("All files generated");
     }
     
+    public void transferFiles() throws Exception {
+        CamelContext context = new DefaultCamelContext();
+        try {
+
+            context.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() {
+                 from(String.format("%s%s", 
+                                     "file:", 
+                                     sourcePath)).to(String.format("%s%s%s%s%s%s%s%s", 
+                                                                 protocol, 
+                                                                 "://", 
+                                                                 username, 
+                                                                 "@", 
+                                                                 host, 
+                                                                 targetPath, 
+                                                                 "?password=", 
+                                                                 password));
+            }
+            });
+            context.start();
+        
+            Thread.sleep(60000);
+        
+        } finally {
+            context.stop();
+        }
+    }
+    
     private void writeKelaFile(AbstractOPTIWriter kelaWriter) {
         try {
             kelaWriter.writeFile();
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
+        } 
+    }
+    
+    @Value("${transferprotocol}")
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    @Value("${transferhost}")
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    @Value("${transferuser}")
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Value("${transferpassword}")
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Value("${exportdir}")
+    public void setSourcePath(String sourcePath) {
+        this.sourcePath = sourcePath;
+    }
+
+    @Value("${targetPath}")
+    public void setTargetPath(String targetPath) {
+        this.targetPath = targetPath;
     }
     
     public static void main (String[] args) {

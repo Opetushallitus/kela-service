@@ -35,6 +35,8 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 
+import com.google.gwt.editor.client.Editor.Ignore;
+
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
@@ -118,6 +120,17 @@ public class KelaGeneratorTest {
         verifyKelaFile(optituWriter, 62);
         verifyKelaFile(optiyhWriter, 2);
         verifyKelaFile(optiytWriter, 6);
+    }
+    
+    @Ignore
+    @Test
+    public void gestTransferFiles() {
+        try {
+            kelaGenerator.transferFiles();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail();
+        }
     }
     
     private void verifyKelaFile(AbstractOPTIWriter kelaWriter, int fileLength) {

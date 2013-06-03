@@ -16,6 +16,7 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -103,9 +104,17 @@ public abstract class AbstractOPTIWriter {
     protected void createFileName(String path, String name) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
         if (StringUtils.isEmpty(path)) {
-            path = this.path + DIR_SEPARATOR;
+            path = createPath();
         }
         fileName =  path + NAMEPREFIX + sdf.format(new Date()) + name;
+    }
+    
+    private String createPath() {
+        File pathF = new File(path);
+        if (!pathF.exists()) {
+            pathF.mkdir();
+        }
+        return this.path + DIR_SEPARATOR;
     }
     
     
