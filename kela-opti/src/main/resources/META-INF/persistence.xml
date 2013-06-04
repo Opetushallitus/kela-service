@@ -13,7 +13,7 @@
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
             <property name="hibernate.connection.username" value="oph"/>
             <property name="hibernate.connection.password" value="oph"/>
-            <property name="hibernate.connection.url" value="jdbc:postgresql://taulu.hard.ware.fi:5432/tarjonta"/>
+            <property name="hibernate.connection.url" value="NOT_DEFINED"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="organisaatioKela" transaction-type="RESOURCE_LOCAL">
@@ -24,7 +24,7 @@
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
             <property name="hibernate.connection.username" value="oph"/>
             <property name="hibernate.connection.password" value="oph"/>
-            <property name="hibernate.connection.url" value="jdbc:postgresql://taulu.hard.ware.fi:5432/organisaatio"/>
+            <property name="hibernate.connection.url" value="NOT_DEFINED"/>
         </properties>
     </persistence-unit>
 </persistence>

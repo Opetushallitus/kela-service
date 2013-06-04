@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +46,8 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 @Component
 @Configurable
 public class WriteOPTILI extends AbstractOPTIWriter {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
     
     private static final String OPTILI = ".OPTILI";
     private static final String ALKUTIETUE = "0000000000ALKU\n";
@@ -161,9 +165,15 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     
 
     private Object getTutkintotunniste(HakukohdeTulos curTulos) {
+        LOG.debug("HaeTutkintotunniste: " + curTulos.getHakukohde().getOid());
         HaeKoulutuksetKyselyTyyppi kysely = new HaeKoulutuksetKyselyTyyppi();
         kysely.getHakukohdeOids().add(curTulos.getHakukohde().getOid());
         HaeKoulutuksetVastausTyyppi vastaus = tarjontaService.haeKoulutukset(kysely);
+        LOG.debug("Koulutustulos size: " + vastaus.getKoulutusTulos().size());
+        if (vastaus == null || vastaus.getKoulutusTulos().isEmpty()) {
+            LOG.warn("\n\n!!!Tutkintotunniste empty for hakukohde: " + curTulos.getHakukohde().getOid() + "\n\n");
+            StringUtils.leftPad("", 10);
+        }
         KoulutusTulos tulos = vastaus.getKoulutusTulos().get(0);
         String koodiUri = tulos.getKoulutus().getKoulutuskoodi().getUri();
         List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        

@@ -15,10 +15,14 @@
  */
 package fi.vm.sade.rajapinnat.kela.dao.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
@@ -38,10 +42,19 @@ public class KelaDAOImpl implements KelaDAO {
     
     private static final String KAYNTIOSOITE = "kaynti";
     
+    private String tarjontaDbUrl;
+    private String organisaatioDbUrl;
+    
     @PostConstruct
     public void initEntityManagers () {
-        tarjontaEm = Persistence.createEntityManagerFactory("tarjontaKela").createEntityManager();
-        organisaatioEm = Persistence.createEntityManagerFactory("organisaatioKela").createEntityManager();
+        Map<String, String> tarjontaDbProperties = new HashMap<String, String>(); 
+        tarjontaDbProperties.put("hibernate.connection.url", tarjontaDbUrl);
+        
+        Map<String, String> organisaatioDbProperties = new HashMap<String, String>(); 
+        organisaatioDbProperties.put("hibernate.connection.url", organisaatioDbUrl);
+        
+        tarjontaEm = Persistence.createEntityManagerFactory("tarjontaKela", tarjontaDbProperties).createEntityManager();
+        organisaatioEm = Persistence.createEntityManagerFactory("organisaatioKela", organisaatioDbProperties).createEntityManager();
     }
 
     @Override
@@ -75,6 +88,24 @@ public class KelaDAOImpl implements KelaDAO {
         } catch (Exception ex) {
             return null;
         }
+    }
+    
+    public String getTarjontaDbUrl() {
+        return tarjontaDbUrl;
+    }
+
+    @Value("${kela-tarjontadburl}")
+    public void setTarjontaDbUrl(String tarjontaDbUrl) {
+        this.tarjontaDbUrl = tarjontaDbUrl;
+    }
+
+    public String getOrganisaatioDbUrl() {
+        return organisaatioDbUrl;
+    }
+
+    @Value("${kela-organisaatiodburl}")
+    public void setOrganisaatioDbUrl(String organisaatioDbUrl) {
+        this.organisaatioDbUrl = organisaatioDbUrl;
     }
 
 }
