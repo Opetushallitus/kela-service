@@ -17,11 +17,8 @@ package fi.vm.sade.rajapinnat.kela;
 
 import java.io.File;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.DefaultCamelContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +68,9 @@ public class KelaGenerator {
     private String targetPath;
     private String dataTimeout;
 
+    /**
+     * Generates all KELA-OPTI transfer files currently implemented
+     */
     public void generateKelaFiles() {
         LOG.info("Fetching organisaatiot");
         long time = System.currentTimeMillis();
@@ -110,6 +110,10 @@ public class KelaGenerator {
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
     }
     
+    /**
+     * Performs ftp transfer of generated kela-opti files.
+     * @throws Exception
+     */
     public void transferFiles() throws Exception {
         LOG.info("transferFiles: ");
         String targetUrl = String.format("%s%s%s%s%s%s%s%s%s%s", 
