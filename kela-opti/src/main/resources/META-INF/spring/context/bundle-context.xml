@@ -4,11 +4,13 @@
        xmlns:context="http://www.springframework.org/schema/context" 
        xmlns:jaxws="http://cxf.apache.org/jaxws"
        xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:camel="http://camel.apache.org/schema/spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
         http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd 
         http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
         http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd ">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <!-- Turn on AspectJ @Configurable support -->
     <context:spring-configured />
@@ -47,5 +49,10 @@
             <bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
         </jaxrs:providers>
     </jaxrs:client>
+    
+    <!-- Let Spring create the Camel context and the Camel template, including lifecycle management such as starting and stopping them -->
+    <camel:camelContext id="kelaCamelContext">
+        <camel:template id="kelaCamelTemplate" />
+    </camel:camelContext>
 
 </beans>

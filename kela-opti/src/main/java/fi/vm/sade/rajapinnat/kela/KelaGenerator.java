@@ -15,7 +15,11 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import java.io.File;
+
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.slf4j.Logger;
@@ -54,6 +58,9 @@ public class KelaGenerator {
     private WriteOPTIYT optiytWriter;
     @Autowired
     private OrganisaatioContainer orgContainer;
+    
+    @Autowired
+    ProducerTemplate producerTemplate;
     
     private String protocol;
 
@@ -104,34 +111,26 @@ public class KelaGenerator {
     }
     
     public void transferFiles() throws Exception {
-        CamelContext context = new DefaultCamelContext();
-        try {
-
-            context.addRoutes(new RouteBuilder() {
-                @Override
-                public void configure() {
-                 from(String.format("%s%s", 
-                                     "file:", 
-                                     sourcePath)).to(String.format("%s%s%s%s%s%s%s%s%s%s", 
-                                                                 protocol, 
-                                                                 "://", 
-                                                                 username, 
-                                                                 "@", 
-                                                                 host, 
-                                                                 targetPath, 
-                                                                 "?password=", 
-                                                                 password,
-                                                                 "&ftpClient.dataTimeout=",
-                                                                 dataTimeout));
-            }
-            });
-            context.start();
-        
-            Thread.sleep(10000);
-        
-        } finally {
-            context.stop();
-        }
+        LOG.info("transferFiles: ");
+        String targetUrl = String.format("%s%s%s%s%s%s%s%s%s%s", 
+                protocol, 
+                "://", 
+                username, 
+                "@", 
+                host, 
+                targetPath, 
+                "?password=", 
+                password,
+                "&ftpClient.dataTimeout=",
+                dataTimeout);
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiliWriter.fileName), Exchange.FILE_NAME, this.optiliWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiniWriter.fileName), Exchange.FILE_NAME, this.optiniWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiolWriter.fileName), Exchange.FILE_NAME, this.optiolWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.fileName), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optituWriter.fileName), Exchange.FILE_NAME, this.optituWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.fileName), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiytWriter.fileName), Exchange.FILE_NAME, this.optiytWriter.getFileLocalName());
+        LOG.info("Files transfered");
     }
     
     private void writeKelaFile(AbstractOPTIWriter kelaWriter) {

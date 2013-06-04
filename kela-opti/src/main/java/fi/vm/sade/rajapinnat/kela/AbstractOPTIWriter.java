@@ -104,13 +104,16 @@ public abstract class AbstractOPTIWriter {
     protected String kelaOpintoalakoodisto;
     protected String kelaKoulutusastekoodisto;
     
+    private String fileLocalName;
+    
     
     protected void createFileName(String path, String name) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
         if (StringUtils.isEmpty(path)) {
             path = createPath();
         }
-        fileName =  path + NAMEPREFIX + sdf.format(new Date()) + name;
+        fileLocalName = NAMEPREFIX + sdf.format(new Date()) + name;
+        fileName =  path + fileLocalName;//NAMEPREFIX + sdf.format(new Date()) + name;
     }
     
     private String createPath() {
@@ -119,6 +122,10 @@ public abstract class AbstractOPTIWriter {
             pathF.mkdir();
         }
         return this.path + DIR_SEPARATOR;
+    }
+    
+    public String getFileLocalName() {
+        return this.fileLocalName;
     }
     
     
