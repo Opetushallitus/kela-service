@@ -88,6 +88,8 @@ public class KelaGeneratorTest {
     private static final String FTPHOST = "127.0.0.1";
     private static final String PROTOCOL = "ftp";
     
+    private static final String GEN_PATH = "target/ftps";
+    
     @Before
     public void initialize() {
         
@@ -181,6 +183,7 @@ public class KelaGeneratorTest {
         kelaWriter.setTarjontaService(tarjontaServiceMock);
         kelaWriter.setHakukohdeDAO(kelaDaoMock);
         kelaWriter.setOrganisaatioResource(orgRMock);
+        kelaWriter.setPath(GEN_PATH);
     }
     
 

@@ -58,6 +58,7 @@ public class KelaGenerator {
     private String password;
     private String sourcePath;
     private String targetPath;
+    private String dataTimeout;
 
     public void generateKelaFiles() {
         System.out.println("Fetching organisaatiot");
@@ -98,7 +99,6 @@ public class KelaGenerator {
     
     public void transferFiles() throws Exception {
         CamelContext context = new DefaultCamelContext();
-        System.out.println("\n\nTarget path: " + targetPath + "\n\n");
         try {
 
             context.addRoutes(new RouteBuilder() {
@@ -106,7 +106,7 @@ public class KelaGenerator {
                 public void configure() {
                  from(String.format("%s%s", 
                                      "file:", 
-                                     sourcePath)).to(String.format("%s%s%s%s%s%s%s%s", 
+                                     sourcePath)).to(String.format("%s%s%s%s%s%s%s%s%s%s", 
                                                                  protocol, 
                                                                  "://", 
                                                                  username, 
@@ -114,7 +114,9 @@ public class KelaGenerator {
                                                                  host, 
                                                                  targetPath, 
                                                                  "?password=", 
-                                                                 password));
+                                                                 password,
+                                                                 "&ftpClient.dataTimeout=",
+                                                                 dataTimeout));
             }
             });
             context.start();
@@ -163,6 +165,16 @@ public class KelaGenerator {
     public void setTargetPath(String targetPath) {
         this.targetPath = targetPath;
     }
+
+    @Value("${dataTimeout}")
+    public void setDataTimeout(String dataTimeout) {
+        this.dataTimeout = dataTimeout;
+    }
+    
+    
+    public String getDataTimeout() {
+        return dataTimeout;
+    }
     
     public String getProtocol() {
         return protocol;
@@ -193,5 +205,7 @@ public class KelaGenerator {
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
         kelaGenerator.generateKelaFiles();
     }
+
+
 
 }

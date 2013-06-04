@@ -61,6 +61,7 @@ public class WriteOPTIOLTest {
     private OrganisaatioResource orgRMock;
     
     private TestDataGenerator generator;
+    private static final String GEN_PATH = "target/ftps";
     
     @Before
     public void initialize() {
@@ -73,6 +74,7 @@ public class WriteOPTIOLTest {
         optiolWriter.setTarjontaService(tarjontaServiceMock);
         optiolWriter.setHakukohdeDAO(kelaDaoMock);
         optiolWriter.setOrganisaatioResource(orgRMock);
+        optiolWriter.setPath(GEN_PATH);
         
         generator = new TestDataGenerator();
         generator.setHakukohdeDaoMock(kelaDaoMock);

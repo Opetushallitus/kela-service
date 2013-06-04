@@ -44,10 +44,12 @@ public class WriteOPTITUTest {
     @Autowired
     private WriteOPTITU optituWriter;
     
+    private static final String GEN_PATH = "target/ftps";
+    
     @Test
     public void testWriteOptituHappuPath() {
         try {
-            
+            optituWriter.setPath(GEN_PATH);
             optituWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optituWriter.getFileName());

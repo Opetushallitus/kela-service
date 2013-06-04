@@ -60,6 +60,8 @@ public class WriteOPTILITest {
     private OrganisaatioResource orgRMock;
     
     private TestDataGenerator testDataGenerator;
+    
+    private static final String GEN_PATH = "target/ftps";
 
     
     
@@ -123,6 +125,7 @@ public class WriteOPTILITest {
         kelaWriter.setTarjontaService(tarjontaServiceMock);
         kelaWriter.setHakukohdeDAO(kelaDaoMock);
         kelaWriter.setOrganisaatioResource(orgRMock);
+        kelaWriter.setPath(GEN_PATH);
     }
     
 

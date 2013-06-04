@@ -62,6 +62,8 @@ public class WriteOPTINITest {
     
     private TestDataGenerator generator;
     
+    private static final String GEN_PATH = "target/ftps";
+    
     @Before
     public void initialize() {
         tarjontaServiceMock = mock(TarjontaPublicService.class);
@@ -73,6 +75,7 @@ public class WriteOPTINITest {
         optiniWriter.setTarjontaService(tarjontaServiceMock);
         optiniWriter.setHakukohdeDAO(kelaDaoMock);
         optiniWriter.setOrganisaatioResource(orgRMock);
+        optiniWriter.setPath(GEN_PATH);
         
         generator = new TestDataGenerator();
         generator.setHakukohdeDaoMock(kelaDaoMock);

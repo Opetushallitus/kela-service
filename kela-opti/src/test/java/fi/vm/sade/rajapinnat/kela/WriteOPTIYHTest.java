@@ -48,10 +48,12 @@ public class WriteOPTIYHTest {
     @Autowired
     private WriteOPTIYH optiyhWriter;
     
+    private static final String GEN_PATH = "target/ftps";
+    
    @Test
    public void testWriteOptiyhHappyPath() {
        try {
-           
+           optiyhWriter.setPath(GEN_PATH);
            optiyhWriter.writeFile();
            
            FileInputStream fstream = new FileInputStream(optiyhWriter.getFileName());

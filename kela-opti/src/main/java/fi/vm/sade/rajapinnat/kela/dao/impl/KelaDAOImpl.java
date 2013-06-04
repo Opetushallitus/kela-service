@@ -40,8 +40,8 @@ public class KelaDAOImpl implements KelaDAO {
     
     @PostConstruct
     public void initEntityManagers () {
-        tarjontaEm = Persistence.createEntityManagerFactory("tarjonta").createEntityManager();
-        organisaatioEm = Persistence.createEntityManagerFactory("organisaatio").createEntityManager();
+        tarjontaEm = Persistence.createEntityManagerFactory("tarjontaKela").createEntityManager();
+        organisaatioEm = Persistence.createEntityManagerFactory("organisaatioKela").createEntityManager();
     }
 
     @Override

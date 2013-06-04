@@ -5,7 +5,7 @@
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd
              http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
              
-    <persistence-unit name="tarjonta" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="tarjontaKela" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL82Dialect"/>
@@ -16,7 +16,7 @@
             <property name="hibernate.connection.url" value="jdbc:postgresql://taulu.hard.ware.fi:5432/tarjonta"/>
         </properties>
     </persistence-unit>
-    <persistence-unit name="organisaatio" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="organisaatioKela" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL82Dialect"/>
