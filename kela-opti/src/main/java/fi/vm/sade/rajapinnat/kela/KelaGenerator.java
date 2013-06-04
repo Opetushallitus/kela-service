@@ -16,15 +16,17 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 
 /**
  * 
@@ -33,6 +35,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 @Component
 @Configurable
 public class KelaGenerator {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
 
     @Autowired
     private WriteOPTILI optiliWriter;
@@ -61,40 +65,42 @@ public class KelaGenerator {
     private String dataTimeout;
 
     public void generateKelaFiles() {
-        System.out.println("Fetching organisaatiot");
+        LOG.info("Fetching organisaatiot");
         long time = System.currentTimeMillis();
+        long startTime = time;
         orgContainer.fetchOrgnaisaatiot();
-        System.out.println("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         
-        System.out.println("Generating optili");
+        LOG.info("Generating optili");
         time = System.currentTimeMillis();
         writeKelaFile(optiliWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         time = System.currentTimeMillis();
-        System.out.println("Generating optini");
+        LOG.info("Generating optini");
         writeKelaFile(optiniWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         time = System.currentTimeMillis();
-        System.out.println("Generating optiol");
+        LOG.info("Generating optiol");
         writeKelaFile(optiolWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         time = System.currentTimeMillis();
-        System.out.println("Generating optiop");
+        LOG.info("Generating optiop");
         writeKelaFile(optiopWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         time = System.currentTimeMillis();
-        System.out.println("Generating optitu");
+        LOG.info("Generating optitu");
         writeKelaFile(optituWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         time = System.currentTimeMillis();
-        System.out.println("Generating optiyh");
+        LOG.info("Generating optiyh");
         writeKelaFile(optiyhWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         time = System.currentTimeMillis();
-        System.out.println("Generating optiyt");
+        LOG.info("Generating optiyt");
         writeKelaFile(optiytWriter);
-        System.out.println("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        System.out.println("All files generated");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        LOG.info("All files generated");
+        LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
     }
     
     public void transferFiles() throws Exception {

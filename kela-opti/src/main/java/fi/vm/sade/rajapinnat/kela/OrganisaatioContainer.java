@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fi.vm.sade.koodisto.service.KoodiService;
 import fi.vm.sade.koodisto.service.KoodistoService;
@@ -49,6 +51,8 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Component
 @Configurable
 public class OrganisaatioContainer {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(OrganisaatioContainer.class);
     
     @Autowired
     protected OrganisaatioService organisaatioService;
@@ -133,7 +137,7 @@ public class OrganisaatioContainer {
 
 
     public boolean isOppilaitosInKoodisto(OrganisaatioPerustietoType curOppilaitos) {
-        System.out.println("isOppilaitosInKoodisto: " + curOppilaitos.getNimiFi() + ", " + curOppilaitos.getOppilaitosKoodi());
+        LOG.info("isOppilaitosInKoodisto: " + curOppilaitos.getNimiFi() + ", " + curOppilaitos.getOppilaitosKoodi());
         String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (!StringUtils.isEmpty(oppilaitoskoodi)) {
@@ -161,7 +165,7 @@ public class OrganisaatioContainer {
     }
     
     public boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
-        System.out.println("isToimpisteWRitable method " + curToimipiste.getNimiFi());
+        LOG.info("isToimpisteWRitable method " + curToimipiste.getNimiFi());
         if (curToimipiste.getParentOid() == null) {
             return false;
         }

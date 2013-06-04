@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +53,8 @@ import fi.vm.sade.tarjonta.service.TarjontaPublicService;
  */
 @Configurable
 public abstract class AbstractOPTIWriter {
+    
+    ///private static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
 
     protected static final Charset LATIN1 = Charset.forName("ISO8859-1");
     protected static final String DATE_PATTERN_FILE = "ddMMyy";
