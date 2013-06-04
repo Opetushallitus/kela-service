@@ -22,7 +22,7 @@
     <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
 
     <context:property-placeholder
-        location="classpath:kela-opti-test.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties"
+        location="classpath:kela-opti.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties"
         ignore-resource-not-found="true" />
 
     <jaxws:client id="koodiPublicService"
