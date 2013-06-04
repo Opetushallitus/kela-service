@@ -59,23 +59,35 @@ public class KelaDAOImpl implements KelaDAO {
 
     @Override
     public Hakukohde findHakukohdeByOid(String oid) {
-        return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=?")
+        try {
+            return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=?")
                                 .setParameter(1, oid)
                                 .getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     @Override
     public Organisaatio findOrganisaatioByOid(String oid) {
-        return (Organisaatio) organisaatioEm.createQuery("FROM "+Organisaatio.class.getName()+" WHERE oid=?")
+        try {
+            return (Organisaatio) organisaatioEm.createQuery("FROM "+Organisaatio.class.getName()+" WHERE oid=?")
                                 .setParameter(1, oid)
                                 .getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
-        return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
-                .setParameter(1, oid)
-                .getSingleResult();
+        try {
+            return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
+                    .setParameter(1, oid)
+                    .getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     @Override
