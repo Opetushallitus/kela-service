@@ -137,7 +137,7 @@ public class OrganisaatioContainer {
 
 
     public boolean isOppilaitosInKoodisto(OrganisaatioPerustietoType curOppilaitos) {
-        LOG.info("isOppilaitosInKoodisto: " + curOppilaitos.getNimiFi() + ", " + curOppilaitos.getOppilaitosKoodi());
+        LOG.debug("isOppilaitosInKoodisto: " + curOppilaitos.getNimiFi() + ", " + curOppilaitos.getOppilaitosKoodi());
         String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (!StringUtils.isEmpty(oppilaitoskoodi)) {
@@ -165,7 +165,7 @@ public class OrganisaatioContainer {
     }
     
     public boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
-        LOG.info("isToimpisteWRitable method " + curToimipiste.getNimiFi());
+        LOG.debug("isToimpisteWRitable method " + curToimipiste.getNimiFi());
         if (curToimipiste.getParentOid() == null) {
             return false;
         }
