@@ -55,7 +55,7 @@ public abstract class AbstractOPTIWriter {
     ///private static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
 
     protected static final Charset LATIN1 = Charset.forName("ISO8859-1");
-    protected static final String DATE_PATTERN_FILE = "ddMMyy";
+    protected static final String DATE_PATTERN_FILE = "yyMMdd";//"ddMMyy";
     protected static final String DATE_PATTERN_RECORD = "dd.MM.yyyy";
     protected static final String NAMEPREFIX = "RY.WYZ.SR.D";
     protected static final String DEFAULT_DATE = "01.01.0001";
