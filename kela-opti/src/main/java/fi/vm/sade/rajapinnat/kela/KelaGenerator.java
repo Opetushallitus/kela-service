@@ -132,7 +132,7 @@ public class KelaGenerator {
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiolWriter.fileName), Exchange.FILE_NAME, this.optiolWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.fileName), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optituWriter.fileName), Exchange.FILE_NAME, this.optituWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.fileName), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
+        //LEFT OUT FOR NOW! producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.fileName), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiytWriter.fileName), Exchange.FILE_NAME, this.optiytWriter.getFileLocalName());
         LOG.info("Files transfered");
     }
