@@ -52,7 +52,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     private static final String OPTILI = ".OPTILI";
     private static final String ALKUTIETUE = "0000000000ALKU\n";
     private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
-    private static final String KOULUTUSLAJI = " N";
+    private static final String KOULUTUSLAJI = "N ";
     
     public WriteOPTILI() {
         super();
@@ -109,8 +109,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("",3), //OPL_KKERROIN
                 StringUtils.leftPad("",10), //Keston yksikko
                 getAlkupvm(), //Alkupaiva, voimassaolon alku
-                StringUtils.leftPad("",10), //Loppupaiva
-                StringUtils.leftPad("",10), //Viimeisin paivityspaiva
+                DEFAULT_DATE,  //Loppupaiva
+                DEFAULT_DATE, //Viimeisin paivityspaiva
                 StringUtils.leftPad("",30), //Viimeisin paivittaja
                 StringUtils.leftPad("",7), //Opiskelijamaksu
                 StringUtils.leftPad("",7), //Lahiopetusta
@@ -149,7 +149,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     private String getAlkamiskausi(HakukohdeTulos curTulos) {
         String kausi = curTulos.getHakukohde().getKoulutuksenAlkamiskausiUri();
         kausi = kausi.substring(0, 1);
-        return StringUtils.leftPad(kausi, 12);
+        return StringUtils.rightPad(kausi, 12);
     }
 
     private String getAlkupvm() {

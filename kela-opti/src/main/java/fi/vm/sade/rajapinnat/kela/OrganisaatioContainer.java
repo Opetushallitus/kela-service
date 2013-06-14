@@ -97,6 +97,7 @@ public class OrganisaatioContainer {
         List<OrganisaatioPerustietoType> oppilaitoksetR = organisaatioService.searchBasicOrganisaatios(criteria);
         
         for (OrganisaatioPerustietoType curOppilaitos : oppilaitoksetR) {
+            LOG.debug("Oppilaitos: " + curOppilaitos.getNimiFi());
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
                 oppilaitokset.add(curOppilaitos);
@@ -114,6 +115,7 @@ public class OrganisaatioContainer {
         List<OrganisaatioPerustietoType> opetuspisteet = organisaatioService.searchBasicOrganisaatios(criteria);
         
         for (OrganisaatioPerustietoType curToimipiste : opetuspisteet) {
+            LOG.debug("Toimipiste: " + curToimipiste.getNimiFi());
             if (isToimipisteWritable(curToimipiste)) {
                 toimipisteet.add(curToimipiste);
                 orgOidList.add(curToimipiste.getOid());

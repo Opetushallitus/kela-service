@@ -83,7 +83,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
                 DEFAULT_DATE,//Viimeisin paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
                 StringUtils.leftPad("", 15),//Tyhjaa
-                StringUtils.leftPad("", 10),//01.01.0001,merkkijono
+                DEFAULT_DATE,//01.01.0001,merkkijono
                 "\n");
         return record;
     }
@@ -103,16 +103,16 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
             OrganisaatioPerustietoType curToimipiste) {
         if (!StringUtils.isEmpty(curToimipiste.getNimiFi())
                 && !StringUtils.isEmpty(curToimipiste.getNimiSv())) {
-            return StringUtils.leftPad("M", 2);
+            return StringUtils.rightPad("4", 2);
         }
         if (!StringUtils.isEmpty(curToimipiste.getNimiFi())) {
-            return StringUtils.leftPad("S", 2);
+            return StringUtils.rightPad("1", 2);
         } 
         if (!StringUtils.isEmpty(curToimipiste.getNimiSv())) {
-            return StringUtils.leftPad("R", 2);
+            return StringUtils.rightPad("2", 2);
         }
 
-        return StringUtils.leftPad("S", 2);
+        return StringUtils.rightPad("1", 2);
     }
 
 }

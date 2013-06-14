@@ -258,7 +258,7 @@ public abstract class AbstractOPTIWriter {
     
 
     protected String getYhteystietojenTunnus(Organisaatio orgE) {
-        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
+        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10, '0');
     }
     
     protected String getDateStrOrDefault(Date date) {
@@ -279,7 +279,7 @@ public abstract class AbstractOPTIWriter {
             olTyyppiKoodi = koodis.get(0);
         }
         KoodiType kelaKoodi = getRinnasteinenKoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
-        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
+        return (kelaKoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10, '0');
     }
 
     protected String getKotikunta(Organisaatio orgE) {

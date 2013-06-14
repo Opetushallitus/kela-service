@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
 /**
@@ -38,7 +39,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
     private static final String OPTIOL = ".OPTIOL";
     
     private static final String ALKUTIETUE = "00000ALKU\n";
-    private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
+    private static final String LOPPUTIETUE = "99999LOPPU??????\n";
     
     public WriteOPTIOL() {
         super();
@@ -66,7 +67,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//18 fields + EOL
                 getOppilaitosNro(curOppilaitos),//OPPIL_NRO
                 StringUtils.leftPad("", 4),//Tyhjaa
-                StringUtils.leftPad("", 10),//Koulutuksen jarjestajan tunnus
+                getKoulJarjTunnus(curOppilaitos),//StringUtils.leftPad("", 10),//Koulutuksen jarjestajan tunnus
                 getYhteystietojenTunnus(orgE),//Yhteystietojen tunnus
                 getOppilaitostyyppitunnus(curOppilaitos),//OTY_ID
                 getZeros(), //0-merkkeja
@@ -84,6 +85,19 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
                 getZeros(),//0-merkkeja
                 "\n");
         return record;
+    }
+
+    private String getKoulJarjTunnus(OrganisaatioPerustietoType curOppilaitos) {
+        String parentOid = curOppilaitos.getParentOid();
+        String tunnus = "";
+        if (curOppilaitos.getTyypit().contains(OrganisaatioTyyppi.KOULUTUSTOIMIJA)) {
+            tunnus = (curOppilaitos.getYtunnus() != null) ? curOppilaitos.getYtunnus() : curOppilaitos.getVirastoTunnus();
+        } else if (parentOid != null) {
+            Organisaatio parent = this.kelaDAO.findOrganisaatioByOid(parentOid);
+            tunnus = (parent.getYtunnus() != null) ? parent.getYtunnus() : parent.getVirastotunnus();
+        }
+        
+        return StringUtils.leftPad(tunnus, 10, '0');
     }
 
     private String getZeros() {

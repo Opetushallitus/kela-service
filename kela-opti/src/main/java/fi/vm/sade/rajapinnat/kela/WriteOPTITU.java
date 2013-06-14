@@ -83,9 +83,9 @@ public class WriteOPTITU extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 1),//TUT_HYVAKSYTTY
                 StringUtils.leftPad("", 1),//Kehityssuunnitelman mukainen tutkinto
                 StringUtils.leftPad("", 1),//Mahdollista suorittaa oppisopimuksella
-                StringUtils.leftPad("", 10),//oppisopimuspaiva
+                DEFAULT_DATE,//oppisopimuspaiva
                 StringUtils.leftPad("", 18),//oppisopimus diaarinumero
-                StringUtils.leftPad("", 10),//TUT_TUPEPVM
+                DEFAULT_DATE,//TUT_TUPEPVM
                 StringUtils.leftPad("", 18),//TUT_TUPEDIA
                 StringUtils.leftPad("", 10),//TUT_PITUUS1
                 StringUtils.leftPad("", 5),//TUT_YKSIKKO1
@@ -109,14 +109,14 @@ public class WriteOPTITU extends AbstractOPTIWriter {
         
         KoodiType koulutuastekoodi = getSisaltyvaKoodi(kelaTutkinto, kelaKoulutusastekoodisto);
         
-        return (koulutuastekoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(koulutuastekoodi.getKoodiArvo(), 10);
+        return (koulutuastekoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(koulutuastekoodi.getKoodiArvo(), 10, '0');
     }
 
     private String getOpintoalanYksiloivaTunniste(KoodiType kelaTutkinto) {
         
         KoodiType opintoalakoodi = getSisaltyvaKoodi(kelaTutkinto, kelaOpintoalakoodisto);
         
-        return (opintoalakoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(opintoalakoodi.getKoodiArvo(), 10);
+        return (opintoalakoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(opintoalakoodi.getKoodiArvo(), 10, '0');
     }
 
     private String getKoodiPvm(XMLGregorianCalendar xgc) {

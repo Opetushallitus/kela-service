@@ -58,6 +58,14 @@ public class Organisaatio {
     @Column(name="oppilaitostyyppi")
     private String oppilaitosTyyppi;
     
+    @Column(name="ytunnus")
+    private String ytunnus;
+
+    @Column(name="virastotunnus")
+    private String virastotunnus;
+    
+    
+    
     public String getOppilaitosTyyppi() {
         return oppilaitosTyyppi;
     }
@@ -120,6 +128,22 @@ public class Organisaatio {
 
     public void setKotipaikka(String kotipaikka) {
         this.kotipaikka = kotipaikka;
+    }
+    
+    public String getYtunnus() {
+        return ytunnus;
+    }
+
+    public void setYtunnus(String ytunnus) {
+        this.ytunnus = ytunnus;
+    }
+
+    public String getVirastotunnus() {
+        return virastotunnus;
+    }
+
+    public void setVirastotunnus(String virastotunnus) {
+        this.virastotunnus = virastotunnus;
     }
     
 }

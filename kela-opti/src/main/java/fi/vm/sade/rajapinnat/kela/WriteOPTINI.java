@@ -111,7 +111,10 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         if (koodit != null && !koodit.isEmpty()) {
             lyhytNimi = getLyhytNimiFromKoodi(koodit.get(0), kielet);
         }
-        return StringUtils.leftPad(lyhytNimi, 40);
+        if (lyhytNimi.length() > 40) {
+            lyhytNimi = lyhytNimi.substring(0, 40);
+        }
+        return StringUtils.rightPad(lyhytNimi, 40);
     }
 
     private String getLyhytNimiFromKoodi(KoodiType koodi,
@@ -147,7 +150,10 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         if (nimi.isEmpty()) {
             nimi = getAvailableName(curOrganisaatio);
         }
-        return StringUtils.leftPad(nimi, 180);
+        if (nimi.length() > 180) {
+            nimi = nimi.substring(0, 180);
+        }
+        return StringUtils.rightPad(nimi, 180);
     }
 
     private String getAvailableName(OrganisaatioPerustietoType curOrganisaatio) {

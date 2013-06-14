@@ -16,6 +16,7 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -126,12 +127,15 @@ public class KelaGenerator {
                 "?password=", 
                 password,
                 "&ftpClient.dataTimeout=",
-                dataTimeout);
+                dataTimeout + "&passiveMode=true");
+        LOG.info("Target url: " + targetUrl);
+        
+        
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiliWriter.fileName), Exchange.FILE_NAME, this.optiliWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiniWriter.fileName), Exchange.FILE_NAME, this.optiniWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiolWriter.fileName), Exchange.FILE_NAME, this.optiolWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.fileName), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optituWriter.fileName), Exchange.FILE_NAME, this.optituWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.fileName), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
         //LEFT OUT FOR NOW! producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.fileName), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
         producerTemplate.sendBodyAndHeader(targetUrl, new File(optiytWriter.fileName), Exchange.FILE_NAME, this.optiytWriter.getFileLocalName());
         LOG.info("Files transfered");
@@ -210,9 +214,18 @@ public class KelaGenerator {
     }
     
     public static void main (String[] args) {
+        Properties props = System.getProperties();
+        props.put("socksProxyHost", "127.0.01");
+        props.put("socksProxyPort", "9090") ;
+        System.setProperties(props);
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
         kelaGenerator.generateKelaFiles();
+        try {
+            kelaGenerator.transferFiles();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 

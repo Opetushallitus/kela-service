@@ -92,11 +92,11 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 3),//Postinumeroon liittyva maatunnus
                 DEFAULT_DATE,//01.01.0001-merkkijono
                 getKatuosoite(orgR.getKayntiosoite()),//Katuosoite tai kayntiosoite
-                getKatuosoite(orgR.getPostiosoite()),//Postilokero
-                getSimpleYhteystieto(orgR.getPuhelinnumero()),//Puhelinnumero
-                getSimpleYhteystieto(orgR.getEmailOsoite()),//Sahkopostiosoite
-                getSimpleYhteystieto(orgR.getFaksinumero()),//Fax-numero
-                getSimpleYhteystieto(orgR.getWwwOsoite()),//Kotisivujen osoite
+                getPostilokero(orgR.getPostiosoite()),//Postilokero
+                getSimpleYhteystieto(orgR.getPuhelinnumero(), 60),//Puhelinnumero
+                getSimpleYhteystieto(orgR.getEmailOsoite(), 80),//Sahkopostiosoite
+                getSimpleYhteystieto(orgR.getFaksinumero(), 20),//Fax-numero
+                getSimpleYhteystieto(orgR.getWwwOsoite(), 80),//Kotisivujen osoite
                 StringUtils.leftPad("", 15),//Postinumero (YHT_ULK_PTNUMERO)
                 StringUtils.leftPad("", 25),//Postitoimipaikka (YHT_ULK_PTPAIKKA)
                 StringUtils.leftPad("", 40),//YHT_ULK_ALUE
@@ -107,12 +107,29 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
         return record;
     }
 
-    private String getSimpleYhteystieto(String yhteystieto) {
-        return (yhteystieto != null) ? StringUtils.leftPad(yhteystieto, 80) : StringUtils.leftPad("", 80);
+    private String getPostilokero(Map<String, String> postiosoite) {
+        String katuos = postiosoite.get(OSOITE_FIELD);
+        if (!StringUtils.isEmpty(katuos) 
+                && katuos.startsWith("PL")
+                && katuos.length() < 11) {
+            return StringUtils.rightPad(katuos, 10);
+        }
+        return StringUtils.rightPad("", 10);
+    }
+
+    private String getSimpleYhteystieto(String yhteystieto, int pad) {
+        if (yhteystieto != null && yhteystieto.length() > pad) {
+            yhteystieto = yhteystieto.substring(0, pad);
+        }
+        return (yhteystieto != null) ? StringUtils.rightPad(yhteystieto, pad) : StringUtils.rightPad("", pad);
     }
 
     private String getKatuosoite(Map<String, String> osoite) {
-        return StringUtils.leftPad(osoite.get(OSOITE_FIELD), 50);
+        String osoiteStr = osoite.get(OSOITE_FIELD);
+        if (osoiteStr != null && osoiteStr.length() > 50) {
+            osoiteStr = osoiteStr.substring(0, 50);
+        }
+        return StringUtils.rightPad(osoiteStr, 50);
     }
 
     private String getPostinumero(Map<String, String> osoite) {
@@ -127,7 +144,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
     private String getYhtId(OrganisaatioPerustietoType organisaatio) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
-        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10);
+        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10, '0');
     }
 
 }
