@@ -13,20 +13,7 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
 	<ctx:annotation-config />
-	<!--
-	Laita tama parent kontekstiin, eli kontekstiin jossa importtaat taman kontekstin (katso esim kela-integraatio-testi-context.xml).
-	Property-placeholderin kaytto on pakollista koska ilman sita SPEL(spring expression language) ei toimi. Sita ei saa kuitenkaan
-	maaritella tanne koska silloin sen ylikirjoittaminen yksikkotesteissa (tai muuallakaan) ei onnistu. 
-	
-	<ctx:property-placeholder
-        location="classpath:kela-tkuva.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-tkuva.properties"
-        ignore-resource-not-found="true" />
-	-->
-        
-	<jaxws:client id="tulosPublicService"
-	                serviceClass="fi.vm.sade.tulos.service.TulosService"
-	                address="${valintalaskentakoostepalvelu.sijoitteluService.url:http://NO_TULOS_WEBSERVICE_URL_CONFIGURED}"/>
-	                
+	           
 	<!--
 		Camel-reitin konfiguraatio. Tarkoitus on siis ylikirjoittaa arvot propertyplaceholderin konfiguraatioilla! 
 	 -->
