@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import fi.vm.sade.rajapinnat.kela.integraatio.TKUVAYHVA;
+import fi.vm.sade.rajapinnat.kela.tkuva.data.TKUVAYHVA;
 
 /**
  * 
@@ -23,7 +23,7 @@ import fi.vm.sade.rajapinnat.kela.integraatio.TKUVAYHVA;
 public class KelaFormaattiTesti {
 
     @Test
-    public void testaaFlatpackFormaatti() throws Exception {
+    public void testaaTietueenPituus() throws Exception {
 
         TKUVAYHVA tietue = new TKUVAYHVA.Builder().setHenkilotunnus("010478123X").setEtunimet("Älfö Ölfär")
                 .setOppilaitos("").setLinjakoodi("").setSukunimi("Åke åkersön").setPoimintapaivamaara(new Date())

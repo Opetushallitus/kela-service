@@ -1,11 +1,11 @@
-package fi.vm.sade.rajapinnat.kela.integraatio;
+package fi.vm.sade.rajapinnat.kela.tkuva.data;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 
 /**
  * 
@@ -15,8 +15,16 @@ import org.apache.commons.lang.StringUtils;
  *         - henkilotunnus - sukunimi - etunimet - valintapaivamaara - lukuvuosi
  *         - ajankohta (Syksy/Kevat)
  * 
- *         Loput on vakioita tai paateltavissa. Siksi builder-pattern
- *         rakentamiseen.
+ *         Loput on vakioita tai paateltavissa - joten builder-pattern
+ *         rakentamiseen. Builderi ottaa huomioon UTF8 - Latin1 konversion ja
+ *         tasaus tietorakenteessa vaadittuun reunaan ja padding kussakin
+ *         tilanteessa oikealla merkilla.
+ * 
+ *         TKUVAYHVA tietue = new
+ *         TKUVAYHVA.Builder().setHenkilotunnus("010478123X"
+ *         ).setEtunimet(...).build();
+ * 
+ *         byte[] tavut = tietue.toByteArray();
  */
 public class TKUVAYHVA {
 
@@ -73,6 +81,9 @@ public class TKUVAYHVA {
         buffer.put(lukukaudenAloituspaiva);
 
         buffer.put(varatila3);
+        // buffer.compact(); no need for this as buffer is allocated 150 which
+        // should be always the size
+
         return buffer.array();
     }
 
@@ -241,8 +252,9 @@ public class TKUVAYHVA {
 
         // private byte[] siirtotunnus = toLatin1("OUYHVA",15);
         // private byte[] tietuetyyppi = toLatin1("T",1);
-        private SimpleDateFormat poimintapaivamaaraJaValintapaivamaaraFormatter = new SimpleDateFormat("ddMMyyyy");
-        private SimpleDateFormat aloitusvuosiFormatter = new SimpleDateFormat("yyyy");
+        private static final FastDateFormat poimintapaivamaaraJaValintapaivamaaraFormatter = FastDateFormat
+                .getInstance("ddMMyyyy");
+        private static final FastDateFormat aloitusvuosiFormatter = FastDateFormat.getInstance("yyyy");
         private byte[] poimintapaivamaara;
         // private byte[] siirtolaji = toLatin1("OPISK",1);
         // private byte[] lahettajaryhmanTunnus = toLatin1("OP",2);
@@ -307,6 +319,16 @@ public class TKUVAYHVA {
 
         public Builder setAjankohtaSyksy(boolean syksy) {
             this.ajankohtaSyksy = syksy;
+            return this;
+        }
+
+        public Builder setSyksyllaAlkavaKoulutus() {
+            setAjankohtaSyksy(true);
+            return this;
+        }
+
+        public Builder setKevaallaAlkavaKoulutus() {
+            setAjankohtaSyksy(false);
             return this;
         }
 

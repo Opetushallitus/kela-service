@@ -10,14 +10,14 @@ import org.junit.Test;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
-import fi.vm.sade.rajapinnat.kela.integraatio.TKUVAYHVA;
+import fi.vm.sade.rajapinnat.kela.tkuva.data.TKUVAYHVA;
 
 @Configuration
 @ContextConfiguration(classes = KelaTekstiEnkoodausTesti.class)
 public class KelaTekstiEnkoodausTesti {
 
     @Test
-    public void testaaEnkoodaus() throws IOException {
+    public void testaaUtf8Latin1Enkoodaus() throws IOException {
         String skandinaavinenNimi = "Åke åke Äke äke Öke öke öööööäääääää";
         // final Charset LATIN1 = Charset.forName("ISO8859-1");
         TKUVAYHVA tietue = new TKUVAYHVA.Builder().setLukuvuosi(new Date()).setValintapaivamaara(new Date())
