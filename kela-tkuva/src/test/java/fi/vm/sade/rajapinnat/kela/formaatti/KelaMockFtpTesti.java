@@ -8,8 +8,6 @@ import org.junit.runner.RunWith;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
@@ -23,9 +21,7 @@ import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
  * @author Jussi Jartamo
  * 
  */
-@Configuration
-@ContextConfiguration(classes = KelaMockFtpTesti.class)
-@ImportResource({ "classpath:kela-testi-context.xml" })
+@ContextConfiguration(classes = KelaFakeFtpSuite.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class KelaMockFtpTesti {
 
