@@ -56,6 +56,7 @@ public class KelaIntegraatioFtpTesti {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(a.toByteArray());
+        outputStream.write(KelaUtil.RIVINVAIHTO);
         outputStream.write(b.toByteArray());
 
         ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray());

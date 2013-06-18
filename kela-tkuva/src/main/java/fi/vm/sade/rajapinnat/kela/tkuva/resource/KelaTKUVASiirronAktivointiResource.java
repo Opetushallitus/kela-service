@@ -108,9 +108,13 @@ public class KelaTKUVASiirronAktivointiResource {
                 ByteArrayOutputStream kooste = new ByteArrayOutputStream();
                 // kirjoitellaan vastaanottajat binaaripotkoon
                 kooste.write(builder.build().toByteArray());
+                kooste.write(KelaUtil.RIVINVAIHTO);
                 kooste.write(builder.build().toByteArray());
+                kooste.write(KelaUtil.RIVINVAIHTO);
                 kooste.write(builder.build().toByteArray());
+                kooste.write(KelaUtil.RIVINVAIHTO);
                 kooste.write(builder.build().toByteArray());
+                // ei rivinvaihtoa loppuun speksin mukaan
 
                 ByteArrayInputStream tavut = new ByteArrayInputStream(kooste.toByteArray());
                 // kelan vaatima tiedostonimi
