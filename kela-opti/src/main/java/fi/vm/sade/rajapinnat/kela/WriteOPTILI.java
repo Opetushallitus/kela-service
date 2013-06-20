@@ -212,6 +212,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     private String getHakukohdeId(HakukohdeTulos curTulos) {
         Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getHakukohde().getOid());
         String hakukohdeId = String.format("%s", hakukE.getId());
-        return StringUtils.leftPad(hakukohdeId, 10);
+        return StringUtils.leftPad(hakukohdeId, 10, '0');
     }
 }

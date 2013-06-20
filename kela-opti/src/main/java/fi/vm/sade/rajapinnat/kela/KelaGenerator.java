@@ -215,7 +215,7 @@ public class KelaGenerator {
     
     public static void main (String[] args) {
         Properties props = System.getProperties();
-        props.put("socksProxyHost", "127.0.01");
+        props.put("socksProxyHost", "127.0.0.1");
         props.put("socksProxyPort", "9090") ;
         System.setProperties(props);
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");

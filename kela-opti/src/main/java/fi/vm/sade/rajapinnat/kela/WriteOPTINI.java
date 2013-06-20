@@ -173,6 +173,6 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 
     private String getSisainenKoodi(Organisaatio orgE) {
         
-        return StringUtils.leftPad(String.format("%s", orgE.getNimi().getId()), 10);
+        return StringUtils.leftPad(String.format("%s", orgE.getNimi().getId()), 10, '0');
     }
 }
