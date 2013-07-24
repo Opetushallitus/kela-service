@@ -4,7 +4,7 @@
   <parent>
     <groupId>fi.vm.sade.rajapinnat</groupId>
     <artifactId>kela</artifactId>
-    <version>5.0-SNAPSHOT</version>
+    <version>6.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>kela-opti</artifactId>
@@ -15,11 +15,11 @@
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-      <organisaatio.api.version>5.0-SNAPSHOT</organisaatio.api.version>
-      <authentication.api.version>5.0-SNAPSHOT</authentication.api.version>
-      <generic.version>5.0-SNAPSHOT</generic.version>
-      <koodisto.api.version>5.0-SNAPSHOT</koodisto.api.version>
-      <tarjonta.api.version>5.0-SNAPSHOT</tarjonta.api.version>
+      <organisaatio.api.version>6.0-SNAPSHOT</organisaatio.api.version>
+      <authentication.api.version>6.0-SNAPSHOT</authentication.api.version>
+      <generic.version>6.0-SNAPSHOT</generic.version>
+      <koodisto.api.version>6.0-SNAPSHOT</koodisto.api.version>
+      <tarjonta.api.version>6.0-SNAPSHOT</tarjonta.api.version>
   </properties>
     
   <build>
