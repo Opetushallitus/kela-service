@@ -58,6 +58,10 @@ public class Organisaatio {
     @Column(name="oppilaitostyyppi")
     private String oppilaitosTyyppi;
     
+    @Column(name="oppilaitoskoodi")
+    private String oppilaitoskoodi;
+
+
     @Column(name="ytunnus")
     private String ytunnus;
 
@@ -146,4 +150,11 @@ public class Organisaatio {
         this.virastotunnus = virastotunnus;
     }
     
+    public String getOppilaitoskoodi() {
+        return oppilaitoskoodi;
+    }
+
+    public void setOppilaitoskoodi(String oppilaitoskoodi) {
+        this.oppilaitoskoodi = oppilaitoskoodi;
+    }
 }

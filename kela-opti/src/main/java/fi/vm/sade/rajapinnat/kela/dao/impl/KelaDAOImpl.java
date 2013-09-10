@@ -16,6 +16,7 @@
 package fi.vm.sade.rajapinnat.kela.dao.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Repository;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
 
 /**
@@ -102,6 +105,15 @@ public class KelaDAOImpl implements KelaDAO {
         }
     }
     
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Organisaatiosuhde> findAllLiitokset() {
+        return (List<Organisaatiosuhde>) organisaatioEm.createQuery("FROM " + Organisaatiosuhde.class.getName() + " WHERE suhdetyyppi = ?") 
+                 .setParameter(1, OrganisaatioSuhdeTyyppi.LIITOS)
+                 .getResultList();
+    }
+    
     public String getTarjontaDbUrl() {
         return tarjontaDbUrl;
     }
@@ -119,5 +131,6 @@ public class KelaDAOImpl implements KelaDAO {
     public void setOrganisaatioDbUrl(String organisaatioDbUrl) {
         this.organisaatioDbUrl = organisaatioDbUrl;
     }
+
 
 }

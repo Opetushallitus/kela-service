@@ -19,6 +19,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,13 +70,21 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
         bos.write(toLatin1(ALKUTIETUE));
         
         for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
-                bos.write(toLatin1(createRecord(curOppilaitos)));   
-                bos.flush();
+                try {
+                    bos.write(toLatin1(createRecord(curOppilaitos)));   
+                    bos.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
         }
         
         for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
-                bos.write(toLatin1(createRecord(curToimipiste)));
-                bos.flush();
+                try {
+                    bos.write(toLatin1(createRecord(curToimipiste)));
+                    bos.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
         }
         
         bos.write(toLatin1(LOPPUTIETUE));
@@ -134,7 +143,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
     private String getPostinumero(Map<String, String> osoite) {
         String postinumeroUri = osoite.get(POSTINUMERO_FIELD);
-        List<KoodiType> koodit = this.getKoodisByUriAndVersio(postinumeroUri);
+        List<KoodiType> koodit = (postinumeroUri != null) ? this.getKoodisByUriAndVersio(postinumeroUri) : new ArrayList<KoodiType>();
         String postinro = "";
         if (koodit != null && !koodit.isEmpty()) {
             postinro = koodit.get(0).getKoodiArvo();

@@ -69,7 +69,12 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
             OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
             if (isHakukohdeToinenaste(tarjoajaOid)) {
-                bos.write(toLatin1(createRecord(curTulos, organisaatioDTO)));
+                try {
+                    bos.write(toLatin1(createRecord(curTulos, organisaatioDTO)));
+                    bos.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
         bos.write(toLatin1(LOPPUTIETUE));
