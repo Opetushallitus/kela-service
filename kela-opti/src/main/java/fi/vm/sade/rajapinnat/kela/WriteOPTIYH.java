@@ -70,7 +70,7 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
     }
 
     private String createRecord(Organisaatiosuhde liitos) {
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
                 getLiitosId(liitos),//YHD_ID
                 StringUtils.leftPad("", 10),//KAS_ID
                 StringUtils.leftPad("", 10),//ALA_ID

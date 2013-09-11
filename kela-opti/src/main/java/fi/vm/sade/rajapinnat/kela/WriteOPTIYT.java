@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
@@ -69,7 +70,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
+        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
                 try {
                     bos.write(toLatin1(createRecord(curOppilaitos)));   
                     bos.flush();
@@ -78,7 +79,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
                 }
         }
         
-        for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
+        for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
                 try {
                     bos.write(toLatin1(createRecord(curToimipiste)));
                     bos.flush();
@@ -93,7 +94,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
     }
 
-    private String createRecord(OrganisaatioPerustietoType organisaatio) {
+    private String createRecord(OrganisaatioPerustieto organisaatio) {
         OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//16 fields + EOL
                 getYhtId(organisaatio),//YHT_ID
@@ -151,7 +152,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
         return StringUtils.leftPad(postinro, 5);
     }
 
-    private String getYhtId(OrganisaatioPerustietoType organisaatio) {
+    private String getYhtId(OrganisaatioPerustieto organisaatio) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
         return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10, '0');
     }

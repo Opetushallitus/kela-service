@@ -38,12 +38,12 @@ import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-import fi.vm.sade.tarjonta.service.TarjontaPublicService;
+import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 
 /**
  * 
@@ -61,8 +61,11 @@ public abstract class AbstractOPTIWriter {
     protected static final String DEFAULT_DATE = "01.01.0001";
     protected static final String DIR_SEPARATOR = "/";
     
+    /*@Autowired
+    protected TarjontaPublicService tarjontaService;*/
+    
     @Autowired
-    protected TarjontaPublicService tarjontaService;
+    protected TarjontaSearchService tarjontaSearchService;
 
     @Autowired
     protected OrganisaatioService organisaatioService;
@@ -88,7 +91,7 @@ public abstract class AbstractOPTIWriter {
     
     protected BufferedOutputStream bos;
     
-    protected List<OrganisaatioPerustietoType> organisaatiot;
+    protected List<OrganisaatioPerustieto> organisaatiot;
 
     protected String kieliFi;
     protected String kieliSv;
@@ -225,23 +228,23 @@ public abstract class AbstractOPTIWriter {
     
     
 
-    protected String getOppilaitosNro(OrganisaatioPerustietoType curOrganisaatio) {
+    protected String getOppilaitosNro(OrganisaatioPerustieto curOrganisaatio) {
         String opnro = "";
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             opnro = curOrganisaatio.getOppilaitosKoodi();
         }
         return StringUtils.leftPad(opnro, 5);
     }
 
     protected String getOpPisteenOppilaitosnumero(
-            OrganisaatioPerustietoType curOrganisaatio) {
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
-                && !curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+            OrganisaatioPerustieto curOrganisaatio) {
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
+                && !curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return StringUtils.leftPad(
                     this.orgContainer.getOppilaitosoidOppilaitosMap().get(
                             curOrganisaatio.getParentOid()).getOppilaitosKoodi(), 5);
         } 
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             return StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
         }
         return StringUtils.leftPad("", 5);
@@ -272,7 +275,7 @@ public abstract class AbstractOPTIWriter {
     
 
     protected String getOppilaitostyyppitunnus(
-            OrganisaatioPerustietoType curOppilaitos) {
+            OrganisaatioPerustieto curOppilaitos) {
         List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
         KoodiType olTyyppiKoodi = null;
         if (!koodis.isEmpty()) {
@@ -313,10 +316,14 @@ public abstract class AbstractOPTIWriter {
         return kmdt;
     }
     
+    /*
     public void setTarjontaService(TarjontaPublicService tarjontaService) {
         this.tarjontaService = tarjontaService;
-    }
+    }*/
 
+    public void setTarjontaSearchService(TarjontaSearchService tarjontaSearchService) {
+        this.tarjontaSearchService = tarjontaSearchService;
+    }
 
     public void setOrganisaatioService(OrganisaatioService organisaatioService) {
         this.organisaatioService = organisaatioService;
@@ -338,7 +345,7 @@ public abstract class AbstractOPTIWriter {
        return bos;
    }
 
-   public void setOrganisaatiot(List<OrganisaatioPerustietoType> organisaatiot) {
+   public void setOrganisaatiot(List<OrganisaatioPerustieto> organisaatiot) {
        this.organisaatiot = organisaatiot;
    }
     

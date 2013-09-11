@@ -15,11 +15,11 @@
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-      <organisaatio.api.version>6.0-SNAPSHOT</organisaatio.api.version>
-      <authentication.api.version>6.0-SNAPSHOT</authentication.api.version>
-      <generic.version>6.0-SNAPSHOT</generic.version>
+      <organisaatio.api.version>6.1-SNAPSHOT</organisaatio.api.version>
+      <authentication.api.version>6.1-SNAPSHOT</authentication.api.version>
+      <generic.version>6.1-SNAPSHOT</generic.version>
       <koodisto.api.version>6.1-SNAPSHOT</koodisto.api.version>
-      <tarjonta.api.version>6.0-SNAPSHOT</tarjonta.api.version>
+      <tarjonta.api.version>6.1-SNAPSHOT</tarjonta.api.version>
   </properties>
     
   <build>
@@ -66,6 +66,13 @@
             <version>${tarjonta.api.version}</version>
             <type>jar</type>
         </dependency>
+        
+        <dependency>
+            <groupId>fi.vm.sade.tarjonta</groupId>
+            <artifactId>tarjonta-shared</artifactId>
+            <version>${tarjonta.api.version}</version>
+            <type>jar</type>
+        </dependency>
 
         <dependency>
             <groupId>fi.vm.sade.koodisto</groupId>
@@ -76,6 +83,12 @@
         <dependency>
             <groupId>fi.vm.sade.organisaatio</groupId>
             <artifactId>organisaatio-api</artifactId>
+            <version>${organisaatio.api.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>fi.vm.sade.organisaatio</groupId>
+            <artifactId>organisaatio-solr-client</artifactId>
             <version>${organisaatio.api.version}</version>
         </dependency>
         

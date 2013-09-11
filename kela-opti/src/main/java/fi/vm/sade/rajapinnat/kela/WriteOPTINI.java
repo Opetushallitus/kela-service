@@ -31,9 +31,8 @@ import org.springframework.stereotype.Component;
 import fi.vm.sade.koodisto.service.types.common.KieliType;
 import fi.vm.sade.koodisto.service.types.common.KoodiMetadataType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
 /**
@@ -61,7 +60,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
+        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
                 try {
                     bos.write(toLatin1(createRecord(curOppilaitos)));   
                     bos.flush();
@@ -69,7 +68,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
                     ex.printStackTrace();
                 }
         }
-        for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
+        for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
                 try {
                     bos.write(toLatin1(createRecord(curToimipiste)));
                     bos.flush();
@@ -84,7 +83,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     }
     
     
-    private String createRecord(OrganisaatioPerustietoType curOrganisaatio) {
+    private String createRecord(OrganisaatioPerustieto curOrganisaatio) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
                 getSisainenKoodi(orgE),//Sisainen koodi
@@ -107,11 +106,11 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     
     
     private String getOrganisaatioLyhytNimi(
-            OrganisaatioPerustietoType curOrganisaatio, Organisaatio orgE, List<String> kielet) {
+            OrganisaatioPerustieto curOrganisaatio, Organisaatio orgE, List<String> kielet) {
         List<KoodiType> koodit = new ArrayList<KoodiType>();
-        if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             koodit = orgContainer.getKoodisByArvoAndKoodisto(curOrganisaatio.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);
-        } else if (curOrganisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        } else if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             String opArvo = String.format("%s%s", getOpPisteenOppilaitosnumero(curOrganisaatio), getOpPisteenJarjNro(orgE));
             koodit = orgContainer.getKoodisByArvoAndKoodisto(opArvo, orgContainer.toimipistekoodisto);
         }
@@ -146,7 +145,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     }
 
     private String getOrganisaatioNimi(
-            OrganisaatioPerustietoType curOrganisaatio, List<String> kielet) {
+            OrganisaatioPerustieto curOrganisaatio, List<String> kielet) {
         String nimi = "";
         if (kielet.contains(kieliFi) && curOrganisaatio.getNimiFi() != null) {
             nimi = curOrganisaatio.getNimiFi();
@@ -164,7 +163,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         return StringUtils.rightPad(nimi, 180);
     }
 
-    private String getAvailableName(OrganisaatioPerustietoType curOrganisaatio) {
+    private String getAvailableName(OrganisaatioPerustieto curOrganisaatio) {
         if (curOrganisaatio.getNimiFi() != null) {
             return curOrganisaatio.getNimiFi();
         }

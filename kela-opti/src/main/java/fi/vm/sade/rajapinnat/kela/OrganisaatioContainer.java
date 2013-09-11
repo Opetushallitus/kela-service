@@ -36,10 +36,10 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.koodisto.service.types.common.KoodistoType;
 import fi.vm.sade.koodisto.util.KoodiServiceSearchCriteriaBuilder;
 import fi.vm.sade.koodisto.util.KoodistoServiceSearchCriteriaBuilder;
-import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioSearchCriteria;
+import fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
@@ -54,8 +54,11 @@ public class OrganisaatioContainer {
     
     private static final Logger LOG = LoggerFactory.getLogger(OrganisaatioContainer.class);
     
+    /*@Autowired
+    protected OrganisaatioService organisaatioService;*/
+    
     @Autowired
-    protected OrganisaatioService organisaatioService;
+    protected OrganisaatioSearchService organisaatioSearchService;
 
 
     @Autowired
@@ -67,11 +70,11 @@ public class OrganisaatioContainer {
     @Autowired
     protected KoodistoService koodistoService;
     
-    private List<OrganisaatioPerustietoType> oppilaitokset;
+    private List<OrganisaatioPerustieto> oppilaitokset;
 
 
-    private Map<String,OrganisaatioPerustietoType> oppilaitosoidOppilaitosMap;
-    private List<OrganisaatioPerustietoType> toimipisteet;
+    private Map<String,OrganisaatioPerustieto> oppilaitosoidOppilaitosMap;
+    private List<OrganisaatioPerustieto> toimipisteet;
     private List<String> orgOidList;
     
     protected String oppilaitosnumerokoodisto;
@@ -89,14 +92,14 @@ public class OrganisaatioContainer {
     
     
     public void fetchOrgnaisaatiot() {
-        oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustietoType>();
-        oppilaitokset = new ArrayList<OrganisaatioPerustietoType>();
+        oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustieto>();
+        oppilaitokset = new ArrayList<OrganisaatioPerustieto>();
         orgOidList = new ArrayList<String>();
-        OrganisaatioSearchCriteriaDTO criteria = new OrganisaatioSearchCriteriaDTO();
+        OrganisaatioSearchCriteria criteria = new OrganisaatioSearchCriteria();
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
-        List<OrganisaatioPerustietoType> oppilaitoksetR = organisaatioService.searchBasicOrganisaatios(criteria);
+        List<OrganisaatioPerustieto> oppilaitoksetR = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         
-        for (OrganisaatioPerustietoType curOppilaitos : oppilaitoksetR) {
+        for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
             LOG.debug("Oppilaitos: " + curOppilaitos.getNimiFi());
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
@@ -105,16 +108,16 @@ public class OrganisaatioContainer {
             }
         }
         
-        toimipisteet = new ArrayList<OrganisaatioPerustietoType>();
+        toimipisteet = new ArrayList<OrganisaatioPerustieto>();
         
-        criteria = new OrganisaatioSearchCriteriaDTO();
+        criteria = new OrganisaatioSearchCriteria();
         
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
         criteria.getOidResctrictionList().addAll(orgOidList);
         
-        List<OrganisaatioPerustietoType> opetuspisteet = organisaatioService.searchBasicOrganisaatios(criteria);
+        List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         
-        for (OrganisaatioPerustietoType curToimipiste : opetuspisteet) {
+        for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
             LOG.debug("Toimipiste: " + curToimipiste.getNimiFi());
             if (isToimipisteWritable(curToimipiste)) {
                 toimipisteet.add(curToimipiste);
@@ -123,7 +126,7 @@ public class OrganisaatioContainer {
         }
     }
     
-    public boolean isOppilaitosWritable(OrganisaatioPerustietoType curOppilaitos) {
+    public boolean isOppilaitosWritable(OrganisaatioPerustieto curOppilaitos) {
         return isOppilaitosInKoodisto(curOppilaitos) 
                 && isOppilaitosToinenAste(curOppilaitos) 
                 && hasOppilaitosIntactYhteystiedot(curOppilaitos);
@@ -132,13 +135,13 @@ public class OrganisaatioContainer {
     
     
     public boolean hasOppilaitosIntactYhteystiedot(
-            OrganisaatioPerustietoType curOppilaitos) {
+            OrganisaatioPerustieto curOppilaitos) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
         return kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()) != null;
     }
 
 
-    public boolean isOppilaitosInKoodisto(OrganisaatioPerustietoType curOppilaitos) {
+    public boolean isOppilaitosInKoodisto(OrganisaatioPerustieto curOppilaitos) {
         LOG.debug("isOppilaitosInKoodisto: " + curOppilaitos.getNimiFi() + ", " + curOppilaitos.getOppilaitosKoodi());
         String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
         List<KoodiType> koodit = new ArrayList<KoodiType>();
@@ -149,7 +152,7 @@ public class OrganisaatioContainer {
     }
 
     public boolean isOppilaitosToinenAste(
-            OrganisaatioPerustietoType curOppilaitos) {
+            OrganisaatioPerustieto curOppilaitos) {
         String opTyyppi = curOppilaitos.getOppilaitostyyppi();
         return  isTyyppiToinenaste(opTyyppi);
     }
@@ -166,13 +169,13 @@ public class OrganisaatioContainer {
                 || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
     }
     
-    public boolean isToimipisteWritable(OrganisaatioPerustietoType curToimipiste) {
+    public boolean isToimipisteWritable(OrganisaatioPerustieto curToimipiste) {
         LOG.debug("isToimpisteWRitable method " + curToimipiste.getNimiFi());
         if (curToimipiste.getParentOid() == null) {
             return false;
         }
         
-        OrganisaatioPerustietoType parentToimipiste = oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid());
+        OrganisaatioPerustieto parentToimipiste = oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid());
         if (parentToimipiste == null) {
             return false;
         }
@@ -189,15 +192,15 @@ public class OrganisaatioContainer {
         return koodit != null && !koodit.isEmpty() && (kelaDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId()) != null);
     }
     
-    public List<OrganisaatioPerustietoType> getOppilaitokset() {
+    public List<OrganisaatioPerustieto> getOppilaitokset() {
         return oppilaitokset;
     }
 
-    public Map<String, OrganisaatioPerustietoType> getOppilaitosoidOppilaitosMap() {
+    public Map<String, OrganisaatioPerustieto> getOppilaitosoidOppilaitosMap() {
         return oppilaitosoidOppilaitosMap;
     }
 
-    public List<OrganisaatioPerustietoType> getToimipisteet() {
+    public List<OrganisaatioPerustieto> getToimipisteet() {
         return toimipisteet;
     }
 
@@ -277,10 +280,10 @@ public class OrganisaatioContainer {
             return null;
         }
     }
-    
+    /*
     public void setOrganisaatioService(OrganisaatioService organisaatioService) {
         this.organisaatioService = organisaatioService;
-    }
+    }*/
 
     public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
         this.kelaDAO = hakukohdeDAO;
@@ -292,6 +295,12 @@ public class OrganisaatioContainer {
 
     public void setKoodistoService(KoodistoService koodistoService) {
         this.koodistoService = koodistoService;
+    }
+
+    public void setOrganisaatioSearchService(
+            OrganisaatioSearchService organisaatioSearchService) {
+        this.organisaatioSearchService = organisaatioSearchService;
+        
     }
 
 }

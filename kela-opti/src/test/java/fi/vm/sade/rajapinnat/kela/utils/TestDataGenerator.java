@@ -21,33 +21,37 @@ import static org.mockito.Mockito.when;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioSearchCriteriaDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioSearchCriteria;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
+import fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.MonikielinenTeksti;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
-import fi.vm.sade.tarjonta.service.TarjontaPublicService;
-import fi.vm.sade.tarjonta.service.types.HaeHakukohteetKyselyTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetKyselyTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi;
-import fi.vm.sade.tarjonta.service.types.HakukohdeListausTyyppi;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
+import fi.vm.sade.tarjonta.service.search.HakukohdeListaus;
+import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
+import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
+import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus.HakukohdeTulos;
+import fi.vm.sade.tarjonta.service.search.KoulutuksetKysely;
+import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus;
+import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus.KoulutusTulos;
+import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 import fi.vm.sade.tarjonta.service.types.KoodistoKoodiTyyppi;
 import fi.vm.sade.tarjonta.service.types.KoulutusListausTyyppi;
 import fi.vm.sade.tarjonta.service.types.TarjoajaTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi.HakukohdeTulos;
-import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi.KoulutusTulos;
 
 /**
  * 
@@ -96,35 +100,36 @@ public class TestDataGenerator {
     
     private OrganisaatioService organisaatioServiceMock;
     private KelaDAO kelaDaoMock;
-    private TarjontaPublicService tarjontaServiceMock;
+    private TarjontaSearchService tarjontaServiceMock;
     private OrganisaatioResource orgRMock;
+    private OrganisaatioSearchService organisaatioSearchServiceMock;
 
 
     Calendar curCal = Calendar.getInstance();
 
-    public List<OrganisaatioPerustietoType> createOrganisaatiot() {
-        List<OrganisaatioPerustietoType> organisaatiot = new ArrayList<OrganisaatioPerustietoType>();
+    public List<OrganisaatioPerustieto> createOrganisaatiot() {
+        List<OrganisaatioPerustieto> organisaatiot = new ArrayList<OrganisaatioPerustieto>();
 
         organisaatiot.add(createOrg(OID_PREFIX + OLKOODI1, 1, "Harman lukio", OLKOODI1, OLTYYPPI, OrganisaatioTyyppi.OPPILAITOS));
         
         organisaatiot.add(createOrg(OID_PREFIX + OLKOODI2, 2, "Alajarven lukio", OLKOODI2, OLTYYPPI, OrganisaatioTyyppi.OPPILAITOS));
-        OrganisaatioPerustietoType opetuspiste1 = createOrg(OID_PREFIX + OLKOODI1 + OPETUSPISTENRO, 3, "Harman lukio", null, null, OrganisaatioTyyppi.OPETUSPISTE);
+        OrganisaatioPerustieto opetuspiste1 = createOrg(OID_PREFIX + OLKOODI1 + OPETUSPISTENRO, 3, "Harman lukio", null, null, OrganisaatioTyyppi.OPETUSPISTE);
         opetuspiste1.setParentOid(OID_PREFIX + OLKOODI1);
         organisaatiot.add(opetuspiste1);
-        OrganisaatioPerustietoType opetuspiste2 = createOrg(OID_PREFIX + OLKOODI2 + OPETUSPISTENRO, 4, "Alajarven lukio", null, null, OrganisaatioTyyppi.OPETUSPISTE);
+        OrganisaatioPerustieto opetuspiste2 = createOrg(OID_PREFIX + OLKOODI2 + OPETUSPISTENRO, 4, "Alajarven lukio", null, null, OrganisaatioTyyppi.OPETUSPISTE);
         opetuspiste2.setParentOid(OID_PREFIX + OLKOODI2);
         organisaatiot.add(opetuspiste2);
         
         return organisaatiot;
     }
     
-    private OrganisaatioPerustietoType createOrg(String oid, long id, String nimi, String olkoodi, String olTyyppi, OrganisaatioTyyppi orgTyyppi) {
-        OrganisaatioPerustietoType ol1 = new OrganisaatioPerustietoType();
+    private OrganisaatioPerustieto createOrg(String oid, long id, String nimi, String olkoodi, String olTyyppi, OrganisaatioTyyppi orgTyyppi) {
+        OrganisaatioPerustieto ol1 = new OrganisaatioPerustieto();
         ol1.setOid(oid);
         ol1.setNimiFi(nimi);
         ol1.setOppilaitosKoodi(olkoodi);
         ol1.setOppilaitostyyppi(olTyyppi);
-        ol1.getTyypit().add(orgTyyppi);
+        ol1.getOrganisaatiotyypit().add(orgTyyppi);
         ol1.setAlkuPvm(curCal.getTime());
         Calendar endCal = Calendar.getInstance();
         endCal.set(Calendar.YEAR, curCal.get(Calendar.YEAR) + 1);
@@ -136,6 +141,7 @@ public class TestDataGenerator {
         orgE.setOpetuspisteenJarjNro(OPETUSPISTENRO);
         orgE.getKielet().add(KIELI);
         orgE.setKotipaikka(KOTIPAIKKA);
+        orgE.setOppilaitoskoodi(olkoodi);
         MonikielinenTeksti nimiE = new MonikielinenTeksti();
         nimiE.setId(id);
         orgE.setNimi(nimiE);
@@ -182,15 +188,15 @@ public class TestDataGenerator {
     
 
     public void generateTarjontaData() {
-        HaeHakukohteetVastausTyyppi vastaus = new HaeHakukohteetVastausTyyppi();
+        HakukohteetVastaus vastaus = new HakukohteetVastaus();
         vastaus.getHakukohdeTulos().add(createHakukohdetulos("hakukohteet_000#1", 0));
         vastaus.getHakukohdeTulos().add(createHakukohdetulos("hakukohteet_011#1", 1));
-        when(tarjontaServiceMock.haeHakukohteet((HaeHakukohteetKyselyTyyppi)anyObject())).thenReturn(vastaus);
+        when(tarjontaServiceMock.haeHakukohteet((HakukohteetKysely)anyObject())).thenReturn(vastaus);
     }
     
     private HakukohdeTulos createHakukohdetulos(String koodistonimi, long id) {
         HakukohdeTulos hakukohdeT = new HakukohdeTulos();
-        HakukohdeListausTyyppi hakukohde = new HakukohdeListausTyyppi();
+        HakukohdeListaus hakukohde = new HakukohdeListaus();
         hakukohde.setOid(koodistonimi);
         hakukohde.setKoodistoNimi(koodistonimi);
         hakukohde.setKoulutuksenAlkamiskausiUri(ALKAMISKAUSI_KEVAT);
@@ -214,7 +220,7 @@ public class TestDataGenerator {
         
         when(kelaDaoMock.findHakukohdeByOid(koodistonimi)).thenReturn(hakukE);
         
-        HaeKoulutuksetVastausTyyppi koulutusVastaus = new HaeKoulutuksetVastausTyyppi();
+        KoulutuksetVastaus koulutusVastaus = new KoulutuksetVastaus();
         KoulutusTulos koulutusTulos = new KoulutusTulos();
         KoulutusListausTyyppi koulutus = new KoulutusListausTyyppi();
         
@@ -225,7 +231,7 @@ public class TestDataGenerator {
         koulutusTulos.setKoulutus(koulutus);
         koulutusVastaus.getKoulutusTulos().add(koulutusTulos);
         
-        when(tarjontaServiceMock.haeKoulutukset((HaeKoulutuksetKyselyTyyppi)anyObject())).thenReturn(koulutusVastaus);
+        when(tarjontaServiceMock.haeKoulutukset((KoulutuksetKysely)anyObject())).thenReturn(koulutusVastaus);
         
         hakukohdeT.setHakukohde(hakukohde);
         
@@ -241,6 +247,15 @@ public class TestDataGenerator {
         this.organisaatioServiceMock = organisaatioServiceMock;
     }
     
+    public OrganisaatioSearchService getOrganisaatioSearchServiceMock() {
+        return organisaatioSearchServiceMock;
+    }
+    
+    public void setOrganisaatioSearchServiceMock(
+            OrganisaatioSearchService organisaatioSearchServiceMock) {
+        this.organisaatioSearchServiceMock = organisaatioSearchServiceMock;
+    }
+    
     public KelaDAO getHakukohdeDaoMock() {
         return kelaDaoMock;
     }
@@ -249,11 +264,11 @@ public class TestDataGenerator {
         this.kelaDaoMock = hakukohdeDaoMock;
     }
     
-    public TarjontaPublicService getTarjontaServiceMock() {
+    public TarjontaSearchService getTarjontaServiceMock() {
         return tarjontaServiceMock;
     }
     
-    public void setTarjontaServiceMock(TarjontaPublicService tarjontaServiceMock) {
+    public void setTarjontaServiceMock(TarjontaSearchService tarjontaServiceMock) {
         this.tarjontaServiceMock = tarjontaServiceMock;
     }
     
@@ -267,11 +282,48 @@ public class TestDataGenerator {
     }
 
     public void createOrganisaatioData() {
-        List<OrganisaatioPerustietoType> organisaatiot = new ArrayList<OrganisaatioPerustietoType>();
+        List<OrganisaatioPerustieto> organisaatiot = new ArrayList<OrganisaatioPerustieto>();
         organisaatiot.addAll(createOrganisaatiot());
-        when(organisaatioServiceMock.searchBasicOrganisaatios((OrganisaatioSearchCriteriaDTO)anyObject())).thenReturn(organisaatiot); 
+        when(organisaatioSearchServiceMock.searchBasicOrganisaatios((OrganisaatioSearchCriteria)anyObject())).thenReturn(organisaatiot); 
+    }
+    
+    public void createLiitosData() {
+        List<Organisaatiosuhde> liitokset = new ArrayList<Organisaatiosuhde>();
+        liitokset .addAll(createLiitokset());
+        when(kelaDaoMock.findAllLiitokset()).thenReturn(liitokset);
     }
    
+    private List<Organisaatiosuhde> createLiitokset() {
+        String parentOlkoodi = "00000";
+        String child1Olkoodi = "00001";
+        String child2Olkoodi = "00002";
+        
+        List<Organisaatiosuhde> liitokset = new ArrayList<Organisaatiosuhde>();
+        
+        Organisaatio parentOrg = new Organisaatio();
+        parentOrg.setOppilaitoskoodi(parentOlkoodi);
+        
+        Organisaatio childOrg1 = new Organisaatio();
+        childOrg1.setOppilaitoskoodi(child1Olkoodi);
+        
+        Organisaatio childOrg2 = new Organisaatio();
+        childOrg2.setOppilaitoskoodi(child2Olkoodi);
+        
+        liitokset.add(createLiitos(1, parentOrg, childOrg1));
+        liitokset.add(createLiitos(2, parentOrg, childOrg2));
+        return liitokset;
+    }
+    
+    private Organisaatiosuhde createLiitos(long id, Organisaatio parent, Organisaatio child) {
+        Organisaatiosuhde liitos = new Organisaatiosuhde();
+        liitos.setId(Long.valueOf(id));
+        liitos.setAlkuPvm(new Date());
+        liitos.setChild(child);
+        liitos.setParent(parent);
+        liitos.setSuhdeTyyppi(OrganisaatioSuhdeTyyppi.LIITOS);
+        return liitos;
+    }
+
     public String getCurrentDateStr() {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
         return sdf.format(curCal.getTime());

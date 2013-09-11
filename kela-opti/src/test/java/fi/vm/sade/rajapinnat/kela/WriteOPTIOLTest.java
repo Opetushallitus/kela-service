@@ -37,9 +37,11 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
+import fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
 import fi.vm.sade.tarjonta.service.TarjontaPublicService;
+import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 
 @ContextConfiguration(locations = "classpath:spring/test-context.xml")
 @TestExecutionListeners(listeners = {
@@ -57,21 +59,23 @@ public class WriteOPTIOLTest {
     
     private OrganisaatioService organisaatioServiceMock;
     private KelaDAO kelaDaoMock;
-    private TarjontaPublicService tarjontaServiceMock;
+    private TarjontaSearchService tarjontaServiceMock;
     private OrganisaatioResource orgRMock;
+    private OrganisaatioSearchService organisaatioSearchServiceMock;
     
     private TestDataGenerator generator;
     private static final String GEN_PATH = "target/ftps";
     
     @Before
     public void initialize() {
-        tarjontaServiceMock = mock(TarjontaPublicService.class);
+        tarjontaServiceMock = mock(TarjontaSearchService.class);
         organisaatioServiceMock = mock(OrganisaatioService.class);
         orgRMock = mock(OrganisaatioResource.class);
+        organisaatioSearchServiceMock = mock(OrganisaatioSearchService.class);
         
         kelaDaoMock = mock(KelaDAO.class);
         optiolWriter.setOrganisaatioService(organisaatioServiceMock);
-        optiolWriter.setTarjontaService(tarjontaServiceMock);
+        optiolWriter.setTarjontaSearchService(tarjontaServiceMock);
         optiolWriter.setHakukohdeDAO(kelaDaoMock);
         optiolWriter.setOrganisaatioResource(orgRMock);
         optiolWriter.setPath(GEN_PATH);
@@ -81,9 +85,10 @@ public class WriteOPTIOLTest {
         generator.setOrganisaatioServiceMock(organisaatioServiceMock);
         generator.setTarjontaServiceMock(tarjontaServiceMock);
         generator.setOrgRMock(orgRMock);
+        generator.setOrganisaatioSearchServiceMock(organisaatioSearchServiceMock);
         
         orgContainer.setHakukohdeDAO(kelaDaoMock);
-        orgContainer.setOrganisaatioService(organisaatioServiceMock);
+        orgContainer.setOrganisaatioSearchService(organisaatioSearchServiceMock);
         
         generator.createOrganisaatioData();
         
