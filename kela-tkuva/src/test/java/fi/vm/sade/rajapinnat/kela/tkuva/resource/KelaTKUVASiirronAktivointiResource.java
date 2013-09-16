@@ -17,7 +17,6 @@ import org.springframework.stereotype.Controller;
 import fi.vm.sade.rajapinnat.kela.tkuva.data.TKUVAYHVA;
 import fi.vm.sade.rajapinnat.kela.tkuva.service.KelaFtpService;
 import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
-import fi.vm.sade.tulos.service.TulosService;
 
 /**
  * 
@@ -38,9 +37,6 @@ import fi.vm.sade.tulos.service.TulosService;
 public class KelaTKUVASiirronAktivointiResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(KelaTKUVASiirronAktivointiResource.class);
-
-    @Autowired
-    TulosService tulosService;
 
     @Autowired
     KelaFtpService kelaService;

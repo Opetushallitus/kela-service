@@ -7,71 +7,64 @@
 		<version>6.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>kela-tkuva</artifactId>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<!-- 
 	<properties>
 		<camel.version>2.9.7</camel.version>
 	</properties>
 	 -->
 	<dependencies>
-		<dependency>
-            <groupId>fi.vm.sade.sijoittelu</groupId>
-            <artifactId>sijoittelu-tulos-api</artifactId>
-            <version>6.0-SNAPSHOT</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-frontend-jaxws</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
+            <scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>1.6.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-ftp</artifactId>
 			<version>${camel.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-spring</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>spring-context</artifactId>
 			<groupId>org.springframework</groupId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>spring-tx</artifactId>
 			<groupId>org.springframework</groupId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>spring-beans</artifactId>
 			<groupId>org.springframework</groupId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>spring-core</artifactId>
 			<groupId>org.springframework</groupId>
+			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
@@ -82,29 +75,35 @@
 		<dependency>
 			<artifactId>spring-asm</artifactId>
 			<groupId>org.springframework</groupId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>spring-aop</artifactId>
 			<groupId>org.springframework</groupId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.fusesource.commonman</groupId>
 			<artifactId>commons-management</artifactId>
 			<version>1.0</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
 			<version>0.1.44-1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>2.2</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -115,12 +114,13 @@
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
+			<scope>test</scope>
 		</dependency>
-		<!-- Test -->
 		<dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -143,20 +143,19 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-        	<groupId>org.springframework</groupId>
-        	<artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-web</artifactId>
@@ -168,6 +167,7 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-spring</artifactId>
             <version>1.9.1</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
