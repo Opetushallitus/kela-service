@@ -84,7 +84,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
                 getDateStrOrDefault(curToimipiste.getLakkautusPvm()),//Op.pisteen lakkauttamispaiva LAKKPVM
                 StringUtils.leftPad("", 1),//Tyhjaa
                 StringUtils.leftPad("", 1),//Opetuspisteen kaikille koulutukselle jarjestetaan kielikoe
-                getYhkoodi(orgContainer.getOppilaitosoidOppilaitosMap().get(curToimipiste.getParentOid())),//YH_KOULU
+                getYhkoodi(orgContainer.getOppilaitosoidOppilaitosMap().get(curToimipiste.getParentOid()), orgE),//YH_KOULU
                 DEFAULT_DATE,//Viimeisin paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
                 StringUtils.leftPad("", 15),//Tyhjaa
@@ -93,9 +93,8 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
         return record;
     }
 
-    private String getYhkoodi(
-            OrganisaatioPerustieto curOppilaitos) {
-        List<KoodiType> koodis = orgContainer.getKoodisByArvoAndKoodisto(curOppilaitos.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);        
+    private String getYhkoodi(OrganisaatioPerustieto oppilaitos, Organisaatio orgE) {
+        List<KoodiType> koodis = orgContainer.getKoodisByArvoAndKoodisto(oppilaitos.getOppilaitosKoodi() + getOpPisteenJarjNro(orgE), orgContainer.toimipistekoodisto);        
         KoodiType opNroKoodi = null;
         if (!koodis.isEmpty()) {
             opNroKoodi = koodis.get(0);
