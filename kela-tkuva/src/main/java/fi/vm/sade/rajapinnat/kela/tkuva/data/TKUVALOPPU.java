@@ -127,7 +127,7 @@ public class TKUVALOPPU {
             t.setTietuelukumaara(tietuelukumaara);
 
             t.setVaratila1(toLatin1("", 112));
-            return null;
+            return t;
         }
     }
 }
