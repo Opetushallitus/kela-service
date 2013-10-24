@@ -345,7 +345,7 @@ public class TKUVAYHVA {
             t.setSiirtotunnus(toLatin1("OUYHVA", 15));
             t.setTietuetyyppi(toLatin1("T", 1));
             t.setPoimintapaivamaara(poimintapaivamaara);
-            t.setSiirtolaji(toLatin1("OPISK", 1));
+            t.setSiirtolaji(toLatin1("OPISK", 5));
             t.setLahettajaryhmanTunnus(toLatin1("OP", 2));
             t.setOppilaitos(oppilaitos);
             t.setLinjakoodi(linjakoodi);

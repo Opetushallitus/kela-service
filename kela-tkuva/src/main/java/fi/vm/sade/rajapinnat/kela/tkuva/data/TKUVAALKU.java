@@ -172,7 +172,7 @@ public class TKUVAALKU {
             t.setSiirtotunnus(toLatin1("OUYHVA", 15));
             t.setTietuetyyppi(toLatin1("A", 1));
             t.setAjopaivamaara(ajopaivamaara);
-            t.setSiirtolaji(toLatin1("OPISK", 1));
+            t.setSiirtolaji(toLatin1("OPISK", 5));
             t.setLajettajaryhma(toLatin1("OP", 2));
 
             t.setVaratila1(toLatin1("", 5));
