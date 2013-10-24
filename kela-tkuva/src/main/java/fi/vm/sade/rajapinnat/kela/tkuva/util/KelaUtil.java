@@ -11,6 +11,7 @@ import org.apache.commons.lang.time.FastDateFormat;
  */
 public class KelaUtil {
 
+    public static final char TYHJA = (char) 0x20;
     public static final byte[] RIVINVAIHTO = "\n".getBytes();
     private static final FastDateFormat FORMATTER = FastDateFormat.getInstance("yyMMdd");
 

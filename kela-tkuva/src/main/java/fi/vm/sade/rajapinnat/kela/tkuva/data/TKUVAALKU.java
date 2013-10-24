@@ -7,6 +7,8 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 
+import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
+
 /**
  * 
  * @author Jussi Jartamo
@@ -158,11 +160,11 @@ public class TKUVAALKU {
 
         private byte[] toLatin1(String text, int size) {
             if (text == null) {
-                return StringUtils.rightPad("", size).getBytes(LATIN1);
+                return StringUtils.rightPad("", size, KelaUtil.TYHJA).getBytes(LATIN1);
             } else if (text.length() > size) {
                 return text.substring(0, size).getBytes(LATIN1);
             }
-            return StringUtils.rightPad(text, size).getBytes(LATIN1);
+            return StringUtils.rightPad(text, size, KelaUtil.TYHJA).getBytes(LATIN1);
         }
 
         public TKUVAALKU build() {
