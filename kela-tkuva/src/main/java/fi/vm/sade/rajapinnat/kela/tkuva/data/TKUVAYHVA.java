@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.joda.time.DateTime;
 
 import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
 
@@ -357,20 +358,23 @@ public class TKUVAYHVA {
             t.setEtunimet(etunimet);
             t.setValintapaivamaara(valintapaivamaara);
             t.setValinnanTila(toLatin1("V", 1));
-            t.setLukuvuosi(toLatin1(aloitusvuosiFormatter.format(lukuvuosi), 4));
 
             t.setVaratila2(toLatin1("", 1));
 
             t.setTutkinnonTaso1(toLatin1("", 3));
             t.setTutkinnonTaso2(toLatin1("", 3));
 
-            if (ajankohtaSyksy) {
+            if (ajankohtaSyksy) { // aloitusvuosi on syksylla sama kuin
+                                  // aloituspaivan vuosi
                 t.setAjankohta(toLatin1("S", 1));
+                t.setLukuvuosi(toLatin1(aloitusvuosiFormatter.format(lukuvuosi), 4));
                 StringBuilder a = new StringBuilder();
                 t.setLukukaudenAloituspaiva(toLatin1(a.append("0108").append(aloitusvuosiFormatter.format(lukuvuosi))
                         .toString(), 8));
-            } else {
+            } else { // kevaalla aloitus vuosi on edellinen vuosi 1.1.2014
+                     // aloitusvuosi on 2013
                 t.setAjankohta(toLatin1("K", 1));
+                t.setLukuvuosi(toLatin1(aloitusvuosiFormatter.format(new DateTime(lukuvuosi).minusYears(1).toDate()), 4));
                 StringBuilder a = new StringBuilder();
                 t.setLukukaudenAloituspaiva(toLatin1(a.append("0101").append(aloitusvuosiFormatter.format(lukuvuosi))
                         .toString(), 8));
