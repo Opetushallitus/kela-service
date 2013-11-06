@@ -105,14 +105,14 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
 
     private String getOpetuspisteenKieli(
             OrganisaatioPerustieto curToimipiste) {
-        if (!StringUtils.isEmpty(curToimipiste.getNimiFi())
-                && !StringUtils.isEmpty(curToimipiste.getNimiSv())) {
+        if (!StringUtils.isEmpty(curToimipiste.getNimi("fi"))
+                && !StringUtils.isEmpty(curToimipiste.getNimi("sv"))) {
             return StringUtils.rightPad("4", 2);
         }
-        if (!StringUtils.isEmpty(curToimipiste.getNimiFi())) {
+        if (!StringUtils.isEmpty(curToimipiste.getNimi("fi"))) {
             return StringUtils.rightPad("1", 2);
         } 
-        if (!StringUtils.isEmpty(curToimipiste.getNimiSv())) {
+        if (!StringUtils.isEmpty(curToimipiste.getNimi("sv"))) {
             return StringUtils.rightPad("2", 2);
         }
 

@@ -100,7 +100,7 @@ public class OrganisaatioContainer {
         List<OrganisaatioPerustieto> oppilaitoksetR = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         
         for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
-            LOG.debug("Oppilaitos: " + curOppilaitos.getNimiFi());
+            LOG.debug("Oppilaitos: " + curOppilaitos.getNimi("fi"));//getNimiFi());
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
                 oppilaitokset.add(curOppilaitos);
@@ -113,12 +113,12 @@ public class OrganisaatioContainer {
         criteria = new OrganisaatioSearchCriteria();
         
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
-        criteria.getOidResctrictionList().addAll(orgOidList);
+        criteria.getOidRestrictionList().addAll(orgOidList);
         
         List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         
         for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
-            LOG.debug("Toimipiste: " + curToimipiste.getNimiFi());
+            LOG.debug("Toimipiste: " + curToimipiste.getNimi("fi"));//getNimiFi());
             if (isToimipisteWritable(curToimipiste)) {
                 toimipisteet.add(curToimipiste);
                 orgOidList.add(curToimipiste.getOid());
@@ -142,7 +142,7 @@ public class OrganisaatioContainer {
 
 
     public boolean isOppilaitosInKoodisto(OrganisaatioPerustieto curOppilaitos) {
-        LOG.debug("isOppilaitosInKoodisto: " + curOppilaitos.getNimiFi() + ", " + curOppilaitos.getOppilaitosKoodi());
+        LOG.debug("isOppilaitosInKoodisto: " + curOppilaitos.getNimi("fi") + ", " + curOppilaitos.getOppilaitosKoodi());
         String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (!StringUtils.isEmpty(oppilaitoskoodi)) {
@@ -170,7 +170,7 @@ public class OrganisaatioContainer {
     }
     
     public boolean isToimipisteWritable(OrganisaatioPerustieto curToimipiste) {
-        LOG.debug("isToimpisteWRitable method " + curToimipiste.getNimiFi());
+        LOG.debug("isToimpisteWRitable method " + curToimipiste.getNimi("fi"));
         if (curToimipiste.getParentOid() == null) {
             return false;
         }
