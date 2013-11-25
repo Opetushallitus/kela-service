@@ -15,11 +15,11 @@
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-      <organisaatio.api.version>7.0</organisaatio.api.version>
-      <authentication.api.version>7.0</authentication.api.version>
+      <organisaatio.api.version>6.2</organisaatio.api.version>
+      <authentication.api.version>6.2</authentication.api.version>
       <generic.version>7.0</generic.version>
-      <koodisto.api.version>7.0</koodisto.api.version>
-      <tarjonta.api.version>7.0</tarjonta.api.version>
+      <koodisto.api.version>6.2</koodisto.api.version>
+      <tarjonta.api.version>6.2</tarjonta.api.version>
   </properties>
     
   <build>
