@@ -16,7 +16,7 @@
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
       <organisaatio.api.version>7.0</organisaatio.api.version>
-      <authentication.api.version>7.0</authentication.api.version>
+      <authentication.api.version>0.0</authentication.api.version>
       <generic.version>7.0</generic.version>
       <koodisto.api.version>7.0</koodisto.api.version>
       <tarjonta.api.version>7.0</tarjonta.api.version>
@@ -134,11 +134,11 @@
             <version>${cxf.version}</version>
         </dependency>
         
-        <dependency>
+        <!--  <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
             <version>1.9.12</version>
-        </dependency>
+        </dependency>-->
         
         <dependency>
             <groupId>org.springframework</groupId>
