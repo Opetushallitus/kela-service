@@ -19,7 +19,7 @@
       <authentication.api.version>6.2</authentication.api.version>
       <generic.version>7.0</generic.version>
       <koodisto.api.version>6.2</koodisto.api.version>
-      <tarjonta.api.version>6.2</tarjonta.api.version>
+      <tarjonta.api.version>7.0</tarjonta.api.version>
   </properties>
     
   <build>
