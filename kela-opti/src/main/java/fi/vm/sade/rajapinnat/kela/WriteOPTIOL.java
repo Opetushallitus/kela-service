@@ -53,8 +53,12 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
         bos.write(toLatin1(ALKUTIETUE));
         
         for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
-                bos.write(toLatin1(createRecord(curOppilaitos)));   
-                bos.flush();
+                try {
+                    bos.write(toLatin1(createRecord(curOppilaitos)));   
+                    bos.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
         }
 
         bos.write(toLatin1(LOPPUTIETUE));

@@ -105,7 +105,7 @@ public abstract class AbstractOPTIWriter {
     private String fileLocalName;
     
     
-    protected void createFileName(String path, String name) {
+    public void createFileName(String path, String name) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
         if (StringUtils.isEmpty(path)) {
             path = createPath();

@@ -62,7 +62,12 @@ public class WriteOPTITU extends AbstractOPTIWriter {
         for (KoodiType curKelaTutkinto : koodit) {
             KoodiType curOphTutkinto = getRinnasteinenKoodi(curKelaTutkinto, koulutuskoodisto);
             if (curOphTutkinto != null) {
-                bos.write(toLatin1(createRecord(curKelaTutkinto, curOphTutkinto)));
+                try {
+                    bos.write(toLatin1(createRecord(curKelaTutkinto, curOphTutkinto)));
+                    bos.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
         

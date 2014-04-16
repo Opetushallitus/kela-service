@@ -27,11 +27,11 @@
 
     <jaxws:client id="koodiPublicService"
                 serviceClass="fi.vm.sade.koodisto.service.KoodiService"
-                address="http://luokka.hard.ware.fi:8303/koodisto-service/services/koodiService"/>
+                address="http://reppu.hard.ware.fi:8303/koodisto-service/services/koodiService"/>
 
     <jaxws:client id="koodistoPublicService"
                   serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
-                  address="http://luokka.hard.ware.fi:8303/koodisto-service/services/koodistoService"/>
+                  address="http://reppu.hard.ware.fi:8303/koodisto-service/services/koodistoService"/>
 
     <jaxws:client id="tarjontaPublicService"
                   serviceClass="fi.vm.sade.tarjonta.service.TarjontaPublicService"

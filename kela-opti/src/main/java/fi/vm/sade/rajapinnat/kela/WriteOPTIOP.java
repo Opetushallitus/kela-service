@@ -53,8 +53,12 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
         bos.write(toLatin1(ALKUTIETUE));
         
         for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
-                bos.write(toLatin1(createRecord(curToimipiste)));
-                bos.flush();
+                try {
+                    bos.write(toLatin1(createRecord(curToimipiste)));
+                    bos.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
         }
 
         bos.write(toLatin1(LOPPUTIETUE));
