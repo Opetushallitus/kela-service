@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
 /**
@@ -52,7 +53,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        for (OrganisaatioPerustietoType curToimipiste : this.orgContainer.getToimipisteet()) {
+        for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
                 try {
                     bos.write(toLatin1(createRecord(curToimipiste)));
                     bos.flush();
@@ -67,7 +68,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
 
     }
 
-    private String createRecord(OrganisaatioPerustietoType curToimipiste) {
+    private String createRecord(OrganisaatioPerustieto curToimipiste) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curToimipiste.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//18 fields + EOL
                 getOpPisteenOppilaitosnumero(curToimipiste),//OPPIL_NRO
@@ -93,7 +94,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
     }
 
     private String getYhkoodi(
-            OrganisaatioPerustietoType curOppilaitos) {
+            OrganisaatioPerustieto curOppilaitos) {
         List<KoodiType> koodis = orgContainer.getKoodisByArvoAndKoodisto(curOppilaitos.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);        
         KoodiType opNroKoodi = null;
         if (!koodis.isEmpty()) {
@@ -104,7 +105,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
     }
 
     private String getOpetuspisteenKieli(
-            OrganisaatioPerustietoType curToimipiste) {
+            OrganisaatioPerustieto curToimipiste) {
         if (!StringUtils.isEmpty(curToimipiste.getNimiFi())
                 && !StringUtils.isEmpty(curToimipiste.getNimiSv())) {
             return StringUtils.rightPad("4", 2);

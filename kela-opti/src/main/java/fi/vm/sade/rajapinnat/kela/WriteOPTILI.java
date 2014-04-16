@@ -31,12 +31,12 @@ import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-import fi.vm.sade.tarjonta.service.types.HaeHakukohteetKyselyTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeHakukohteetVastausTyyppi.HakukohdeTulos;
-import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetKyselyTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi;
-import fi.vm.sade.tarjonta.service.types.HaeKoulutuksetVastausTyyppi.KoulutusTulos;
+import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
+import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
+import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus.HakukohdeTulos;
+import fi.vm.sade.tarjonta.service.search.KoulutuksetKysely;
+import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus;
+import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus.KoulutusTulos;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 
 /**
@@ -63,8 +63,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         createFileName("", OPTILI);
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
-        HaeHakukohteetKyselyTyyppi kysely = new HaeHakukohteetKyselyTyyppi();
-        HaeHakukohteetVastausTyyppi vastaus = tarjontaService.haeHakukohteet(kysely);
+        HakukohteetKysely kysely = new HakukohteetKysely();
+        HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
         for (HakukohdeTulos curTulos : vastaus.getHakukohdeTulos()) {
             String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
             OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
@@ -171,9 +171,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     private Object getTutkintotunniste(HakukohdeTulos curTulos) {
         LOG.debug("HaeTutkintotunniste: " + curTulos.getHakukohde().getOid());
-        HaeKoulutuksetKyselyTyyppi kysely = new HaeKoulutuksetKyselyTyyppi();
+        KoulutuksetKysely kysely = new KoulutuksetKysely();
         kysely.getHakukohdeOids().add(curTulos.getHakukohde().getOid());
-        HaeKoulutuksetVastausTyyppi vastaus = tarjontaService.haeKoulutukset(kysely);
+        KoulutuksetVastaus vastaus = tarjontaSearchService.haeKoulutukset(kysely);
         LOG.debug("Koulutustulos size: " + vastaus.getKoulutusTulos().size());
         if (vastaus == null || vastaus.getKoulutusTulos().isEmpty()) {
             LOG.warn("\n\n!!!Tutkintotunniste empty for hakukohde: " + curTulos.getHakukohde().getOid() + "\n\n");

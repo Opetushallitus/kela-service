@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
+import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
 /**
@@ -52,7 +53,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
         bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
         bos.write(toLatin1(ALKUTIETUE));
         
-        for (OrganisaatioPerustietoType curOppilaitos : this.orgContainer.getOppilaitokset()) {
+        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
                 try {
                     bos.write(toLatin1(createRecord(curOppilaitos)));   
                     bos.flush();
@@ -66,7 +67,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
         bos.close();
     }
 
-    private String createRecord(OrganisaatioPerustietoType curOppilaitos) {
+    private String createRecord(OrganisaatioPerustieto curOppilaitos) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//18 fields + EOL
                 getOppilaitosNro(curOppilaitos),//OPPIL_NRO
@@ -91,10 +92,10 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
         return record;
     }
 
-    private String getKoulJarjTunnus(OrganisaatioPerustietoType curOppilaitos) {
+    private String getKoulJarjTunnus(OrganisaatioPerustieto curOppilaitos) {
         String parentOid = curOppilaitos.getParentOid();
         String tunnus = "";
-        if (curOppilaitos.getTyypit().contains(OrganisaatioTyyppi.KOULUTUSTOIMIJA)) {
+        if (curOppilaitos.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.KOULUTUSTOIMIJA)) {
             tunnus = (curOppilaitos.getYtunnus() != null) ? curOppilaitos.getYtunnus() : curOppilaitos.getVirastoTunnus();
         } else if (parentOid != null) {
             Organisaatio parent = this.kelaDAO.findOrganisaatioByOid(parentOid);
