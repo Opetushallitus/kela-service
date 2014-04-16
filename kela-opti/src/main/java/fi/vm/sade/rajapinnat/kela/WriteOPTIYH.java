@@ -76,10 +76,10 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 10),//ALA_ID
                 StringUtils.leftPad("", 5),//OPE_OPPILNRO
                 StringUtils.leftPad("", 2),//OPE_OPJNO
-                getOppilaitosnumero(liitos.getParent()), //OPPILNRO
+                getOppilaitosnumero(liitos.getChild()), //OPPILNRO
                 StringUtils.leftPad("", 60),//Suomenkielinen selite
                 getDateStrOrDefault(liitos.getAlkuPvm()),//Oppilaitoksen yhdistamispaiva
-                getOppilaitosnumero(liitos.getChild()), //KOHDE_ONRO
+                getOppilaitosnumero(liitos.getParent()), //KOHDE_ONRO
                 StringUtils.leftPad("", 2),//KOHDE_OPJNO
                 DEFAULT_DATE,//Viimeisin paivityspvm
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja

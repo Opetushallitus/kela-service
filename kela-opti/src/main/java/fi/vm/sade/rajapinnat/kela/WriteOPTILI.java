@@ -31,12 +31,12 @@ import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.tarjonta.service.search.HakukohdePerustieto;
 import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
 import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
-import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus.HakukohdeTulos;
 import fi.vm.sade.tarjonta.service.search.KoulutuksetKysely;
 import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus;
-import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus.KoulutusTulos;
+import fi.vm.sade.tarjonta.service.search.KoulutusPerustieto;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 
 /**
@@ -65,16 +65,18 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         bos.write(toLatin1(ALKUTIETUE));
         HakukohteetKysely kysely = new HakukohteetKysely();
         HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
-        for (HakukohdeTulos curTulos : vastaus.getHakukohdeTulos()) {
-            String tarjoajaOid = curTulos.getHakukohde().getTarjoaja().getTarjoajaOid();
-            OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
-            if (isHakukohdeToinenaste(tarjoajaOid)) {
-                try {
+        for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
+            try {
+                String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
+                System.out.println("TarjoajaOid: " + tarjoajaOid);
+                OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
+                if (isHakukohdeToinenaste(tarjoajaOid)) {   
                     bos.write(toLatin1(createRecord(curTulos, organisaatioDTO)));
                     bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                
                 }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
         bos.write(toLatin1(LOPPUTIETUE));
@@ -86,7 +88,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return this.orgContainer.getOrgOidList().contains(tarjoajaOid);
     }
 
-    private String createRecord(HakukohdeTulos curTulos, OrganisaatioDTO organisaatioDTO) {
+    private String createRecord(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatioDTO) {
         return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //51 fields + line ending
                 getHakukohdeId(curTulos),//Sisainen koodi
                 getOppilaitosnumero(curTulos, organisaatioDTO),//OPPIL_NRO
@@ -143,16 +145,16 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         
     }
     
-    private String getVuosi(HakukohdeTulos curTulos) {
-        return curTulos.getHakukohde().getKoulutuksenAlkamisvuosi();
+    private String getVuosi(HakukohdePerustieto curTulos) {
+        return curTulos.getKoulutuksenAlkamisvuosi().toString();
     }
 
     private String getTila() {
         return "PAAT";
     }
 
-    private String getAlkamiskausi(HakukohdeTulos curTulos) {
-        String kausi = curTulos.getHakukohde().getKoulutuksenAlkamiskausiUri();
+    private String getAlkamiskausi(HakukohdePerustieto curTulos) {
+        String kausi = curTulos.getKoulutuksenAlkamiskausi().getUri();
         kausi = kausi.substring(0, 1);
         return StringUtils.rightPad(kausi, 12);
     }
@@ -161,26 +163,26 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return DEFAULT_DATE;
     }
     
-    private Object getHakukohdeKoodi(HakukohdeTulos curTulos) {
-        String koodiUri = curTulos.getHakukohde().getKoodistoNimi();
+    private Object getHakukohdeKoodi(HakukohdePerustieto curTulos) {
+        String koodiUri = curTulos.getKoodistoNimi();
         List<KoodiType> koodis = getKoodisByUriAndVersio(koodiUri);
         return (koodis.isEmpty()) ? StringUtils.leftPad("", 3) : koodis.get(0).getKoodiArvo();
     }
     
     
 
-    private Object getTutkintotunniste(HakukohdeTulos curTulos) {
-        LOG.debug("HaeTutkintotunniste: " + curTulos.getHakukohde().getOid());
+    private Object getTutkintotunniste(HakukohdePerustieto curTulos) {
+        LOG.debug("HaeTutkintotunniste: " + curTulos.getOid());
         KoulutuksetKysely kysely = new KoulutuksetKysely();
-        kysely.getHakukohdeOids().add(curTulos.getHakukohde().getOid());
+        kysely.getHakukohdeOids().add(curTulos.getOid());
         KoulutuksetVastaus vastaus = tarjontaSearchService.haeKoulutukset(kysely);
-        LOG.debug("Koulutustulos size: " + vastaus.getKoulutusTulos().size());
-        if (vastaus == null || vastaus.getKoulutusTulos().isEmpty()) {
-            LOG.warn("\n\n!!!Tutkintotunniste empty for hakukohde: " + curTulos.getHakukohde().getOid() + "\n\n");
+        LOG.debug("Koulutustulos size: " + vastaus.getKoulutukset().size());
+        if (vastaus == null || vastaus.getKoulutukset().isEmpty()) {
+            LOG.warn("\n\n!!!Tutkintotunniste empty for hakukohde: " + curTulos.getOid() + "\n\n");
             StringUtils.leftPad("", 10);
         }
-        KoulutusTulos tulos = vastaus.getKoulutusTulos().get(0);
-        String koodiUri = tulos.getKoulutus().getKoulutuskoodi().getUri();
+        KoulutusPerustieto tulos = vastaus.getKoulutukset().get(0);
+        String koodiUri = tulos.getKoulutuskoodi().getUri();
         List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
         KoodiType koulutuskoodi = null;
         if (!koodis.isEmpty()) {
@@ -194,18 +196,18 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return KOULUTUSLAJI;
     }
 
-    private String getOpetuspisteenJarjNro(HakukohdeTulos curTulos, OrganisaatioDTO organisaatio) {
+    private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(curTulos.getHakukohde().getTarjoaja().getTarjoajaOid());
+            Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(curTulos.getTarjoajaOid());
             return (organisaatioE != null && organisaatioE.getOpetuspisteenJarjNro() != null) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
         }
         return "01";
     }
 
-    private String getOppilaitosnumero(HakukohdeTulos curTulos, OrganisaatioDTO organisaatio) {
+    private String getOppilaitosnumero(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return String.format("%s", organisaatio.getOppilaitosKoodi());
         } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
@@ -214,8 +216,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return StringUtils.leftPad("", 5);
     }
 
-    private String getHakukohdeId(HakukohdeTulos curTulos) {
-        Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getHakukohde().getOid());
+    private String getHakukohdeId(HakukohdePerustieto curTulos) {
+        Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getOid());
         String hakukohdeId = String.format("%s", hakukE.getId());
         return StringUtils.leftPad(hakukohdeId, 10, '0');
     }

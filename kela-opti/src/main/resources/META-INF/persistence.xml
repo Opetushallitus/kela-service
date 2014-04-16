@@ -12,7 +12,7 @@
             <property name="hibernate.jdbc.batch_size" value="20" />
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
             <property name="hibernate.connection.username" value="oph"/>
-            <property name="hibernate.connection.password" value="oph"/>
+            <property name="hibernate.connection.password" value="xwfRWdsyjAgT"/><!--"a7S5jm659392"/>--><!--value="oph"/>-->
             <property name="hibernate.connection.url" value="NOT_DEFINED"/>
         </properties>
     </persistence-unit>
@@ -23,7 +23,7 @@
             <property name="hibernate.jdbc.batch_size" value="20" />
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
             <property name="hibernate.connection.username" value="oph"/>
-            <property name="hibernate.connection.password" value="oph"/>
+            <property name="hibernate.connection.password" value="xwfRWdsyjAgT"/><!--"a7S5jm659392"/>--><!--value="oph"/>-->
             <property name="hibernate.connection.url" value="NOT_DEFINED"/>
         </properties>
     </persistence-unit>

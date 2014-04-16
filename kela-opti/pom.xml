@@ -4,6 +4,7 @@
   <parent>
     <groupId>fi.vm.sade.rajapinnat</groupId>
     <artifactId>kela</artifactId>
+
     <version>9.0-SNAPSHOT</version>
   </parent>
   
@@ -64,6 +65,16 @@
             <artifactId>tarjonta-api</artifactId>
             <version>${tarjonta.api.version}</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <artifactId>geronimo-servlet_2.5_spec</artifactId>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.cxf</groupId>
+                    <artifactId>cxf-bundle</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <dependency>
@@ -138,11 +149,11 @@
             <version>${cxf.version}</version>
         </dependency>
         
-        <dependency>
+        <!--  <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
             <version>1.9.12</version>
-        </dependency>
+        </dependency>-->
         
         <dependency>
             <groupId>org.springframework</groupId>

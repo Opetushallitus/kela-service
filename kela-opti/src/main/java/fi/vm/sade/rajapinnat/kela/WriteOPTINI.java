@@ -147,12 +147,12 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     private String getOrganisaatioNimi(
             OrganisaatioPerustieto curOrganisaatio, List<String> kielet) {
         String nimi = "";
-        if (kielet.contains(kieliFi) && curOrganisaatio.getNimiFi() != null) {
-            nimi = curOrganisaatio.getNimiFi();
-        } else if (kielet.contains(kieliSv) && curOrganisaatio.getNimiSv() != null) {
-            nimi = curOrganisaatio.getNimiSv();
-        } else if (kielet.contains(kieliEn) && curOrganisaatio.getNimiEn() != null) {
-            nimi = curOrganisaatio.getNimiEn();
+        if (kielet.contains(kieliFi) && curOrganisaatio.getNimi("fi") != null) {
+            nimi = curOrganisaatio.getNimi("fi");//getNimiFi();
+        } else if (kielet.contains(kieliSv) && curOrganisaatio.getNimi("sv") != null) {
+            nimi = curOrganisaatio.getNimi("sv");
+        } else if (kielet.contains(kieliEn) && curOrganisaatio.getNimi("en") != null) {
+            nimi = curOrganisaatio.getNimi("en");
         }
         if (nimi.isEmpty()) {
             nimi = getAvailableName(curOrganisaatio);
@@ -164,14 +164,14 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     }
 
     private String getAvailableName(OrganisaatioPerustieto curOrganisaatio) {
-        if (curOrganisaatio.getNimiFi() != null) {
-            return curOrganisaatio.getNimiFi();
+        if (curOrganisaatio.getNimi("fi") != null) {
+            return curOrganisaatio.getNimi("fi");
         }
-        if (curOrganisaatio.getNimiSv() != null) {
-            return curOrganisaatio.getNimiSv();
+        if (curOrganisaatio.getNimi("sv") != null) {
+            return curOrganisaatio.getNimi("sv");
         }
-        if (curOrganisaatio.getNimiEn() != null) {
-            return curOrganisaatio.getNimiEn();
+        if (curOrganisaatio.getNimi("en") != null) {
+            return curOrganisaatio.getNimi("en");
         }
         return "";
     }

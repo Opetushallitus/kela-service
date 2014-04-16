@@ -84,7 +84,7 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
                 getDateStrOrDefault(curToimipiste.getLakkautusPvm()),//Op.pisteen lakkauttamispaiva LAKKPVM
                 StringUtils.leftPad("", 1),//Tyhjaa
                 StringUtils.leftPad("", 1),//Opetuspisteen kaikille koulutukselle jarjestetaan kielikoe
-                getYhkoodi(orgContainer.getOppilaitosoidOppilaitosMap().get(curToimipiste.getParentOid())),//YH_KOULU
+                getYhkoodi(orgContainer.getOppilaitosoidOppilaitosMap().get(curToimipiste.getParentOid()), orgE),//YH_KOULU
                 DEFAULT_DATE,//Viimeisin paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
                 StringUtils.leftPad("", 15),//Tyhjaa
@@ -93,9 +93,8 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
         return record;
     }
 
-    private String getYhkoodi(
-            OrganisaatioPerustieto curOppilaitos) {
-        List<KoodiType> koodis = orgContainer.getKoodisByArvoAndKoodisto(curOppilaitos.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);        
+    private String getYhkoodi(OrganisaatioPerustieto oppilaitos, Organisaatio orgE) {
+        List<KoodiType> koodis = orgContainer.getKoodisByArvoAndKoodisto(oppilaitos.getOppilaitosKoodi() + getOpPisteenJarjNro(orgE), orgContainer.toimipistekoodisto);        
         KoodiType opNroKoodi = null;
         if (!koodis.isEmpty()) {
             opNroKoodi = koodis.get(0);
@@ -106,14 +105,14 @@ public class WriteOPTIOP extends AbstractOPTIWriter {
 
     private String getOpetuspisteenKieli(
             OrganisaatioPerustieto curToimipiste) {
-        if (!StringUtils.isEmpty(curToimipiste.getNimiFi())
-                && !StringUtils.isEmpty(curToimipiste.getNimiSv())) {
+        if (!StringUtils.isEmpty(curToimipiste.getNimi("fi"))
+                && !StringUtils.isEmpty(curToimipiste.getNimi("sv"))) {
             return StringUtils.rightPad("4", 2);
         }
-        if (!StringUtils.isEmpty(curToimipiste.getNimiFi())) {
+        if (!StringUtils.isEmpty(curToimipiste.getNimi("fi"))) {
             return StringUtils.rightPad("1", 2);
         } 
-        if (!StringUtils.isEmpty(curToimipiste.getNimiSv())) {
+        if (!StringUtils.isEmpty(curToimipiste.getNimi("sv"))) {
             return StringUtils.rightPad("2", 2);
         }
 
