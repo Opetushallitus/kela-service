@@ -110,7 +110,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public List<Organisaatiosuhde> findAllLiitokset() {
         return (List<Organisaatiosuhde>) organisaatioEm.createQuery("FROM " + Organisaatiosuhde.class.getName() + " WHERE suhdetyyppi = ?") 
-                 .setParameter(1, OrganisaatioSuhdeTyyppi.LIITOS)
+                 .setParameter(1, OrganisaatioSuhdeTyyppi.LIITOS.name())
                  .getResultList();
     }
     
