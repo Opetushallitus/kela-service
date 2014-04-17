@@ -54,12 +54,13 @@ public abstract class AbstractOPTIWriter {
     
     ///private static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
 
-    protected static final Charset LATIN1 = Charset.forName("ISO8859-1");
-    protected static final String DATE_PATTERN_FILE = "yyMMdd";//"ddMMyy";
-    protected static final String DATE_PATTERN_RECORD = "dd.MM.yyyy";
-    protected static final String NAMEPREFIX = "RY.WYZ.SR.D";
-    protected static final String DEFAULT_DATE = "01.01.0001";
-    protected static final String DIR_SEPARATOR = "/";
+	protected String CHARSET;
+	protected Charset LATIN1;
+    protected String DATE_PATTERN_FILE;
+    protected String DATE_PATTERN_RECORD;
+    protected String NAMEPREFIX;
+    protected String DEFAULT_DATE;
+    protected String DIR_SEPARATOR;
     
     /*@Autowired
     protected TarjontaPublicService tarjontaService;*/
@@ -107,6 +108,36 @@ public abstract class AbstractOPTIWriter {
     
     private String fileLocalName;
     
+    @Value("${charset:ISO8859-1}")
+    public void setCharset(String charset) {
+		CHARSET = charset;
+		LATIN1 = Charset.forName(charset);
+	}
+ 
+    @Value("${fileDatePattern:yyMMdd}")
+    public void setFileDatePattern(String fileDatePattern) {
+		DATE_PATTERN_FILE = fileDatePattern;
+	}
+    
+    @Value("${recordDatePattern:dd.MM.yyyy}")
+	public void setRecordDatePattern(String recordDatePattern) {
+		DATE_PATTERN_RECORD = recordDatePattern;
+	}
+    
+    @Value("${filenamePrefix:RY.WYZ.SR.D}")
+	public void setFileNamePrefix(String filenamePrefix) {
+		NAMEPREFIX = filenamePrefix;
+	}
+    
+    @Value("${defaultDate:01.01.0001}")
+	public void setDefaultDate(String defaultDate) {
+		DEFAULT_DATE = defaultDate;
+	}
+
+    @Value("${dirSeparator:/}")
+	public void setDirSeparator(String dirSeparator) {
+		DIR_SEPARATOR = dirSeparator;
+	}
     
     public void createFileName(String path, String name) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
@@ -365,5 +396,8 @@ public abstract class AbstractOPTIWriter {
     }
     
     public abstract void writeFile() throws IOException;
+    protected static class OPTFormatException extends Exception {
+		private static final long serialVersionUID = 1L;
+    }
 
 }

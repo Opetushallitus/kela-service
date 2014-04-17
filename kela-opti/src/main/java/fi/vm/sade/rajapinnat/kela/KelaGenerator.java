@@ -16,7 +16,6 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.File;
-import java.util.Properties;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -25,9 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -55,6 +54,9 @@ public class KelaGenerator {
     @Autowired
     private WriteOPTIYT optiytWriter;
     @Autowired
+    private WriteORGOID orgoidWriter;
+    
+    @Autowired
     private OrganisaatioContainer orgContainer;
     
     @Autowired
@@ -78,7 +80,7 @@ public class KelaGenerator {
         long startTime = time;
         orgContainer.fetchOrgnaisaatiot();
         LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        
+
         LOG.info("Generating optili");
         time = System.currentTimeMillis();
         writeKelaFile(optiliWriter);
@@ -107,8 +109,14 @@ public class KelaGenerator {
         LOG.info("Generating optiyt");
         writeKelaFile(optiytWriter);
         LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        time = System.currentTimeMillis();
+        writeKelaFile(orgoidWriter);
+        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+
         LOG.info("All files generated");
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+        LOG.info("Generating orgoid");
+
     }
     
     /**

@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import fi.vm.sade.koodisto.service.KoodiService;
 import fi.vm.sade.koodisto.service.KoodistoService;
@@ -124,6 +124,7 @@ public class OrganisaatioContainer {
                 orgOidList.add(curToimipiste.getOid());
             }
         }
+        LOG.info(String.format("got %s oppilaitos, %s toimipiste",oppilaitokset.size(), toimipisteet.size()));
     }
     
     public boolean isOppilaitosWritable(OrganisaatioPerustieto curOppilaitos) {
