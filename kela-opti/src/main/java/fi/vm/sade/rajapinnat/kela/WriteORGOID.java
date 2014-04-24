@@ -15,9 +15,6 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,15 +26,19 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-
 /**
- * 
  * @author Janne
  */
 @Component
 @Configurable
 public class WriteORGOID extends AbstractOPTIWriter {
 
+	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
+	@Override
+	public  void writeFile() throws IOException {
+		throw new RuntimeException("writeFile() not supported any more");
+	}
+	
 	private enum OrgType {
 		OPPILAITOS, 
 		TOIMIPISTE
@@ -47,64 +48,56 @@ public class WriteORGOID extends AbstractOPTIWriter {
 	private ApplicationContext appContext;
 	
 	private String FILENAME_SUFFIX;
-	private char PARENTPATH_SEPARATOR;
+	private String PARENTPATH_SEPARATOR;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
 
-	private final static String ERR_MESS_1="ERROR: Error writing oppilaitos %s : invalid values.";
-	private final static String ERR_MESS_2="ERROR: Error writing oppilaitos %s : %s.";
-	private final static String ERR_MESS_3="ERROR: Error writing toimipiste %s : invalid values.";
-	private final static String ERR_MESS_4="ERROR: Error writing toimipiste %s : %s.";
-	private final static String ERR_MESS_5="ERROR: length of %s ('%s') should be max %s.";
-	private final static String ERR_MESS_6="ERROR: incorrect OID : '%s'";
-	private final static String ERR_MESS_7="ERROR: could not find oppilaitos for toimipiste with OID %s";
+	private final static String ERR_MESS_ORGOID_1="could not write oppilaitos %s : invalid values.";
+	private final static String ERR_MESS_ORGOID_2="could not write toimipiste %s : invalid values.";
+	private final static String ERR_MESS_ORGOID_3="incorrect OID : '%s'";
+	private final static String ERR_MESS_ORGOID_4="could not find oppilaitos for toimipiste with OID %s";
 	
-	private final static String WARN_MESS_1="WARN: perhaps toimipiste %s should not have oppilaitoskoodi (%s)";
+	private final static String WARN_MESS_ORGOID_1="perhaps toimipiste %s should not have oppilaitoskoodi (%s)";
 
 	public WriteORGOID() {
 		super();
 	}
-
+	
 	@Override
-	public void writeFile() throws IOException {
-		createFileName("", FILENAME_SUFFIX);
-		bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
-		bos.write(toLatin1(ALKUTIETUE + "\n"));
-
+	public void composeRecords() throws IOException {
 		for (OrganisaatioPerustieto ol : this.orgContainer.getOppilaitokset()) {
 			try {
-				bos.write(toLatin1(createRecord(ol, OrgType.OPPILAITOS)));
-				bos.flush();
+				this.writeRecord(ol, OrgType.OPPILAITOS);
 			} catch (OPTFormatException e) {
-				System.err.println(String.format(ERR_MESS_1, ol.getOid()));
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				System.err.println(String.format(ERR_MESS_2, ol.getOid(), ex.getMessage()));
+				LOG.error(String.format(ERR_MESS_ORGOID_1, ol.getOid()));
 			}
 		}
-
 		for (OrganisaatioPerustieto tp : this.orgContainer.getToimipisteet()) {
 			try {
-				bos.write(toLatin1(createRecord(tp, OrgType.TOIMIPISTE)));
-				bos.flush();
+				this.writeRecord(tp, OrgType.TOIMIPISTE);
 			} catch (OPTFormatException e) {
-				System.err.println(String.format(ERR_MESS_3, tp.getOid()));
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				System.err.println(String.format(ERR_MESS_4, tp.getOid(), ex.getMessage()));
+				LOG.error(String.format(ERR_MESS_ORGOID_2, tp.getOid()));
 			}
 		}
-
-		bos.write(toLatin1(LOPPUTIETUE + "\n"));
-		bos.flush();
-		bos.close();
+	}
+	
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		Organisaatio org = getOrganisaatio((OrganisaatioPerustieto) args[0]);
+		OrgType orgType = (OrgType) args[1];
+		String record = String.format("%s%s%s%s", // 4 fields + EOL
+				getOPPIL_NRO(org, orgType), 
+				getOPJNO(org, orgType), 
+				getOID(org, orgType), 
+				"\n");
+		return record;
 	}
 
 	private String findOppilaitosNumero(Organisaatio org, OrgType orgType) throws OPTFormatException {
 		String olKoodi = org.getOppilaitoskoodi();
 		if (orgType.equals(OrgType.TOIMIPISTE)) {
 			if (org.getOppilaitoskoodi() != null) {
-				warn(String.format(WARN_MESS_1, org.getOid(), org.getOppilaitoskoodi()));
+				warn(String.format(WARN_MESS_ORGOID_1, org.getOid(), org.getOppilaitoskoodi()));
 			} else {
 				String[] parentsOids = org.getParentOidPath().split("" + PARENTPATH_SEPARATOR);
 				for (String parentOID : parentsOids) {
@@ -121,7 +114,7 @@ public class WriteORGOID extends AbstractOPTIWriter {
 	private String getOPPIL_NRO(Organisaatio org, OrgType orgType) throws OPTFormatException {
 		String olKoodi = findOppilaitosNumero(org, orgType);
 		if (olKoodi == null || olKoodi.length() == 0) {
-			error(String.format(ERR_MESS_7, org.getOid()));
+			error(String.format(ERR_MESS_ORGOID_4, org.getOid()));
 		}
 		return strFormatter(olKoodi, orgType, null, 5, "oppilaitoskoodi");
 	}
@@ -133,28 +126,19 @@ public class WriteORGOID extends AbstractOPTIWriter {
 	private String getOID(Organisaatio org, OrgType orgType) throws OPTFormatException {
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_6, org.getOid()));
+			error(String.format(ERR_MESS_ORGOID_3, org.getOid()));
 		}
 		return strFormatter(oid, orgType, null, 22, "OID");
 	}
-
+	
 	private String strFormatter(String str, OrgType orgType, OrgType reqOrgType, int len, String humanName) throws OPTFormatException {
 		if (null == reqOrgType || reqOrgType.equals(orgType)) {
 			if (null == str || str.length() > len) {
-				error(String.format(ERR_MESS_5, humanName, str, len));
+				error(String.format(ERR_MESS_2, humanName, str, len));
 			}
 			return StringUtils.rightPad(str, len);
 		}
 		return StringUtils.rightPad("", len);
-	}
-
-	private void error(String errorMsg) throws OPTFormatException {
-		System.err.println(errorMsg);
-		throw new OPTFormatException();
-	}
-
-	private void warn(String warnMsg) {
-		System.out.println(warnMsg);
 	}
 
 	private Organisaatio getOrganisaatio(OrganisaatioPerustieto orgPerustieto) {
@@ -162,18 +146,8 @@ public class WriteORGOID extends AbstractOPTIWriter {
 		return org;
 	}
 
-	private String createRecord(OrganisaatioPerustieto organisaatio, OrgType orgType) throws OPTFormatException {
-		Organisaatio org = getOrganisaatio(organisaatio);
-		String record = String.format("%s%s%s%s", // 4 fields + EOL
-				getOPPIL_NRO(org, orgType), 
-				getOPJNO(org, orgType), 
-				getOID(org, orgType), 
-				"\n");
-		return record;
-	}
-	
-	@Value("${organisaatiot.parentPathSeparator:|}")
-    public void setParentPathSeparator(char parentPathSeparator) {
+	@Value("${organisaatiot.parentPathSeparator:\\|}")
+    public void setParentPathSeparator(String parentPathSeparator) {
         this.PARENTPATH_SEPARATOR = parentPathSeparator;
     }
 	
@@ -191,4 +165,24 @@ public class WriteORGOID extends AbstractOPTIWriter {
     public void setFilenameSuffix(String filenameSuffix) {
         this.FILENAME_SUFFIX = filenameSuffix;
     }
+
+	@Override
+	public String getAlkutietue() {
+		return ALKUTIETUE;
+	}
+
+	@Override
+	public String getLopputietue() {
+		return LOPPUTIETUE;
+	}
+
+	@Override
+	public String getFilenameSuffix() {
+		return FILENAME_SUFFIX;
+	}
+
+	@Override
+	public String getPath() {
+		return "";
+	}
 }

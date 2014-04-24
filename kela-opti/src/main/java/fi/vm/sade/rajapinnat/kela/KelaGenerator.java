@@ -28,7 +28,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
-
 /**
  * 
  * @author Markus
@@ -75,48 +74,21 @@ public class KelaGenerator {
      * Generates all KELA-OPTI transfer files currently implemented
      */
     public void generateKelaFiles() {
-        LOG.info("Fetching organisaatiot");
+        LOG.info("Fetching organisaatiot from index...");
         long time = System.currentTimeMillis();
         long startTime = time;
         orgContainer.fetchOrgnaisaatiot();
         LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-
-        LOG.info("Generating optili");
-        time = System.currentTimeMillis();
         writeKelaFile(optiliWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
-        LOG.info("Generating optini");
         writeKelaFile(optiniWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
-        LOG.info("Generating optiol");
         writeKelaFile(optiolWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
-        LOG.info("Generating optiop");
         writeKelaFile(optiopWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
-        LOG.info("Generating optitu");
-        writeKelaFile(optituWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
-        LOG.info("Generating optiyh");
+        writeKelaFile(optituWriter); 
         writeKelaFile(optiyhWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
-        LOG.info("Generating optiyt");
         writeKelaFile(optiytWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        time = System.currentTimeMillis();
         writeKelaFile(orgoidWriter);
-        LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-
         LOG.info("All files generated");
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
-        LOG.info("Generating orgoid");
-
     }
     
     /**
@@ -138,21 +110,25 @@ public class KelaGenerator {
                 dataTimeout + "&passiveMode=true");
         LOG.info("Target url: " + targetUrl);
         
-        
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiliWriter.fileName), Exchange.FILE_NAME, this.optiliWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiniWriter.fileName), Exchange.FILE_NAME, this.optiniWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiolWriter.fileName), Exchange.FILE_NAME, this.optiolWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optituWriter.fileName), Exchange.FILE_NAME, this.optituWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.fileName), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.fileName), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiytWriter.fileName), Exchange.FILE_NAME, this.optiytWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiliWriter.getFileName()), Exchange.FILE_NAME, this.optiliWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiniWriter.getFileName()), Exchange.FILE_NAME, this.optiniWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiolWriter.getFileName()), Exchange.FILE_NAME, this.optiolWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optituWriter.getFileName()), Exchange.FILE_NAME, this.optituWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.getFileName()), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.getFileName()), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiytWriter.getFileName()), Exchange.FILE_NAME, this.optiytWriter.getFileLocalName());
+        producerTemplate.sendBodyAndHeader(targetUrl, new File(orgoidWriter.getFileName()), Exchange.FILE_NAME, this.orgoidWriter.getFileLocalName());
         LOG.info("Files transfered");
     }
     
     private void writeKelaFile(AbstractOPTIWriter kelaWriter) {
         try {
-            kelaWriter.writeFile();
+            long time = System.currentTimeMillis();
+            LOG.info(String.format("Generating file %s...",kelaWriter.getFileName()));
+            kelaWriter.writeStream();
+            LOG.info("Generation time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         } catch (Exception ex) {
+        	LOG.error(ex.getMessage());
             ex.printStackTrace();
         } 
     }

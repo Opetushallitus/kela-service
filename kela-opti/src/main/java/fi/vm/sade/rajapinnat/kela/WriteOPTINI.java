@@ -57,7 +57,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     @Override
     public void writeFile() throws IOException {
         createFileName("", OPTINI);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
         bos.write(toLatin1(ALKUTIETUE));
         
         for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
@@ -182,4 +182,40 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         
         return StringUtils.leftPad(String.format("%s", orgE.getNimi().getId()), 10, '0');
     }
+
+	@Override
+	public void composeRecords() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAlkutietue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getLopputietue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getFilenameSuffix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getPath() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

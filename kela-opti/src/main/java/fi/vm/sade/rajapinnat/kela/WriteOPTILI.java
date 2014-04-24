@@ -61,7 +61,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     @Override
     public void writeFile() throws IOException {
         createFileName("", OPTILI);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
         bos.write(toLatin1(ALKUTIETUE));
         HakukohteetKysely kysely = new HakukohteetKysely();
         HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
@@ -146,7 +146,10 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
     
     private String getVuosi(HakukohdePerustieto curTulos) {
-        return curTulos.getKoulutuksenAlkamisvuosi().toString();
+    	if (null != curTulos && null != curTulos.getKoulutuksenAlkamisvuosi()){
+    		return curTulos.getKoulutuksenAlkamisvuosi().toString();
+    	}
+    	return null;
     }
 
     private String getTila() {
@@ -221,4 +224,40 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         String hakukohdeId = String.format("%s", hakukE.getId());
         return StringUtils.leftPad(hakukohdeId, 10, '0');
     }
+
+	@Override
+	public void composeRecords() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAlkutietue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getLopputietue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getFilenameSuffix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getPath() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

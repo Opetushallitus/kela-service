@@ -17,6 +17,8 @@ package fi.vm.sade.rajapinnat.kela;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -24,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,15 +48,31 @@ import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
-
 /**
  * 
  * @author Markus
  */
 @Configurable
 public abstract class AbstractOPTIWriter {
+    //TODO: writeFile() is only for backward compatibility -- it must be replaced by composeRecords()
+	public abstract void writeFile() throws IOException;
+	//TODO: createFileName(..) is only for backward compatibility -- it must be replaced by getters getPath and getFilenameSuffix
+	public void createFileName(String path, String suffix) {
+		LOG.warn("depricated function createFileName(String path, String suffix) called!");
+		createFileNames(path,suffix);
+	}
+	//TODO: bos is only for backward compatibility -- it must be accessed directly
+	protected BufferedOutputStream bos;
+
+    public abstract void composeRecords() throws IOException;
+    public abstract String composeRecord(Object... args) throws OPTFormatException;
     
-    ///private static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
+    public abstract String getAlkutietue();
+    public abstract String getLopputietue();
+    public abstract String getFilenameSuffix();
+    public abstract String getPath();
+    
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
 
 	protected String CHARSET;
 	protected Charset LATIN1;
@@ -61,7 +81,14 @@ public abstract class AbstractOPTIWriter {
     protected String NAMEPREFIX;
     protected String DEFAULT_DATE;
     protected String DIR_SEPARATOR;
+
+    protected final static String ERR_MESS_1="ERROR: invalid number : '%s'";
+    protected final static String ERR_MESS_2="ERROR: length of %s ('%s') should be max %s.";
+    protected final static String ERR_MESS_3="File not found : '%s'";
+    protected final static String ERR_MESS_4="I/O error : '%s'";
     
+    protected final static String INFO_MESS_1="%s records written, %s skipped.";
+
     /*@Autowired
     protected TarjontaPublicService tarjontaService;*/
     
@@ -85,12 +112,11 @@ public abstract class AbstractOPTIWriter {
 
     protected OrganisaatioResource organisaatioResource;
 
+    private String fileName=null;
 
-    protected String fileName;
-
-    protected String path;
+    private String path=null;
     
-    protected BufferedOutputStream bos;
+    private BufferedOutputStream bostr;
     
     protected List<OrganisaatioPerustieto> organisaatiot;
 
@@ -106,7 +132,7 @@ public abstract class AbstractOPTIWriter {
     protected String kelaOpintoalakoodisto;
     protected String kelaKoulutusastekoodisto;
     
-    private String fileLocalName;
+    private String fileLocalName=null;
     
     @Value("${charset:ISO8859-1}")
     public void setCharset(String charset) {
@@ -139,7 +165,11 @@ public abstract class AbstractOPTIWriter {
 		DIR_SEPARATOR = dirSeparator;
 	}
     
-    public void createFileName(String path, String name) {
+    private void createFileName() {
+    	createFileNames(getPath(),getFilenameSuffix());
+    }
+
+    private void createFileNames(String path, String name) {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
         if (StringUtils.isEmpty(path)) {
             path = createPath();
@@ -157,9 +187,11 @@ public abstract class AbstractOPTIWriter {
     }
     
     public String getFileLocalName() {
+    	if (fileLocalName==null) {
+    		createFileName();
+    	}
         return this.fileLocalName;
     }
-    
     
     protected byte[] toLatin1(String text) {
         return text.getBytes(LATIN1);
@@ -239,7 +271,6 @@ public abstract class AbstractOPTIWriter {
                 }
             }
         }
-        
         return targetKoodi;
     }
     
@@ -256,9 +287,6 @@ public abstract class AbstractOPTIWriter {
         return null;
     }
     
-    
-    
-
     protected String getOppilaitosNro(OrganisaatioPerustieto curOrganisaatio) {
         String opnro = "";
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
@@ -267,8 +295,7 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad(opnro, 5);
     }
 
-    protected String getOpPisteenOppilaitosnumero(
-            OrganisaatioPerustieto curOrganisaatio) {
+    protected String getOpPisteenOppilaitosnumero(OrganisaatioPerustieto curOrganisaatio) {
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
                 && !curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return StringUtils.leftPad(
@@ -281,7 +308,6 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad("", 5);
     }
     
-
     protected String getOpPisteenJarjNro(Organisaatio orgE) {
         String opPisteenJarjNro = "";
         if (orgE.getOpetuspisteenJarjNro() != null) {
@@ -289,7 +315,6 @@ public abstract class AbstractOPTIWriter {
         }
         return StringUtils.leftPad(opPisteenJarjNro, 2);
     }
-    
 
     protected String getYhteystietojenTunnus(Organisaatio orgE) {
         return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10, '0');
@@ -304,7 +329,6 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad(dateStr, 10);
     }
     
-
     protected String getOppilaitostyyppitunnus(
             OrganisaatioPerustieto curOppilaitos) {
         List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
@@ -324,8 +348,6 @@ public abstract class AbstractOPTIWriter {
         }
         return StringUtils.leftPad(kotikuntaArvo, 3);
     }
-    
-    
     
     /**
      * Get koodi metadata by locale with language fallback to FI
@@ -368,36 +390,97 @@ public abstract class AbstractOPTIWriter {
         this.organisaatioResource = organisaatioResource;
     }
     
-   public String getFileName() {
-       return fileName;
-   }
-   
-   public BufferedOutputStream getBos() {
-       return bos;
-   }
+	public String getFileName() {
+		if (fileName==null) {
+			createFileName();
+		}
+		return fileName;
+	}
 
    public void setOrganisaatiot(List<OrganisaatioPerustieto> organisaatiot) {
        this.organisaatiot = organisaatiot;
    }
     
-    private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
-        SearchKoodisCriteriaType criteria = new SearchKoodisCriteriaType();
-        int versio = -1;
-        if (koodiUri.contains("#")) {
-            int endIndex = koodiUri.lastIndexOf('#');
-            versio = Integer.parseInt(koodiUri.substring(endIndex + 1));
-            koodiUri = koodiUri.substring(0, endIndex);
-        }
-        criteria.getKoodiUris().add(koodiUri);
-        if (versio > -1) {
-            criteria.setKoodiVersio(versio);
-        }
-        return criteria;
-    }
+	private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
+		SearchKoodisCriteriaType criteria = new SearchKoodisCriteriaType();
+		int versio = -1;
+		if (koodiUri.contains("#")) {
+			int endIndex = koodiUri.lastIndexOf('#');
+			versio = Integer.parseInt(koodiUri.substring(endIndex + 1));
+			koodiUri = koodiUri.substring(0, endIndex);
+		}
+		criteria.getKoodiUris().add(koodiUri);
+		if (versio > -1) {
+			criteria.setKoodiVersio(versio);
+		}
+		return criteria;
+	}
     
-    public abstract void writeFile() throws IOException;
+    private int writesTries = 0;
+    private int writes = 0;
+    
+	public void writeStream() {
+		createFileName();
+		writesTries = 0;
+	    writes = 0;
+		try {
+			bostr = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
+			bostr.write(toLatin1(getAlkutietue() + "\n"));
+			bostr.flush();
+			composeRecords();
+			bostr.write(toLatin1(getLopputietue() + "\n"));
+			bostr.flush();
+			bostr.close();
+			LOG.info(String.format(INFO_MESS_1, writes, writesTries-writes));
+		} catch (FileNotFoundException e) {
+			LOG.error(String.format(ERR_MESS_3,getFileName()));
+			e.printStackTrace();
+		} catch (IOException e) {
+			LOG.error(String.format(ERR_MESS_4,getFileName()));
+			e.printStackTrace();
+		}
+	}
+    
+	
+	public void writeRecord(Object... args) throws IOException, OPTFormatException {
+			++writesTries;
+			bostr.write(toLatin1(composeRecord(args)));
+			++writes;
+	}
+	
     protected static class OPTFormatException extends Exception {
 		private static final long serialVersionUID = 1L;
     }
+    protected String strFormatter(String str, int len, String humanName) throws OPTFormatException {
+		if (null == str || str.length() > len) {
+			error(String.format(ERR_MESS_2, humanName, str, len));
+		}
+		return StringUtils.rightPad(str, len);
+	}
 
+    protected String numFormatter(String str, int len, String humanName) throws OPTFormatException {
+		try {
+			Float.parseFloat(str);
+		}catch(NumberFormatException e) {
+			error(String.format(ERR_MESS_1, humanName, str, len));
+		}
+		if (null == str || str.length() > len) {
+			error(String.format(ERR_MESS_2, humanName, str, len));
+		}
+		return StringUtils.leftPad(str, len, '0');
+	}
+	
+    protected void error(String errorMsg) throws OPTFormatException {
+		LOG.error(errorMsg);
+		throw new OPTFormatException();
+	}
+
+    protected void warn(String warnMsg) {
+    	LOG.warn(warnMsg);
+		System.out.println(warnMsg);
+	}
+    
+    protected void info(String infoMsg) {
+		LOG.info(infoMsg);
+	}
 }

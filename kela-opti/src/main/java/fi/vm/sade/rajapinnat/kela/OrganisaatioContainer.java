@@ -100,7 +100,7 @@ public class OrganisaatioContainer {
         List<OrganisaatioPerustieto> oppilaitoksetR = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         
         for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
-            LOG.debug("Oppilaitos: " + curOppilaitos.getNimi("fi"));//getNimiFi());
+            LOG.debug("Oppilaitos: " + curOppilaitos.getNimi("fi"));
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
                 oppilaitokset.add(curOppilaitos);
@@ -109,22 +109,24 @@ public class OrganisaatioContainer {
         }
         
         toimipisteet = new ArrayList<OrganisaatioPerustieto>();
-        
         criteria = new OrganisaatioSearchCriteria();
-        
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
         criteria.getOidRestrictionList().addAll(orgOidList);
         
         List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         
         for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
-            LOG.debug("Toimipiste: " + curToimipiste.getNimi("fi"));//getNimiFi());
+            LOG.debug("Toimipiste: " + curToimipiste.getNimi("fi"));
             if (isToimipisteWritable(curToimipiste)) {
                 toimipisteet.add(curToimipiste);
                 orgOidList.add(curToimipiste.getOid());
             }
         }
-        LOG.info(String.format("got %s oppilaitos, %s toimipiste",oppilaitokset.size(), toimipisteet.size()));
+        LOG.info(String.format("found valid oppilaitos: %s (%s rejected) and valid toimipiste: %s (%s rejected)", 
+        		oppilaitokset.size(),
+        		oppilaitoksetR.size()-oppilaitokset.size(),
+        		toimipisteet.size(),
+        		opetuspisteet.size()-toimipisteet.size()));
     }
     
     public boolean isOppilaitosWritable(OrganisaatioPerustieto curOppilaitos) {
@@ -183,14 +185,16 @@ public class OrganisaatioContainer {
         
         Organisaatio toimipisteE = kelaDAO.findOrganisaatioByOid(curToimipiste.getOid());
         
-        
+        if (null==toimipisteE) {
+        	LOG.warn(String.format("There is no oraganisaatio for oid %s although it was found in index",curToimipiste.getOid()));
+        }
         List<KoodiType> koodit = new ArrayList<KoodiType>();
-        if (!StringUtils.isEmpty(parentToimipiste.getOppilaitosKoodi()) && !StringUtils.isEmpty(toimipisteE.getOpetuspisteenJarjNro())) {
+        if (null!= toimipisteE && !StringUtils.isEmpty(parentToimipiste.getOppilaitosKoodi()) && !StringUtils.isEmpty(toimipisteE.getOpetuspisteenJarjNro())) {
             String toimipistearvo = String.format("%s%s", parentToimipiste.getOppilaitosKoodi(), toimipisteE.getOpetuspisteenJarjNro());
             koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
         }
         
-        return koodit != null && !koodit.isEmpty() && (kelaDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId()) != null);
+        return null!=toimipisteE && null!=koodit && !koodit.isEmpty() && null!=(kelaDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId()));
     }
     
     public List<OrganisaatioPerustieto> getOppilaitokset() {

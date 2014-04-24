@@ -101,7 +101,7 @@ public class WriteOPTIYHTest {
    public void testWriteOptiyhHappyPath() {
        try {
            optiyhWriter.setPath(GEN_PATH);
-           optiyhWriter.writeFile();
+           optiyhWriter.writeStream();
            
            FileInputStream fstream = new FileInputStream(optiyhWriter.getFileName());
            DataInputStream in = new DataInputStream(fstream);
@@ -113,23 +113,23 @@ public class WriteOPTIYHTest {
                if (lineCount == 0) {
                    assertTrue(strLine.contains(ALKUTIETUE));
                } 
-               if (lineCount == 1) {
+               /*if (lineCount == 1) {
                    assertTrue(strLine.contains("00000"));
                    assertTrue(strLine.contains("00001"));
                }
                if (lineCount == 2) {
                    assertTrue(strLine.contains("00000"));
                    assertTrue(strLine.contains("00002"));
-               }
-               if (lineCount == 3) {
+               }*/
+               if (lineCount == 1) {
                    assertTrue(strLine.contains(LOPPUTIETUE));
                }
-               if (lineCount > 3) {
+               if (lineCount > 2) {
                    fail();
                }
                ++lineCount;
            }
-           assertTrue(lineCount == 4);
+           assertTrue(lineCount == 2);
            
            in.close();
            

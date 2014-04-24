@@ -51,7 +51,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     @Override
     public void writeFile() throws IOException {
         this.createFileName("", OPTITU);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
+        bos = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
         bos.write(toLatin1(ALKUTIETUE));
         SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();
         criteria.setKoodistoUri(kelaTutkintokoodisto);
@@ -138,6 +138,42 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     private String getKelaTutkintoTunniste(KoodiType kelaTutkinto) {
         return StringUtils.leftPad(kelaTutkinto.getKoodiArvo(), 10);
     }
+
+	@Override
+	public void composeRecords() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAlkutietue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getLopputietue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getFilenameSuffix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getPath() {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
     
 
