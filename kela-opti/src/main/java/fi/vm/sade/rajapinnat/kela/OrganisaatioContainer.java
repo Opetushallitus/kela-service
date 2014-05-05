@@ -91,14 +91,18 @@ public class OrganisaatioContainer {
     protected String opTyyppiMusiikkioppilaitokset;
     
     
-    public void fetchOrgnaisaatiot() {
+    public void fetchOrganisaatiot() {
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustieto>();
         oppilaitokset = new ArrayList<OrganisaatioPerustieto>();
         orgOidList = new ArrayList<String>();
         OrganisaatioSearchCriteria criteria = new OrganisaatioSearchCriteria();
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
         List<OrganisaatioPerustieto> oppilaitoksetR = organisaatioSearchService.searchBasicOrganisaatios(criteria);
-        
+        if (oppilaitoksetR.size()==10000) {
+        	LOG.warn("Query resulted exactly 10000 rows, which is the hard limit for returned rows. There may be more rows that are not returned because of this limitation! Please check.");
+        }
+        long startTime = System.currentTimeMillis();
+        LOG.info("oppilaitokset....");
         for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
             LOG.debug("Oppilaitos: " + curOppilaitos.getNimi("fi"));
             if (isOppilaitosWritable(curOppilaitos)) {
@@ -108,13 +112,15 @@ public class OrganisaatioContainer {
             }
         }
         
+        LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");        
         toimipisteet = new ArrayList<OrganisaatioPerustieto>();
         criteria = new OrganisaatioSearchCriteria();
         criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
         criteria.getOidRestrictionList().addAll(orgOidList);
         
         List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);
-        
+        startTime = System.currentTimeMillis();
+        LOG.info("opetuspisteet....");
         for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
             LOG.debug("Toimipiste: " + curToimipiste.getNimi("fi"));
             if (isToimipisteWritable(curToimipiste)) {
@@ -122,6 +128,7 @@ public class OrganisaatioContainer {
                 orgOidList.add(curToimipiste.getOid());
             }
         }
+        LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
         LOG.info(String.format("found valid oppilaitos: %s (%s rejected) and valid toimipiste: %s (%s rejected)", 
         		oppilaitokset.size(),
         		oppilaitoksetR.size()-oppilaitokset.size(),
@@ -186,7 +193,7 @@ public class OrganisaatioContainer {
         Organisaatio toimipisteE = kelaDAO.findOrganisaatioByOid(curToimipiste.getOid());
         
         if (null==toimipisteE) {
-        	LOG.warn(String.format("There is no oraganisaatio for oid %s although it was found in index",curToimipiste.getOid()));
+        	LOG.warn(String.format("There is no organisaatio for oid %s in DB although it was found in index.",curToimipiste.getOid()));
         }
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (null!= toimipisteE && !StringUtils.isEmpty(parentToimipiste.getOppilaitosKoodi()) && !StringUtils.isEmpty(toimipisteE.getOpetuspisteenJarjNro())) {
@@ -267,16 +274,24 @@ public class OrganisaatioContainer {
         this.opTyyppiMusiikkioppilaitokset = opTyyppiMusiikkioppilaitokset;
     }
     
-    public List<KoodiType> getKoodisByArvoAndKoodisto(String arvo, String koodistoUri) {
-        try {
-            SearchKoodistosCriteriaType koodistoSearchCriteria = KoodistoServiceSearchCriteriaBuilder.latestKoodistoByUri(koodistoUri);
-
-            List<KoodistoType> koodistoResult = koodistoService.searchKoodistos(koodistoSearchCriteria);
-            if(koodistoResult.size() != 1) {
+    private  List<KoodistoType> cachedKoodistoResult;
+    private String cachedKoodistoUri;
+    private List<KoodistoType> searchKoodistos(String koodistoUri) {
+    	if(cachedKoodistoResult==null || !cachedKoodistoUri.equals(koodistoUri)) {
+    		cachedKoodistoUri=koodistoUri;
+    		SearchKoodistosCriteriaType koodistoSearchCriteria = KoodistoServiceSearchCriteriaBuilder.latestKoodistoByUri(cachedKoodistoUri);
+    		cachedKoodistoResult = koodistoService.searchKoodistos(koodistoSearchCriteria);;
+            if(cachedKoodistoResult.size() != 1) {
                 // FIXME: Throw something other than RuntimeException?
                 throw new RuntimeException("No koodisto found for koodisto URI " + koodistoUri);
             }
-            KoodistoType koodisto = koodistoResult.get(0);
+    	}
+    	 return cachedKoodistoResult;
+    }
+
+    public List<KoodiType> getKoodisByArvoAndKoodisto(String arvo, String koodistoUri) {
+        try {
+            KoodistoType koodisto = searchKoodistos(koodistoUri).get(0);
 
             SearchKoodisByKoodistoCriteriaType koodiSearchCriteria = KoodiServiceSearchCriteriaBuilder.koodisByArvoAndKoodistoUriAndKoodistoVersio(arvo,
                     koodistoUri, koodisto.getVersio());

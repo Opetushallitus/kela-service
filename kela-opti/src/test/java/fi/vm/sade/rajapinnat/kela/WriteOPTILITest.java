@@ -98,8 +98,8 @@ public class WriteOPTILITest {
     @Test
     public void testWriteOptiliHappyPath() {
         try {
-            orgContainer.fetchOrgnaisaatiot();
-            optiliWriter.writeFile();
+            orgContainer.fetchOrganisaatiot();
+            optiliWriter.writeStream();
             
             FileInputStream fstream = new FileInputStream(optiliWriter.getFileName());
             DataInputStream in = new DataInputStream(fstream);

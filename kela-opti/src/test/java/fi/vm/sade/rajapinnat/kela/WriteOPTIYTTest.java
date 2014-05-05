@@ -82,7 +82,7 @@ public class WriteOPTIYTTest {
     @Test
     public void testWriteOPTIYTHappyPath() {
         try {
-            orgContainer.fetchOrgnaisaatiot();
+            orgContainer.fetchOrganisaatiot();
             optiytWriter.writeStream();
             
             FileInputStream fstream = new FileInputStream(optiytWriter.getFileName());

@@ -15,9 +15,6 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -25,8 +22,10 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
@@ -37,7 +36,6 @@ import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
 import fi.vm.sade.tarjonta.service.search.KoulutuksetKysely;
 import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus;
 import fi.vm.sade.tarjonta.service.search.KoulutusPerustieto;
-import fi.vm.sade.koodisto.service.types.common.KoodiType;
 
 /**
  * 
@@ -46,105 +44,38 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 @Component
 @Configurable
 public class WriteOPTILI extends AbstractOPTIWriter {
-    
+	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
+	@Override
+	public  void writeFile() throws IOException {
+		throw new RuntimeException("writeFile() not supported any more");
+	}
+	
     private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
     
-    private static final String OPTILI = ".OPTILI";
-    private static final String ALKUTIETUE = "0000000000ALKU\n";
-    private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
-    private static final String KOULUTUSLAJI = "N ";
+    private String FILENAME_SUFFIX;
+    private String ALKUTIETUE;
+    private String LOPPUTIETUE;
+    private String KOULUTUSLAJI;
+    
+    private final static String ERR_MESS_OPTILI_1="could not write hakukohde %s, tarjoaja %s : invalid values.";
+    private final static String ERR_MESS_OPTILI_2="hakukohde %s not found in DB although found in index.";
+    
+	private final static String ERR_MESS_OPTILI_3="incorrect OID : '%s'";
+	private final static String ERR_MESS_OPTILI_4="OID cannot not be null";
+	private final static String ERR_MESS_OPTILI_5="KelaKoodi has invalid format : %s";
+
+	
+    private final static String WARN_MESS_OPTILI_1="Tutkintotunniste empty for hakukohde: %s";
+    private final static String INFO_MESS_OPTILI_1="fetched %s hakukohde from index.";
     
     public WriteOPTILI() {
         super();
-    }
-    
-    @Override
-    public void writeFile() throws IOException {
-        createFileName("", OPTILI);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
-        bos.write(toLatin1(ALKUTIETUE));
-        HakukohteetKysely kysely = new HakukohteetKysely();
-        HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
-        for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
-            try {
-                String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
-                System.out.println("TarjoajaOid: " + tarjoajaOid);
-                OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
-                if (isHakukohdeToinenaste(tarjoajaOid)) {   
-                    bos.write(toLatin1(createRecord(curTulos, organisaatioDTO)));
-                    bos.flush();
-                
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-        bos.write(toLatin1(LOPPUTIETUE));
-        bos.flush();
-        bos.close();
     }
 
     private boolean isHakukohdeToinenaste(String tarjoajaOid) {
         return this.orgContainer.getOrgOidList().contains(tarjoajaOid);
     }
 
-    private String createRecord(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatioDTO) {
-        return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //51 fields + line ending
-                getHakukohdeId(curTulos),//Sisainen koodi
-                getOppilaitosnumero(curTulos, organisaatioDTO),//OPPIL_NRO
-                getOpetuspisteenJarjNro(curTulos, organisaatioDTO),//OPJNO
-                StringUtils.leftPad("",12),//Op. linjan tai koulutuksen jarjestysnro
-                getKoulutuslaji(),//Koulutuslaji
-                StringUtils.leftPad("",2),//Opintolinjan kieli
-                StringUtils.leftPad("",2),//OPL_LASPER
-                StringUtils.leftPad("",2),//Valintakoeryhma
-                StringUtils.leftPad("",10),//Kokeilun yksiloiva tunniste
-                StringUtils.leftPad("",5), //OPL_SUUNT
-                getTutkintotunniste(curTulos),//TUT_ID 
-                getHakukohdeKoodi(curTulos),//YHLINJA
-                StringUtils.leftPad("",3), //OPL_OTTOALUE
-                StringUtils.leftPad("",3), //Opetusmuoto
-                StringUtils.leftPad("",10), //Pohjakoulutusvaat. yksiloiva tunniste
-                StringUtils.leftPad("",2), //Koulutustyyppi
-                StringUtils.leftPad("",3), //OPL-EKASITTELY
-                StringUtils.leftPad("",2), //Koul. rahoitusmuoto
-                StringUtils.leftPad("",2), //OPL_PKR_TUNNUS
-                StringUtils.leftPad("",2), //OPL_VKOEJAR
-                StringUtils.leftPad("",2), //OPL_VKOEKUT
-                StringUtils.leftPad("",7), //Alinkeskiarvo
-                StringUtils.leftPad("",12), //Koulutuksen kesto
-                StringUtils.leftPad("",3), //OPL_KKERROIN
-                StringUtils.leftPad("",10), //Keston yksikko
-                getAlkupvm(), //Alkupaiva, voimassaolon alku
-                DEFAULT_DATE,  //Loppupaiva
-                DEFAULT_DATE, //Viimeisin paivityspaiva
-                StringUtils.leftPad("",30), //Viimeisin paivittaja
-                StringUtils.leftPad("",7), //Opiskelijamaksu
-                StringUtils.leftPad("",7), //Lahiopetusta
-                StringUtils.leftPad("",6), //OPL_LAHIOP.YKS
-                StringUtils.leftPad("",2), //OPL_ERITYISVAL
-                StringUtils.leftPad("",12), //OPL_KOULUTUS-AIKA
-                StringUtils.leftPad("",6), //OPL_KOULUTUSAI-KAYKSIKKO
-                StringUtils.leftPad("",6), //El-harpis
-                getAlkamiskausi(curTulos), //ALKUKAUSI
-                getTila(), //TILA
-                getVuosi(curTulos), //VUOSI 
-                DEFAULT_DATE, //Alkupaiva, voimassaolon alku
-                DEFAULT_DATE, //Loppupaiva, voimassaolon loppu
-                StringUtils.leftPad("",1), //OPL_TULOSTUS
-                StringUtils.leftPad("",15), //OPL_OMISTAJA
-                StringUtils.leftPad("",3), //OPL_KUNTA
-                StringUtils.leftPad("",3), //OPL_PAINOALUE
-                StringUtils.leftPad("",1), //OPL_TYOHONSIJOITUSSEUR
-                StringUtils.leftPad("",1), //OPL_LYHYTKESTO
-                StringUtils.leftPad("",2), //OPL_MAKSUKER.
-                StringUtils.leftPad("",10), //OPL_SOSIAALISETEDUT
-                StringUtils.leftPad("",10), //OPL_SOPIMUSNRO
-                StringUtils.leftPad("",14), //Tyhjaa
-                "\n");
-        
-    }
-    
     private String getVuosi(HakukohdePerustieto curTulos) {
     	if (null != curTulos && null != curTulos.getKoulutuksenAlkamisvuosi()){
     		return curTulos.getKoulutuksenAlkamisvuosi().toString();
@@ -166,23 +97,22 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return DEFAULT_DATE;
     }
     
-    private Object getHakukohdeKoodi(HakukohdePerustieto curTulos) {
+    @SuppressWarnings("unused")
+	private Object getHakukohdeKoodi(HakukohdePerustieto curTulos) {
         String koodiUri = curTulos.getKoodistoNimi();
         List<KoodiType> koodis = getKoodisByUriAndVersio(koodiUri);
         return (koodis.isEmpty()) ? StringUtils.leftPad("", 3) : koodis.get(0).getKoodiArvo();
     }
-    
-    
 
-    private Object getTutkintotunniste(HakukohdePerustieto curTulos) {
+    private Object getTutkintotunniste(HakukohdePerustieto curTulos) throws OPTFormatException {
         LOG.debug("HaeTutkintotunniste: " + curTulos.getOid());
         KoulutuksetKysely kysely = new KoulutuksetKysely();
         kysely.getHakukohdeOids().add(curTulos.getOid());
         KoulutuksetVastaus vastaus = tarjontaSearchService.haeKoulutukset(kysely);
         LOG.debug("Koulutustulos size: " + vastaus.getKoulutukset().size());
         if (vastaus == null || vastaus.getKoulutukset().isEmpty()) {
-            LOG.warn("\n\n!!!Tutkintotunniste empty for hakukohde: " + curTulos.getOid() + "\n\n");
-            StringUtils.leftPad("", 10);
+            warn(String.format(WARN_MESS_OPTILI_1, curTulos.getOid()));
+            return StringUtils.leftPad("", 6);
         }
         KoulutusPerustieto tulos = vastaus.getKoulutukset().get(0);
         String koodiUri = tulos.getKoulutuskoodi().getUri();
@@ -192,14 +122,32 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             koulutuskoodi = koodis.get(0);
         }
         KoodiType kelaKoodi = getRinnasteinenKoodi(koulutuskoodi, kelaTutkintokoodisto);
-        return (kelaKoodi == null) ? StringUtils.leftPad("", 10) : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10);
+        if (null == kelaKoodi) {
+        	return StringUtils.leftPad("", 6);
+        }
+        //KelaKoodi.getKoodiArvo() is 10 chars long. 4 left ones should be zeroes, and 6 right ones make up the kelakoodi. Otherwise it is error.
+        String _kelaKoodi = kelaKoodi.getKoodiArvo();
+        if (_kelaKoodi.length()>6) {
+        	try {
+        		int nolla = Integer.parseInt(_kelaKoodi.substring(0,_kelaKoodi.length()-6));
+        		if (nolla!=0) {
+        			throw new NumberFormatException();
+        		}
+        	} catch(NumberFormatException nfe) {
+        		error(String.format(ERR_MESS_OPTILI_5, _kelaKoodi));
+        	}
+        	_kelaKoodi=_kelaKoodi.substring(_kelaKoodi.length()-6);
+        	
+        }
+        return strFormatter(_kelaKoodi, 6, "kelakoodi");
     }
 
     private String getKoulutuslaji() {
         return KOULUTUSLAJI;
     }
 
-    private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
+    @SuppressWarnings("unused")
+	private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
             return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
         } 
@@ -210,7 +158,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return "01";
     }
 
-    private String getOppilaitosnumero(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
+    private String getOppilaitosnumero(OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return String.format("%s", organisaatio.getOppilaitosKoodi());
         } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
@@ -219,45 +167,154 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return StringUtils.leftPad("", 5);
     }
 
-    private String getHakukohdeId(HakukohdePerustieto curTulos) {
+    private String getHakukohdeId(HakukohdePerustieto curTulos) throws OPTFormatException {
         Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getOid());
+        if (hakukE==null) {
+        	error(String.format(ERR_MESS_OPTILI_2,curTulos.getOid()));
+        }
         String hakukohdeId = String.format("%s", hakukE.getId());
-        return StringUtils.leftPad(hakukohdeId, 10, '0');
+        return numFormatter(hakukohdeId, 10, "hakukohdeid");
+    }
+
+	@Value("${OPTILI.alkutietue}")
+    public void setAlkutietue(String alkutietue) {
+        this.ALKUTIETUE = alkutietue;
+    }
+	
+	@Value("${OPTILI.lopputietue}")
+    public void setLopputietue(String lopputietue) {
+        this.LOPPUTIETUE = lopputietue;
+    }
+	
+	@Value("${OPTILI.filenameSuffix:.OPTILI}")
+    public void setFilenameSuffix(String filenameSuffix) {
+        this.FILENAME_SUFFIX = filenameSuffix;
+    }
+
+	@Value("${OPTILI.koulutuslaji:N }")
+    public void setKoulutuslaji(String koulutuslaji) {
+        this.KOULUTUSLAJI = koulutuslaji;
+    }
+	
+	@Override
+	public void composeRecords() throws IOException {
+        HakukohteetKysely kysely = new HakukohteetKysely();
+        HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
+        info(String.format(INFO_MESS_OPTILI_1, vastaus.getHitCount()));
+        for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
+        	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
+            OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
+            try {
+            	if (isHakukohdeToinenaste(tarjoajaOid)) {
+            		this.writeRecord(curTulos, organisaatioDTO);
+                } 
+            } catch (OPTFormatException e) {
+					LOG.error(String.format(ERR_MESS_OPTILI_1, curTulos.getOid(), tarjoajaOid));
+			}
+        }
     }
 
 	@Override
-	public void composeRecords() throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
-		// TODO Auto-generated method stub
-		return null;
+		HakukohdePerustieto curTulos=(HakukohdePerustieto) args[0];
+		OrganisaatioDTO organisaatioDTO=(OrganisaatioDTO) args[1];
+		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //44 fields + line ending
+                getHakukohdeId(curTulos),//Sisainen koodi
+                getOppilaitosnumero(organisaatioDTO),//OPPIL_NRO
+                getOrgOid(organisaatioDTO), //OrganisaatioOID
+                StringUtils.leftPad("",2),//OPJNO
+                StringUtils.leftPad("",12),//Op. linjan tai koulutuksen jarjestysnro
+                getKoulutuslaji(),//Koulutuslaji
+                StringUtils.leftPad("",2),//Opintolinjan kieli
+                StringUtils.leftPad("",2),//OPL_LASPER
+                StringUtils.leftPad("",2),//Valintakoeryhma
+                StringUtils.leftPad("",10),//Kokeilun yksiloiva tunniste
+                StringUtils.leftPad("",5), //OPL_SUUNT
+                getHakukohteenNimi(curTulos),//Hakukohteen nimi
+                StringUtils.leftPad("",1),//filler
+                getTutkinnonTaso(curTulos),//Hakukohteen nimi
+                getTutkintotunniste(curTulos),//TUT_ID = koulutuskoodi
+                getOrgOid(curTulos), //hakukohde OrgOID
+                StringUtils.leftPad("",3), //filler
+                StringUtils.leftPad("",3), //OPL_OTTOALUE
+                StringUtils.leftPad("",3), //Opetusmuoto
+                StringUtils.leftPad("",2), //Koulutustyyppi
+                StringUtils.leftPad("",3), //OPL-EKASITTELY
+                StringUtils.leftPad("",2), //OPL_PKR_TUNNUS
+                StringUtils.leftPad("",2), //OPL_VKOEJAR
+                StringUtils.leftPad("",2), //OPL_VKOEKUT
+                StringUtils.leftPad("",7), //Alinkeskiarvo
+                StringUtils.leftPad("",12), //Koulutuksen kesto
+                StringUtils.leftPad("",3), //OPL_KKERROIN
+                getAlkupvm(), //Alkupaiva, voimassaolon alku
+                DEFAULT_DATE,  //Loppupaiva
+                DEFAULT_DATE, //Viimeisin paivityspaiva
+                StringUtils.leftPad("",30), //Viimeisin paivittaja
+                StringUtils.leftPad("",6), //El-harpis
+                getAlkamiskausi(curTulos), //ALKUKAUSI
+                getTila(), //TILA
+                getVuosi(curTulos), //VUOSI 
+                DEFAULT_DATE, //Alkupaiva, voimassaolon alku
+                DEFAULT_DATE, //Loppupaiva, voimassaolon loppu
+                StringUtils.leftPad("",1), //OPL_TULOSTUS
+                StringUtils.leftPad("",15), //OPL_OMISTAJA
+                StringUtils.leftPad("",3), //OPL_KUNTA
+                StringUtils.leftPad("",3), //OPL_PAINOALUE
+                StringUtils.leftPad("",1), //OPL_TYOHONSIJOITUSSEUR
+                StringUtils.leftPad("",1), //OPL_LYHYTKESTO
+                StringUtils.leftPad("",14), //Tyhjaa
+                "\n");
+
 	}
 
+	private String getOrgOid(OrganisaatioDTO org) throws OPTFormatException {
+		if(null==org.getOid()) {
+			error(String.format(ERR_MESS_OPTILI_4));
+		}
+		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
+		if (oid == null || oid.length() == 0) {
+			error(String.format(ERR_MESS_OPTILI_3, org.getOid()));
+		}
+		return strFormatter(oid, 22, "OID");
+	}
+
+	private String getOrgOid(HakukohdePerustieto org) throws OPTFormatException {
+		if(null==org.getOid()) {
+			error(String.format(ERR_MESS_OPTILI_4));
+		}
+		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
+		if (oid == null || oid.length() == 0) {
+			error(String.format(ERR_MESS_OPTILI_3, org.getOid()));
+		}
+		return strFormatter(oid, 22, "OID");
+	}
+	
+	private String getHakukohteenNimi(HakukohdePerustieto curTulos) throws OPTFormatException {
+		return strCutter(curTulos.getNimi("fi"), 40, "hakukohteen nimi");
+	}
+	
+	private String getTutkinnonTaso(HakukohdePerustieto curTulos) throws OPTFormatException {
+		warn("Tutkinnon tason cannot be retrieved yet");
+        return StringUtils.leftPad("", 3);
+    }
+	
 	@Override
 	public String getAlkutietue() {
-		// TODO Auto-generated method stub
-		return null;
+		return ALKUTIETUE;
 	}
 
 	@Override
 	public String getLopputietue() {
-		// TODO Auto-generated method stub
-		return null;
+		return LOPPUTIETUE;
 	}
 
 	@Override
 	public String getFilenameSuffix() {
-		// TODO Auto-generated method stub
-		return null;
+		return FILENAME_SUFFIX;
 	}
 
 	@Override
 	public String getPath() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 }

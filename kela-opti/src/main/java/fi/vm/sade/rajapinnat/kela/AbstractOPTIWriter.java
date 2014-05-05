@@ -82,10 +82,12 @@ public abstract class AbstractOPTIWriter {
     protected String DEFAULT_DATE;
     protected String DIR_SEPARATOR;
 
-    protected final static String ERR_MESS_1="ERROR: invalid number : '%s'";
-    protected final static String ERR_MESS_2="ERROR: length of %s ('%s') should be max %s.";
+    protected final static String ERR_MESS_1="invalid number (%s) : '%s'";
+    protected final static String ERR_MESS_2="length of %s ('%s') should be max %s.";
     protected final static String ERR_MESS_3="File not found : '%s'";
     protected final static String ERR_MESS_4="I/O error : '%s'";
+    
+    protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     
     protected final static String INFO_MESS_1="%s records written, %s skipped.";
 
@@ -331,12 +333,18 @@ public abstract class AbstractOPTIWriter {
     
     protected String getOppilaitostyyppitunnus(
             OrganisaatioPerustieto curOppilaitos) {
+    	info("-------");
+    	info("oppilaitos:"+curOppilaitos.getNimi("fi"));
+    	info("oppilaitos oid:"+curOppilaitos.getOid());
+    	info("oppilaitos tyyppi:"+curOppilaitos.getOppilaitostyyppi());
         List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
         KoodiType olTyyppiKoodi = null;
         if (!koodis.isEmpty()) {
             olTyyppiKoodi = koodis.get(0);
+            info("olTyyppiKoodi:"+curOppilaitos.getOppilaitostyyppi());
         }
         KoodiType kelaKoodi = getRinnasteinenKoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
+        info("kelaKoodi:"+kelaKoodi);
         return (kelaKoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10, '0');
     }
 
@@ -433,10 +441,10 @@ public abstract class AbstractOPTIWriter {
 			bostr.close();
 			LOG.info(String.format(INFO_MESS_1, writes, writesTries-writes));
 		} catch (FileNotFoundException e) {
-			LOG.error(String.format(ERR_MESS_3,getFileName()));
+			LOG.error(String.format(ERR_MESS_3, getFileName()));
 			e.printStackTrace();
 		} catch (IOException e) {
-			LOG.error(String.format(ERR_MESS_4,getFileName()));
+			LOG.error(String.format(ERR_MESS_4, getFileName()));
 			e.printStackTrace();
 		}
 	}
@@ -457,12 +465,23 @@ public abstract class AbstractOPTIWriter {
 		}
 		return StringUtils.rightPad(str, len);
 	}
+    
+    protected String strCutter(String str, int len, String humanName) throws OPTFormatException {
+		if (null == str) {
+			error(String.format(ERR_MESS_2, humanName, str, len));
+		}
+		if(str.length() > len) {
+			warn(String.format(WARN_MESS_1, str, len, humanName));
+			return str.substring(0,len);
+		}
+		return StringUtils.rightPad(str, len);
+	}
 
     protected String numFormatter(String str, int len, String humanName) throws OPTFormatException {
 		try {
 			Float.parseFloat(str);
 		}catch(NumberFormatException e) {
-			error(String.format(ERR_MESS_1, humanName, str, len));
+			error(String.format(ERR_MESS_1, humanName, str));
 		}
 		if (null == str || str.length() > len) {
 			error(String.format(ERR_MESS_2, humanName, str, len));
@@ -477,7 +496,6 @@ public abstract class AbstractOPTIWriter {
 
     protected void warn(String warnMsg) {
     	LOG.warn(warnMsg);
-		System.out.println(warnMsg);
 	}
     
     protected void info(String infoMsg) {

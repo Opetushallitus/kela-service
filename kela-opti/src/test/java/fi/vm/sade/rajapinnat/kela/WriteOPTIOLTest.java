@@ -97,7 +97,7 @@ public class WriteOPTIOLTest {
     @Test
     public void testWriteOptiolHappyPath() {
         try {
-            orgContainer.fetchOrgnaisaatiot();
+            orgContainer.fetchOrganisaatiot();
             optiolWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiolWriter.getFileName());

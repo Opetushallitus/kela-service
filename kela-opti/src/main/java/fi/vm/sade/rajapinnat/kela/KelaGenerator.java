@@ -77,7 +77,7 @@ public class KelaGenerator {
         LOG.info("Fetching organisaatiot from index...");
         long time = System.currentTimeMillis();
         long startTime = time;
-        orgContainer.fetchOrgnaisaatiot();
+        orgContainer.fetchOrganisaatiot();;
         LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
         writeKelaFile(optiliWriter);
         writeKelaFile(optiniWriter);

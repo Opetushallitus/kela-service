@@ -97,7 +97,7 @@ public class WriteOPTIOPTest {
     @Test
     public void testWriteOptiopHappyPath() {
         try {
-            orgContainer.fetchOrgnaisaatiot();
+            orgContainer.fetchOrganisaatiot();
             optiopWriter.writeFile();
             
             FileInputStream fstream = new FileInputStream(optiopWriter.getFileName());
