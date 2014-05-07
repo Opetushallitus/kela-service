@@ -15,16 +15,15 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioPerustietoType;
+import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
@@ -37,60 +36,24 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Configurable
 public class WriteOPTIOL extends AbstractOPTIWriter {
     
-    private static final String OPTIOL = ".OPTIOL";
+	private String FILENAME_SUFFIX;
+	private String ALKUTIETUE;
+	private String LOPPUTIETUE;
     
-    private static final String ALKUTIETUE = "00000ALKU\n";
-    private static final String LOPPUTIETUE = "99999LOPPU??????\n";
-    
+	private final static String ERR_MESS_OPTIOL_1 = "could not write oppilaitos %s : invalid values.";
+	private final static String ERR_MESS_OPTIOL_2="incorrect OID : '%s'";
+	private final static String ERR_MESS_OPTIOL_3="OID cannot not be null";
+	private final static String ERR_MESS_OPTIOL_4="Could not retreive organisaatiotyyppi";
+	
     public WriteOPTIOL() {
         super();
-        
     }
     
-    @Override
-    public void writeFile() throws IOException {
-        createFileName("", OPTIOL);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
-        bos.write(toLatin1(ALKUTIETUE));
-        
-        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
-                try {
-                    bos.write(toLatin1(createRecord(curOppilaitos)));   
-                    bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-        }
-
-        bos.write(toLatin1(LOPPUTIETUE));
-        bos.flush();
-        bos.close();
-    }
-
-    private String createRecord(OrganisaatioPerustieto curOppilaitos) {
-        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//18 fields + EOL
-                getOppilaitosNro(curOppilaitos),//OPPIL_NRO
-                StringUtils.leftPad("", 4),//Tyhjaa
-                getKoulJarjTunnus(curOppilaitos),//StringUtils.leftPad("", 10),//Koulutuksen jarjestajan tunnus
-                getYhteystietojenTunnus(orgE),//Yhteystietojen tunnus
-                getOppilaitostyyppitunnus(curOppilaitos),//OTY_ID
-                getZeros(), //0-merkkeja
-                StringUtils.leftPad("", 5),//AMK_OPNRO
-                getKotikunta(orgE),//Oppilaitoksen kotikunta
-                DEFAULT_DATE,//01.01.0001-merkkijono
-                DEFAULT_DATE,//01.01.0001-merkkijono
-                getDateStrOrDefault(curOppilaitos.getAlkuPvm()),//Oppilaitoksen perustamisajankohta
-                getDateStrOrDefault(curOppilaitos.getLakkautusPvm()),//Oppilaitoksen lakkauttamisajankohta
-                DEFAULT_DATE,//Viimeinen paivityspaiva
-                StringUtils.leftPad("", 30),//Viimeisin paivittaja
-                StringUtils.leftPad("", 15),//Tyhjaa
-                StringUtils.leftPad("", 6),//HANKI-koulutuksen kayttama menolaji
-                StringUtils.leftPad("", 20),//HANKI-koulutuksen kayttama tilikoodi
-                getZeros(),//0-merkkeja
-                "\n");
-        return record;
-    }
+	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
+	@Override
+	public  void writeFile() throws IOException {
+		throw new RuntimeException("writeFile() not supported any more");
+	}
 
     private String getKoulJarjTunnus(OrganisaatioPerustieto curOppilaitos) {
         String parentOid = curOppilaitos.getParentOid();
@@ -101,48 +64,96 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
             Organisaatio parent = this.kelaDAO.findOrganisaatioByOid(parentOid);
             tunnus = (parent.getYtunnus() != null) ? parent.getYtunnus() : parent.getVirastotunnus();
         }
-        
         return StringUtils.leftPad(tunnus, 10, '0');
-    }
-
-    private String getZeros() {
-        return "0000000000";
     }
 
 	@Override
 	public void composeRecords() throws IOException {
-		// TODO Auto-generated method stub
-		
+        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
+            try {
+            	writeRecord(curOppilaitos);
+            } catch (OPTFormatException e) {
+				LOG.error(String.format(ERR_MESS_OPTIOL_1, curOppilaitos.getOid()));
+			}
+        }
 	}
 
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
-		// TODO Auto-generated method stub
-		return null;
+		OrganisaatioPerustieto curOppilaitos = (OrganisaatioPerustieto) args[0];
+        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//19 fields + EOL
+                getOppilaitosNro(curOppilaitos),//OPPIL_NRO
+                getOrgOid(orgE),
+                getOrganisaatioTyyppi(curOppilaitos),
+                getKoulJarjTunnus(curOppilaitos),//StringUtils.leftPad("", 10),//Koulutuksen jarjestajan tunnus
+                getYhteystietojenTunnus(orgE),//Yhteystietojen tunnus
+                getOppilaitostyyppitunnus(curOppilaitos),//OTY_ID
+                numFormatter("0", 10, null), //0-merkkeja
+                StringUtils.leftPad("", 5),//AMK_OPNRO
+                getKotikunta(orgE),//Oppilaitoksen kotikunta
+                DEFAULT_DATE,//01.01.0001-merkkijono
+                DEFAULT_DATE,//01.01.0001-merkkijono
+                getDateStrOrDefault(curOppilaitos.getAlkuPvm()),//Oppilaitoksen perustamisajankohta
+                getDateStrOrDefault(curOppilaitos.getLakkautusPvm()),//Oppilaitoksen lakkauttamisajankohta
+                DEFAULT_DATE,//Viimeinen paivityspaiva
+                StringUtils.leftPad("", 10),//Viimeisin paivittaja
+                StringUtils.leftPad("", 15),//Tyhjaa
+                StringUtils.leftPad("", 6),//HANKI-koulutuksen kayttama menolaji
+                StringUtils.leftPad("", 20),//HANKI-koulutuksen kayttama tilikoodi
+                numFormatter("0", 10, null), //0-merkkeja
+                "\n");
+        return record;
+	}
+	
+	private String getOrganisaatioTyyppi(OrganisaatioPerustieto curOppilaitos) throws OPTFormatException {
+		List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
+		if (koodis.isEmpty()) {
+			error(ERR_MESS_OPTIOL_4);
+		}
+		return strFormatter(koodis.get(0).getKoodiArvo(),2,"organisaatiotyyppi");
+	}
+	private String getOrgOid(Organisaatio org) throws OPTFormatException {
+		if(null==org.getOid()) {
+			error(String.format(ERR_MESS_OPTIOL_3));
+		}
+		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
+		if (oid == null || oid.length() == 0) {
+			error(String.format(ERR_MESS_OPTIOL_2, org.getOid()));
+		}
+		return strFormatter(oid, 22, "OID");
 	}
 
-	@Override
 	public String getAlkutietue() {
-		// TODO Auto-generated method stub
-		return null;
+		return ALKUTIETUE;
 	}
 
-	@Override
 	public String getLopputietue() {
-		// TODO Auto-generated method stub
-		return null;
+		return LOPPUTIETUE;
 	}
 
-	@Override
 	public String getFilenameSuffix() {
-		// TODO Auto-generated method stub
-		return null;
+		return FILENAME_SUFFIX;
 	}
 
-	@Override
 	public String getPath() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
+	}
+	
+	@Value("${OPTIOL.filenameSuffix:.OPTIOL}")
+	public void setFilenameSuffix(String filenameSuffix) {
+		this.FILENAME_SUFFIX = filenameSuffix;
 	}
 
+	@Value("${OPTIOL.alkutietue}")
+	public void setAlkutietue(String alkutietue) {
+		this.ALKUTIETUE = alkutietue;
+	}
+
+	@Value("${OPTIOL.lopputietue}")
+	public void setLopputietue(String lopputietue) {
+		this.LOPPUTIETUE = lopputietue;
+	}
+	
+	
 }

@@ -333,18 +333,13 @@ public abstract class AbstractOPTIWriter {
     
     protected String getOppilaitostyyppitunnus(
             OrganisaatioPerustieto curOppilaitos) {
-    	info("-------");
-    	info("oppilaitos:"+curOppilaitos.getNimi("fi"));
-    	info("oppilaitos oid:"+curOppilaitos.getOid());
-    	info("oppilaitos tyyppi:"+curOppilaitos.getOppilaitostyyppi());
         List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
         KoodiType olTyyppiKoodi = null;
         if (!koodis.isEmpty()) {
             olTyyppiKoodi = koodis.get(0);
-            info("olTyyppiKoodi:"+curOppilaitos.getOppilaitostyyppi());
         }
         KoodiType kelaKoodi = getRinnasteinenKoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
-        info("kelaKoodi:"+kelaKoodi);
+        //info("kelaKoodi:"+kelaKoodi);
         return (kelaKoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10, '0');
     }
 
@@ -377,11 +372,6 @@ public abstract class AbstractOPTIWriter {
         return kmdt;
     }
     
-    /*
-    public void setTarjontaService(TarjontaPublicService tarjontaService) {
-        this.tarjontaService = tarjontaService;
-    }*/
-
     public void setTarjontaSearchService(TarjontaSearchService tarjontaSearchService) {
         this.tarjontaSearchService = tarjontaSearchService;
     }
@@ -453,6 +443,7 @@ public abstract class AbstractOPTIWriter {
 	public void writeRecord(Object... args) throws IOException, OPTFormatException {
 			++writesTries;
 			bostr.write(toLatin1(composeRecord(args)));
+			bostr.flush();
 			++writes;
 	}
 	
