@@ -293,9 +293,13 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		return strCutter(curTulos.getNimi("fi"), 40, "hakukohteen nimi");
 	}
 	
+	boolean warned=false;
 	private String getTutkinnonTaso(HakukohdePerustieto curTulos) throws OPTFormatException {
-		warn("Tutkinnon tason cannot be retrieved yet");
-        return StringUtils.leftPad("", 3);
+		if (!warned) {
+			warn("'Tutkinnon taso (TUTTASO)' is fixed always to be '050 (alempi kk.tutkinto)'");
+			warned=true;
+		}
+        return StringUtils.leftPad("050", 3);
     }
 	
 	@Override
