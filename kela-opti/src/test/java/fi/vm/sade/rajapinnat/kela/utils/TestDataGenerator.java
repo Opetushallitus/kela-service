@@ -111,10 +111,10 @@ public class TestDataGenerator {
         organisaatiot.add(createOrg(OID_PREFIX + OLKOODI1, 1, "Harman lukio", OLKOODI1, OLTYYPPI, OrganisaatioTyyppi.OPPILAITOS));
         
         organisaatiot.add(createOrg(OID_PREFIX + OLKOODI2, 2, "Alajarven lukio", OLKOODI2, OLTYYPPI, OrganisaatioTyyppi.OPPILAITOS));
-        OrganisaatioPerustieto opetuspiste1 = createOrg(OID_PREFIX + OLKOODI1 + OPETUSPISTENRO, 3, "Harman lukio", null, null, OrganisaatioTyyppi.OPETUSPISTE);
+        OrganisaatioPerustieto opetuspiste1 = createOrg(OID_PREFIX + OLKOODI1 + OPETUSPISTENRO, 3, "Harman lukio", null, null, OrganisaatioTyyppi.TOIMIPISTE);
         opetuspiste1.setParentOid(OID_PREFIX + OLKOODI1);
         organisaatiot.add(opetuspiste1);
-        OrganisaatioPerustieto opetuspiste2 = createOrg(OID_PREFIX + OLKOODI2 + OPETUSPISTENRO, 4, "Alajarven lukio", null, null, OrganisaatioTyyppi.OPETUSPISTE);
+        OrganisaatioPerustieto opetuspiste2 = createOrg(OID_PREFIX + OLKOODI2 + OPETUSPISTENRO, 4, "Alajarven lukio", null, null, OrganisaatioTyyppi.TOIMIPISTE);
         opetuspiste2.setParentOid(OID_PREFIX + OLKOODI2);
         organisaatiot.add(opetuspiste2);
         
@@ -205,7 +205,7 @@ public class TestDataGenerator {
         
         OrganisaatioDTO tarjoajaDTO = new OrganisaatioDTO();
         tarjoajaDTO.setOid(TARJOAJA_OID);
-        tarjoajaDTO.getTyypit().add(OrganisaatioTyyppi.OPETUSPISTE);
+        tarjoajaDTO.getTyypit().add(OrganisaatioTyyppi.TOIMIPISTE);
         tarjoajaDTO.getTyypit().add(OrganisaatioTyyppi.OPPILAITOS);
         tarjoajaDTO.setOpetuspisteenJarjNro(TARJOAJA_OPJARJNRO);
         tarjoajaDTO.setOppilaitosKoodi(TARJOAJA_OLKOODI);
