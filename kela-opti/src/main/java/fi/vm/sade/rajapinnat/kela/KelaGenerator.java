@@ -95,9 +95,10 @@ public class KelaGenerator {
      * Performs ftp transfer of generated kela-opti files.
      * @throws Exception
      */
+    private String targetUrl;
     public void transferFiles() throws Exception {
         LOG.info("transferFiles: ");
-        String targetUrl = String.format("%s%s%s%s%s%s%s%s%s%s", 
+        targetUrl = String.format("%s%s%s%s%s%s%s%s%s%s", 
                 protocol, 
                 "://", 
                 username, 
@@ -109,18 +110,21 @@ public class KelaGenerator {
                 "&ftpClient.dataTimeout=",
                 dataTimeout + "&passiveMode=true");
         LOG.info("Target url: " + targetUrl);
-        
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiliWriter.getFileName()), Exchange.FILE_NAME, this.optiliWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiniWriter.getFileName()), Exchange.FILE_NAME, this.optiniWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiolWriter.getFileName()), Exchange.FILE_NAME, this.optiolWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optituWriter.getFileName()), Exchange.FILE_NAME, this.optituWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiopWriter.getFileName()), Exchange.FILE_NAME, this.optiopWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiyhWriter.getFileName()), Exchange.FILE_NAME, this.optiyhWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(optiytWriter.getFileName()), Exchange.FILE_NAME, this.optiytWriter.getFileLocalName());
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(orgoidWriter.getFileName()), Exchange.FILE_NAME, this.orgoidWriter.getFileLocalName());
-        LOG.info("Files transfered");
+        sendFile(optiliWriter);
+        sendFile(optiniWriter);
+        sendFile(optiolWriter);
+        sendFile(optituWriter);
+        sendFile(optiopWriter);
+        sendFile(optiyhWriter);
+        sendFile(optiytWriter);
+        sendFile(orgoidWriter);
+        LOG.info("Files transferred");
     }
-    
+    private void sendFile(AbstractOPTIWriter writer) {
+    	LOG.info("Sending: " + writer.getFileName()+"...");
+    	producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
+    	LOG.info("Done.");
+    }
     private void writeKelaFile(AbstractOPTIWriter kelaWriter) {
         try {
             long time = System.currentTimeMillis();
