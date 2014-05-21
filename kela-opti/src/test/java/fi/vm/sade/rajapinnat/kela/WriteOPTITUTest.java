@@ -50,7 +50,7 @@ public class WriteOPTITUTest {
     public void testWriteOptituHappuPath() {
         try {
             /*optituWriter.setPath(GEN_PATH);
-            optituWriter.writeFile();
+            optituWriter.writeStream();
             
             FileInputStream fstream = new FileInputStream(optituWriter.getFileName());
             DataInputStream in = new DataInputStream(fstream);

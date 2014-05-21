@@ -99,7 +99,7 @@ public class WriteOPTINITest {
     public void testWriteOptiniHappyPath() {
         try {
             orgContainer.fetchOrganisaatiot();
-            optiniWriter.writeFile();
+            optiniWriter.writeStream();
             
             FileInputStream fstream = new FileInputStream(optiniWriter.getFileName());
             DataInputStream in = new DataInputStream(fstream);
