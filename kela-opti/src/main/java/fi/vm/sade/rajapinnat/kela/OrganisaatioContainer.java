@@ -96,7 +96,7 @@ public class OrganisaatioContainer {
         oppilaitokset = new ArrayList<OrganisaatioPerustieto>();
         orgOidList = new ArrayList<String>();
         OrganisaatioSearchCriteria criteria = new OrganisaatioSearchCriteria();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPPILAITOS.value());
+        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.TOIMIPISTE.value());
         List<OrganisaatioPerustieto> oppilaitoksetR = organisaatioSearchService.searchBasicOrganisaatios(criteria);
         if (oppilaitoksetR.size()==10000) {
         	LOG.warn("Query resulted exactly 10000 rows, which is the hard limit for returned rows. There may be more rows that are not returned because of this limitation! Please check.");
@@ -115,7 +115,7 @@ public class OrganisaatioContainer {
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");        
         toimipisteet = new ArrayList<OrganisaatioPerustieto>();
         criteria = new OrganisaatioSearchCriteria();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
+        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.TOIMIPISTE.value());
         criteria.getOidRestrictionList().addAll(orgOidList);
         
         List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);

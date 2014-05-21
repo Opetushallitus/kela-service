@@ -15,7 +15,7 @@
   
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <organisaatio.api.version>7.0-SNAPSHOT</organisaatio.api.version>
+      <organisaatio.api.version>9.1-SNAPSHOT</organisaatio.api.version>
       <authentication.api.version>7.0-SNAPSHOT</authentication.api.version>
       <generic.version>7.0-SNAPSHOT</generic.version>
       <koodisto.api.version>7.0-SNAPSHOT</koodisto.api.version>

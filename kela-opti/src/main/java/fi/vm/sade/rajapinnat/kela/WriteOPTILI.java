@@ -148,7 +148,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     @SuppressWarnings("unused")
 	private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
@@ -161,7 +161,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     private String getOppilaitosnumero(OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return String.format("%s", organisaatio.getOppilaitosKoodi());
-        } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             return String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
         }
         return StringUtils.leftPad("", 5);
