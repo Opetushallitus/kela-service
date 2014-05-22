@@ -15,9 +15,6 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -25,6 +22,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoCriteriaType;
@@ -39,44 +37,71 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 @Configurable
 public class WriteOPTITU extends AbstractOPTIWriter {
 
-    private static final String OPTITU = ".OPTITU";
+    @Override
+    public void writeFile() throws IOException {
+		throw new RuntimeException("writeFile() not supported any more");
+    }
     
-    private static final String ALKUTIETUE = "0000000000ALKU\n";
-    private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
+    private final static String ERR_MESS_OPTITU_1 = "could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values.";
     
+    private String FILENAME_SUFFIX;
+    private String ALKUTIETUE;
+    private String LOPPUTIETUE;
+
     public WriteOPTITU() {
         super();
     }
     
-    @Override
-    public void writeFile() throws IOException {
-        this.createFileName("", OPTITU);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
-        bos.write(toLatin1(ALKUTIETUE));
+    private String getKoulutusasteenYksiloivaTunniste(KoodiType kelaTutkinto) throws OPTFormatException {
+        KoodiType koulutuastekoodi = getSisaltyvaKoodi(kelaTutkinto, kelaKoulutusastekoodisto);
+        return (koulutuastekoodi == null) ?	StringUtils.leftPad("", 10, '0') : numFormatter(koulutuastekoodi.getKoodiArvo(), 10, "koulutusastekoodi");
+    }
+
+    private String getOpintoalanYksiloivaTunniste(KoodiType kelaTutkinto) throws OPTFormatException {
+        
+        KoodiType opintoalakoodi = getSisaltyvaKoodi(kelaTutkinto, kelaOpintoalakoodisto);
+        return (opintoalakoodi == null) ? StringUtils.leftPad("", 10, '0') : numFormatter(opintoalakoodi.getKoodiArvo(), 10, "opintoalakoodi");
+    }
+
+    private String getKoodiPvm(XMLGregorianCalendar xgc) {
+        if (xgc == null) {
+            return DEFAULT_DATE;
+        }
+        return  getDateStrOrDefault(xgc.toGregorianCalendar().getTime());
+    }
+
+    private String getOphTutkintotunniste(KoodiType ophTutkinto) throws OPTFormatException {
+        //KelaKoodi.ophTutkinto() is 10 chars long. 4 left ones should be zeroes, and 6 right ones make up the ophtutkinto-koodiarvo. Otherwise it is error.
+    	return stripPreceedingZeros(ophTutkinto.getKoodiArvo(), 6, "ophtutkinto - koodiarvo");
+    }
+
+    private String getKelaTutkintoTunniste(KoodiType kelaTutkinto) {
+    	return StringUtils.leftPad("",10);
+    }
+
+	@Override
+	public void composeRecords() throws IOException {
         SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();
         criteria.setKoodistoUri(kelaTutkintokoodisto);
         criteria.setKoodistoVersioSelection(SearchKoodisByKoodistoVersioSelectionType.LATEST);
         
         List<KoodiType> koodit = this.koodiService.searchKoodisByKoodisto(criteria);
-        
         for (KoodiType curKelaTutkinto : koodit) {
-            KoodiType curOphTutkinto = getRinnasteinenKoodi(curKelaTutkinto, koulutuskoodisto);
+            KoodiType curOphTutkinto = getRinnasteinenKoodi(curKelaTutkinto, koulutuskoodisto); // "tutkintokela" "koulutus"
             if (curOphTutkinto != null) {
-                try {
-                    bos.write(toLatin1(createRecord(curKelaTutkinto, curOphTutkinto)));
-                    bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+    			try {
+    				writeRecord(curKelaTutkinto, curOphTutkinto);
+    			} catch (OPTFormatException e) {
+    				LOG.error(String.format(ERR_MESS_OPTITU_1, curKelaTutkinto.getKoodiArvo(),curOphTutkinto.getKoodiArvo()));
+    			} 
             }
         }
-        
-        bos.write(toLatin1(LOPPUTIETUE));
-        bos.flush();
-        bos.close();
-    }
+	}
 
-    private String createRecord(KoodiType kelaTutkinto, KoodiType ophTutkinto) {
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		KoodiType kelaTutkinto = (KoodiType) args[0];
+		KoodiType ophTutkinto = (KoodiType) args[0];
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //26 fields + EOL
                 getKelaTutkintoTunniste(kelaTutkinto),//TUT_ID
                 getOphTutkintotunniste(ophTutkinto),//Tilastokeskuksen koulutuskoodi
@@ -105,76 +130,41 @@ public class WriteOPTITU extends AbstractOPTIWriter {
                 getOpintoalanYksiloivaTunniste(kelaTutkinto),//UALA_ID
                 getKoulutusasteenYksiloivaTunniste(kelaTutkinto),//UKAS_ID
                 "\n");
-        return record;
-    }
-    
-    
-
-    private String getKoulutusasteenYksiloivaTunniste(KoodiType kelaTutkinto) {
-        
-        KoodiType koulutuastekoodi = getSisaltyvaKoodi(kelaTutkinto, kelaKoulutusastekoodisto);
-        
-        return (koulutuastekoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(koulutuastekoodi.getKoodiArvo(), 10, '0');
-    }
-
-    private String getOpintoalanYksiloivaTunniste(KoodiType kelaTutkinto) {
-        
-        KoodiType opintoalakoodi = getSisaltyvaKoodi(kelaTutkinto, kelaOpintoalakoodisto);
-        
-        return (opintoalakoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(opintoalakoodi.getKoodiArvo(), 10, '0');
-    }
-
-    private String getKoodiPvm(XMLGregorianCalendar xgc) {
-        if (xgc == null) {
-            return DEFAULT_DATE;
-        }
-        return  getDateStrOrDefault(xgc.toGregorianCalendar().getTime());
-    }
-
-    private String getOphTutkintotunniste(KoodiType ophTutkinto) {
-        return StringUtils.leftPad(ophTutkinto.getKoodiArvo(), 6);
-    }
-
-    private String getKelaTutkintoTunniste(KoodiType kelaTutkinto) {
-        return StringUtils.leftPad(kelaTutkinto.getKoodiArvo(), 10);
-    }
-
-	@Override
-	public void composeRecords() throws IOException {
-		// TODO Auto-generated method stub
-		
+		return record;
 	}
 
-	@Override
-	public String composeRecord(Object... args) throws OPTFormatException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	@Value("${OPTITU.alkutietue}")
+    public void setAlkutietue(String alkutietue) {
+        this.ALKUTIETUE = alkutietue;
+    }
+	
+	@Value("${OPTITU.lopputietue}")
+    public void setLopputietue(String lopputietue) {
+        this.LOPPUTIETUE = lopputietue;
+    }
+	
+	@Value("${OPTITU.filenameSuffix:.OPTITU}")
+    public void setFilenameSuffix(String filenameSuffix) {
+        this.FILENAME_SUFFIX = filenameSuffix;
+    }
 
 	@Override
 	public String getAlkutietue() {
-		// TODO Auto-generated method stub
-		return null;
+		return ALKUTIETUE;
 	}
 
 	@Override
 	public String getLopputietue() {
-		// TODO Auto-generated method stub
-		return null;
+		return LOPPUTIETUE;
 	}
 
 	@Override
 	public String getFilenameSuffix() {
-		// TODO Auto-generated method stub
-		return null;
+		return FILENAME_SUFFIX;
 	}
 
 	@Override
 	public String getPath() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
-    
-    
-
 }
