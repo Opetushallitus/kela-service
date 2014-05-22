@@ -62,8 +62,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     
 	private final static String ERR_MESS_OPTILI_3="incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTILI_4="OID cannot not be null";
-	private final static String ERR_MESS_OPTILI_5="KelaKoodi has invalid format : %s";
-
 	
     private final static String WARN_MESS_OPTILI_1="Tutkintotunniste empty for hakukohde: %s";
     private final static String INFO_MESS_OPTILI_1="fetched %s hakukohde from index.";
@@ -126,20 +124,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         	return StringUtils.leftPad("", 6);
         }
         //KelaKoodi.getKoodiArvo() is 10 chars long. 4 left ones should be zeroes, and 6 right ones make up the kelakoodi. Otherwise it is error.
-        String _kelaKoodi = kelaKoodi.getKoodiArvo();
-        if (_kelaKoodi.length()>6) {
-        	try {
-        		int nolla = Integer.parseInt(_kelaKoodi.substring(0,_kelaKoodi.length()-6));
-        		if (nolla!=0) {
-        			throw new NumberFormatException();
-        		}
-        	} catch(NumberFormatException nfe) {
-        		error(String.format(ERR_MESS_OPTILI_5, _kelaKoodi));
-        	}
-        	_kelaKoodi=_kelaKoodi.substring(_kelaKoodi.length()-6);
-        	
-        }
-        return strFormatter(_kelaKoodi, 6, "kelakoodi");
+        return stripPreceedingZeros(kelaKoodi.getKoodiArvo(), 6,  "kelakoodi");
     }
 
     private String getKoulutuslaji() {

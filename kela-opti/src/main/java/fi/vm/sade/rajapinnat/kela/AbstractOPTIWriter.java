@@ -86,7 +86,8 @@ public abstract class AbstractOPTIWriter {
     protected final static String ERR_MESS_2="length of %s ('%s') should be max %s.";
     protected final static String ERR_MESS_3="File not found : '%s'";
     protected final static String ERR_MESS_4="I/O error : '%s'";
-    
+    protected final static String ERR_MESS_5="%s does not preceed with enough zeros : %s (should be max %s significant numbers)";
+
     protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     
     protected final static String INFO_MESS_1="%s records written, %s skipped.";
@@ -480,6 +481,22 @@ public abstract class AbstractOPTIWriter {
 		return StringUtils.leftPad(str, len, '0');
 	}
 	
+    
+    protected String stripPreceedingZeros(String str, int len, String humanName) throws OPTFormatException {
+    	if (str.length()>len) {
+	    	try {
+	    		int nolla = Integer.parseInt(str.substring(0,str.length()-len));
+	    		if (nolla!=0) {
+	    			throw new NumberFormatException();
+	    		}
+	    	} catch(NumberFormatException nfe) {
+	    		error(String.format(ERR_MESS_5, humanName, str, len));
+	    	}
+	    	str=str.substring(str.length()-len);
+	    }
+    	return strFormatter(str, len, humanName);
+    }
+
     protected void error(String errorMsg) throws OPTFormatException {
 		LOG.error(errorMsg);
 		throw new OPTFormatException();
