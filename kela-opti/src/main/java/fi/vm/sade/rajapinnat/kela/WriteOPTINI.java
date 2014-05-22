@@ -39,12 +39,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Configurable
 public class WriteOPTINI extends AbstractOPTIWriter {
 
-    @Override
-    public void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-    }
-    
-    private String FILENAME_SUFFIX;
+	private String FILENAME_SUFFIX;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
     
@@ -52,7 +47,6 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 	private final static String ERR_MESS_OPTINI_2 = "could not write toimipiste %s : invalid values.";
 	private final static String ERR_MESS_OPTINI_3 = "incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTINI_4 = "OID cannot not be null";
-
 
     public WriteOPTINI() {
         super();
@@ -173,7 +167,6 @@ public class WriteOPTINI extends AbstractOPTIWriter {
                 "\n");
         return record;
 	}
-
 
 	private String getOrgOid(OrganisaatioPerustieto org) throws OPTFormatException {
 		if(null==org.getOid()) {

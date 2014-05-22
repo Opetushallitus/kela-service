@@ -45,8 +45,6 @@ public class KelaGenerator {
     @Autowired
     private WriteOPTIOL optiolWriter;
     @Autowired
-    private WriteOPTIOP optiopWriter;
-    @Autowired
     private WriteOPTITU optituWriter;
     @Autowired
     private WriteOPTIYH optiyhWriter;
@@ -82,7 +80,6 @@ public class KelaGenerator {
         writeKelaFile(optiliWriter);
         writeKelaFile(optiniWriter);
         writeKelaFile(optiolWriter);
-        writeKelaFile(optiopWriter);
         writeKelaFile(optituWriter); 
         writeKelaFile(optiyhWriter);
         writeKelaFile(optiytWriter);
@@ -95,36 +92,43 @@ public class KelaGenerator {
      * Performs ftp transfer of generated kela-opti files.
      * @throws Exception
      */
+    
+	private String mkTargetUrl(String protocol, String username,
+	String host, String targetPath, String password,
+	String dataTimeout) {
+		return String.format("%s%s%s%s%s%s%s%s%s%s", 
+		                protocol, 
+		                "://", 
+		                username, 
+		                "@", 
+		                host, 
+		                targetPath, 
+		                "?password=", 
+		                password,
+		                "&ftpClient.dataTimeout=",
+		                dataTimeout + "&passiveMode=true");
+	}
+
     private String targetUrl;
     public void transferFiles() throws Exception {
-        LOG.info("transferFiles: ");
-        targetUrl = String.format("%s%s%s%s%s%s%s%s%s%s", 
-                protocol, 
-                "://", 
-                username, 
-                "@", 
-                host, 
-                targetPath, 
-                "?password=", 
-                password,
-                "&ftpClient.dataTimeout=",
-                dataTimeout + "&passiveMode=true");
-        LOG.info("Target url: " + targetUrl);
+        LOG.info("transferFiles: target url: " + mkTargetUrl(protocol, username, host, targetPath, "???", dataTimeout));
+        targetUrl = mkTargetUrl(protocol, username, host, targetPath, password, dataTimeout);
         sendFile(optiliWriter);
         sendFile(optiniWriter);
         sendFile(optiolWriter);
         sendFile(optituWriter);
-        sendFile(optiopWriter);
         sendFile(optiyhWriter);
         sendFile(optiytWriter);
         sendFile(orgoidWriter);
         LOG.info("Files transferred");
     }
+    
     private void sendFile(AbstractOPTIWriter writer) {
     	LOG.info("Sending: " + writer.getFileName()+"...");
     	producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
     	LOG.info("Done.");
     }
+    
     private void writeKelaFile(AbstractOPTIWriter kelaWriter) {
         try {
             long time = System.currentTimeMillis();
@@ -172,7 +176,6 @@ public class KelaGenerator {
         this.dataTimeout = dataTimeout;
     }
     
-    
     public String getDataTimeout() {
         return dataTimeout;
     }
@@ -202,10 +205,6 @@ public class KelaGenerator {
     }
     
     public static void main (String[] args) {
-        /*Properties props = System.getProperties();
-        props.put("socksProxyHost", "127.0.0.1");
-        props.put("socksProxyPort", "9090") ;
-        System.setProperties(props);*/
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
         kelaGenerator.generateKelaFiles();
@@ -215,7 +214,4 @@ public class KelaGenerator {
             ex.printStackTrace();
         }
     }
-
-
-
 }

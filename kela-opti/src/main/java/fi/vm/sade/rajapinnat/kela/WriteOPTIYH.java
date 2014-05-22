@@ -33,13 +33,6 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 @Component
 @Configurable
 public class WriteOPTIYH extends AbstractOPTIWriter {
-
-	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
-	@Override
-	public  void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-	}
-	
     private String FILENAME_SUFFIX;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;

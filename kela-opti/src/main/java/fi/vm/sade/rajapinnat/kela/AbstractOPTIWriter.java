@@ -54,15 +54,6 @@ import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
  */
 @Configurable
 public abstract class AbstractOPTIWriter {
-    //TODO: writeFile() is only for backward compatibility -- it must be replaced by composeRecords()
-	public abstract void writeFile() throws IOException;
-	//TODO: createFileName(..) is only for backward compatibility -- it must be replaced by getters getPath and getFilenameSuffix
-	public void createFileName(String path, String suffix) {
-		LOG.warn("depricated function createFileName(String path, String suffix) called!");
-		createFileNames(path,suffix);
-	}
-	//TODO: bos is only for backward compatibility -- it must be accessed directly
-	protected BufferedOutputStream bos;
 
     public abstract void composeRecords() throws IOException;
     public abstract String composeRecord(Object... args) throws OPTFormatException;

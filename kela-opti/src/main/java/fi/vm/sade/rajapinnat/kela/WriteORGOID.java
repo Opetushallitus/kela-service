@@ -32,13 +32,6 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Component
 @Configurable
 public class WriteORGOID extends AbstractOPTIWriter {
-
-	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
-	@Override
-	public  void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-	}
-	
 	private enum OrgType {
 		OPPILAITOS, 
 		TOIMIPISTE

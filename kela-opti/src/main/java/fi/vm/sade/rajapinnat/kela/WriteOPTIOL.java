@@ -48,12 +48,6 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
     public WriteOPTIOL() {
         super();
     }
-    
-	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
-	@Override
-	public  void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-	}
 
     private String getKoulJarjTunnus(OrganisaatioPerustieto curOppilaitos) {
         String parentOid = curOppilaitos.getParentOid();
@@ -154,6 +148,4 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 	public void setLopputietue(String lopputietue) {
 		this.LOPPUTIETUE = lopputietue;
 	}
-	
-	
 }

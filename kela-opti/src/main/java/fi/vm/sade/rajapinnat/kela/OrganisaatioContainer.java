@@ -54,12 +54,8 @@ public class OrganisaatioContainer {
     
     private static final Logger LOG = LoggerFactory.getLogger(OrganisaatioContainer.class);
     
-    /*@Autowired
-    protected OrganisaatioService organisaatioService;*/
-    
     @Autowired
     protected OrganisaatioSearchService organisaatioSearchService;
-
 
     @Autowired
     protected KelaDAO kelaDAO;
@@ -71,8 +67,6 @@ public class OrganisaatioContainer {
     protected KoodistoService koodistoService;
     
     private List<OrganisaatioPerustieto> oppilaitokset;
-
-
     private Map<String,OrganisaatioPerustieto> oppilaitosoidOppilaitosMap;
     private List<OrganisaatioPerustieto> toimipisteet;
     private List<String> orgOidList;
@@ -89,7 +83,6 @@ public class OrganisaatioContainer {
     protected String opTyyppiAmmatillisetAikuiskoulutuseskukset;
     protected String opTyyppiKansanopistot;
     protected String opTyyppiMusiikkioppilaitokset;
-    
     
     public void fetchOrganisaatiot() {
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustieto>();
@@ -141,15 +134,12 @@ public class OrganisaatioContainer {
                 && isOppilaitosToinenAste(curOppilaitos) 
                 && hasOppilaitosIntactYhteystiedot(curOppilaitos);
     }
-    
-    
-    
+
     public boolean hasOppilaitosIntactYhteystiedot(
             OrganisaatioPerustieto curOppilaitos) {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
         return kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()) != null;
     }
-
 
     public boolean isOppilaitosInKoodisto(OrganisaatioPerustieto curOppilaitos) {
         LOG.debug("isOppilaitosInKoodisto: " + curOppilaitos.getNimi("fi") + ", " + curOppilaitos.getOppilaitosKoodi());
@@ -166,7 +156,6 @@ public class OrganisaatioContainer {
         String opTyyppi = curOppilaitos.getOppilaitostyyppi();
         return  isTyyppiToinenaste(opTyyppi);
     }
-    
 
     protected boolean isTyyppiToinenaste(String opTyyppi) {
         return opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
@@ -300,10 +289,6 @@ public class OrganisaatioContainer {
             return null;
         }
     }
-    /*
-    public void setOrganisaatioService(OrganisaatioService organisaatioService) {
-        this.organisaatioService = organisaatioService;
-    }*/
 
     public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
         this.kelaDAO = hakukohdeDAO;
@@ -322,5 +307,4 @@ public class OrganisaatioContainer {
         this.organisaatioSearchService = organisaatioSearchService;
         
     }
-
 }

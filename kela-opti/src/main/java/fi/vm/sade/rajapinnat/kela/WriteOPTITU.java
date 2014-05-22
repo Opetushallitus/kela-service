@@ -37,12 +37,7 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 @Configurable
 public class WriteOPTITU extends AbstractOPTIWriter {
 
-    @Override
-    public void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-    }
-    
-    private final static String ERR_MESS_OPTITU_1 = "could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values.";
+	private final static String ERR_MESS_OPTITU_1 = "could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values.";
     
     private String FILENAME_SUFFIX;
     private String ALKUTIETUE;

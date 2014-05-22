@@ -27,11 +27,6 @@ import java.io.InputStreamReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockftpserver.fake.FakeFtpServer;
-import org.mockftpserver.fake.UserAccount;
-import org.mockftpserver.fake.filesystem.DirectoryEntry;
-import org.mockftpserver.fake.filesystem.FileSystem;
-import org.mockftpserver.fake.filesystem.WindowsFakeFileSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -40,14 +35,11 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 
-import com.google.gwt.editor.client.Editor.Ignore;
-
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.utils.TestDataGenerator;
-import fi.vm.sade.tarjonta.service.TarjontaPublicService;
 import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 
 @ContextConfiguration(locations = "classpath:spring/test-context.xml")
@@ -65,8 +57,6 @@ public class KelaGeneratorTest {
     private WriteOPTINI optiniWriter;
     @Autowired
     private WriteOPTIOL optiolWriter;
-    @Autowired
-    private WriteOPTIOP optiopWriter;
     @Autowired
     private WriteOPTITU optituWriter;
     @Autowired
@@ -105,7 +95,6 @@ public class KelaGeneratorTest {
         setMockServices(optiliWriter);
         setMockServices(optiniWriter);
         setMockServices(optiolWriter);
-        setMockServices(optiopWriter);
         setMockServices(optituWriter);
         setMockServices(optiyhWriter);
         setMockServices(optiytWriter);

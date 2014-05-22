@@ -44,13 +44,8 @@ import fi.vm.sade.tarjonta.service.search.KoulutusPerustieto;
 @Component
 @Configurable
 public class WriteOPTILI extends AbstractOPTIWriter {
-	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
-	@Override
-	public  void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-	}
-	
-    private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
+
+	private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
     
     private String FILENAME_SUFFIX;
     private String ALKUTIETUE;

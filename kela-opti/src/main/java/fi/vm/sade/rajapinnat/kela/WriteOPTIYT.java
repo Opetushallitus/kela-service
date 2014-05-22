@@ -41,12 +41,6 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Configurable
 public class WriteOPTIYT extends AbstractOPTIWriter {
 
-	//TODO: writeFile() is only for backward compatibility (deprecated)-- it must be replaced by composeRecords()
-	@Override
-	public  void writeFile() throws IOException {
-		throw new RuntimeException("writeFile() not supported any more");
-	}
-
 	@Autowired
 	private ApplicationContext appContext;
 
@@ -93,17 +87,14 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO
 				StringUtils.leftPad("", 3),// Postinumeroon liittyva maatunnus
 				DEFAULT_DATE,// 01.01.0001-merkkijono
-				getKatuosoite(orgR.getKayntiosoite()),// Katuosoite tai
-														// kayntiosoite
+				getKatuosoite(orgR.getKayntiosoite()),// Katuosoite tai kayntiosoite
 				getPostilokero(orgR.getPostiosoite()),// Postilokero
 				getSimpleYhteystieto(orgR.getPuhelinnumero(), 60),// Puhelinnumero
 				getSimpleYhteystieto(orgR.getEmailOsoite(), 80),// Sahkopostiosoite
 				getSimpleYhteystieto(orgR.getFaksinumero(), 20),// Fax-numero
-				getSimpleYhteystieto(orgR.getWwwOsoite(), 80),// Kotisivujen
-																// osoite
+				getSimpleYhteystieto(orgR.getWwwOsoite(), 80),// Kotisivujen osoite
 				StringUtils.leftPad("", 15),// Postinumero (YHT_ULK_PTNUMERO)
-				StringUtils.leftPad("", 25),// Postitoimipaikka
-											// (YHT_ULK_PTPAIKKA)
+				StringUtils.leftPad("", 25),// Postitoimipaikka (YHT_ULK_PTPAIKKA)
 				StringUtils.leftPad("", 40),// YHT_ULK_ALUE
 				DEFAULT_DATE,// Viimeisin paivityspaiva
 				StringUtils.leftPad("", 30),// Viimeisin paivittaja
