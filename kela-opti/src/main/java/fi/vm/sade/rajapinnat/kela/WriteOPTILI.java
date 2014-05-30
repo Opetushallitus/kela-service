@@ -183,9 +183,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         info(String.format(INFO_MESS_OPTILI_1, vastaus.getHitCount()));
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
         	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
-            OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
             try {
             	if (isHakukohdeToinenaste(tarjoajaOid)) {
+            		OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
             		this.writeRecord(curTulos, organisaatioDTO);
                 } 
             } catch (OPTFormatException e) {
