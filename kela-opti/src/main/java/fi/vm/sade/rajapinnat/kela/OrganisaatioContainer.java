@@ -112,7 +112,7 @@ public class OrganisaatioContainer {
         
         criteria = new OrganisaatioSearchCriteria();
         
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.OPETUSPISTE.value());
+        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.TOIMIPISTE.value());
         criteria.getOidRestrictionList().addAll(orgOidList);
         
         List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);

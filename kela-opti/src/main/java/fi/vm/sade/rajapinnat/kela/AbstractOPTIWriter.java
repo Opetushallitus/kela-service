@@ -238,13 +238,13 @@ public abstract class AbstractOPTIWriter {
 
     protected String getOpPisteenOppilaitosnumero(
             OrganisaatioPerustieto curOrganisaatio) {
-        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE) 
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE) 
                 && !curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return StringUtils.leftPad(
                     this.orgContainer.getOppilaitosoidOppilaitosMap().get(
                             curOrganisaatio.getParentOid()).getOppilaitosKoodi(), 5);
         } 
-        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             return StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
         }
         return StringUtils.leftPad("", 5);

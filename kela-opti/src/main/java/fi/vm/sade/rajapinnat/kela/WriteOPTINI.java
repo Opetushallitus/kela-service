@@ -110,7 +110,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             koodit = orgContainer.getKoodisByArvoAndKoodisto(curOrganisaatio.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);
-        } else if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        } else if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             String opArvo = String.format("%s%s", getOpPisteenOppilaitosnumero(curOrganisaatio), getOpPisteenJarjNro(orgE));
             koodit = orgContainer.getKoodisByArvoAndKoodisto(opArvo, orgContainer.toimipistekoodisto);
         }

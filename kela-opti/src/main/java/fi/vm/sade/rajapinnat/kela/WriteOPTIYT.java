@@ -207,7 +207,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
     }
 
     private String getPostilokero(List<Map<String, String>> yhteystiedot) {
-        String katuos = this.getAddressStr(null, ADDRESS_DATA_TYPE_POSTAL, STREET_ADDRESS, false);
+        String katuos = this.getAddressStr(yhteystiedot, ADDRESS_DATA_TYPE_POSTAL, STREET_ADDRESS, false);
         if (!StringUtils.isEmpty(katuos) 
                 && katuos.startsWith("PL")
                 && katuos.length() < 11) {

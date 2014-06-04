@@ -68,7 +68,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
             try {
                 String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
-                System.out.println("TarjoajaOid: " + tarjoajaOid);
                 OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
                 if (isHakukohdeToinenaste(tarjoajaOid)) {   
                     bos.write(toLatin1(createRecord(curTulos, organisaatioDTO)));
@@ -116,7 +115,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("",3), //OPL_KKERROIN
                 StringUtils.leftPad("",10), //Keston yksikko
                 getAlkupvm(), //Alkupaiva, voimassaolon alku
-                DEFAULT_DATE,  //Loppupaiva
+                DEFAULT_DATE, //Loppupaiva
                 DEFAULT_DATE, //Viimeisin paivityspaiva
                 StringUtils.leftPad("",30), //Viimeisin paivittaja
                 StringUtils.leftPad("",7), //Opiskelijamaksu
@@ -197,7 +196,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
 
     private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
@@ -210,7 +209,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     private String getOppilaitosnumero(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             return String.format("%s", organisaatio.getOppilaitosKoodi());
-        } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPETUSPISTE)) {
+        } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             return String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
         }
         return StringUtils.leftPad("", 5);
