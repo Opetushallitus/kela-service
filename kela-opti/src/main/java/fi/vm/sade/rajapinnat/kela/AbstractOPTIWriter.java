@@ -24,6 +24,8 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -73,11 +75,16 @@ public abstract class AbstractOPTIWriter {
     protected String DEFAULT_DATE;
     protected String DIR_SEPARATOR;
 
+	public final static String ALKULOPPUTIETUE_FORMAT="0+ALKU|9+LOPPU(\\?+)";
+
     protected final static String ERR_MESS_1="invalid number (%s) : '%s'";
     protected final static String ERR_MESS_2="length of %s ('%s') should be max %s.";
     protected final static String ERR_MESS_3="File not found : '%s'";
     protected final static String ERR_MESS_4="I/O error : '%s'";
     protected final static String ERR_MESS_5="%s does not preceed with enough zeros : %s (should be max %s significant numbers)";
+	protected final static String ERR_MESS_6="Alkutietue '%s' must match "+ALKULOPPUTIETUE_FORMAT;
+	protected final static String ERR_MESS_7="Lopputietue '%s' must match "+ALKULOPPUTIETUE_FORMAT;
+	protected final static String ERR_MESS_8="Number of rows (%s) will not fit into lopputietue '%s'";
 
     protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     
@@ -245,7 +252,6 @@ public abstract class AbstractOPTIWriter {
         return this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
     }
     
-
     protected KoodiType getRinnasteinenKoodi(KoodiType koulutuskoodi, String targetKoodisto) {
         KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
         uriAndVersio.setKoodiUri(koulutuskoodi.getKoodiUri());
@@ -331,7 +337,6 @@ public abstract class AbstractOPTIWriter {
             olTyyppiKoodi = koodis.get(0);
         }
         KoodiType kelaKoodi = getRinnasteinenKoodi(olTyyppiKoodi, kelaOppilaitostyyppikoodisto);
-        //info("kelaKoodi:"+kelaKoodi);
         return (kelaKoodi == null) ? StringUtils.leftPad("", 10, '0') : StringUtils.leftPad(kelaKoodi.getKoodiArvo(), 10, '0');
     }
 
@@ -344,13 +349,6 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad(kotikuntaArvo, 3);
     }
     
-    /**
-     * Get koodi metadata by locale with language fallback to FI
-     *
-     * @param koodiType
-     * @param locale
-     * @return
-     */
     public KoodiMetadataType getKoodiMetadataForLanguage(KoodiType koodiType, KieliType kieli) {
         KoodiMetadataType kmdt = KoodistoHelper.getKoodiMetadataForLanguage(koodiType, kieli);
         return kmdt;
@@ -406,7 +404,21 @@ public abstract class AbstractOPTIWriter {
 		return criteria;
 	}
     
-    private int writesTries = 0;
+	private String getAlkutietueWithCheck() throws IOException {
+		if (isValidAlkutietue(getAlkutietue())) {
+			return getAlkutietue();
+		}
+		return null;
+	}
+
+	private String getLopputietueWithCheck() throws IOException {
+		if (isValidLopputietue(getLopputietue())) {
+			return getLopputietue();
+		}
+		return null;
+	}
+
+	private int writesTries = 0;
     private int writes = 0;
     
 	public void writeStream() {
@@ -415,10 +427,10 @@ public abstract class AbstractOPTIWriter {
 	    writes = 0;
 		try {
 			bostr = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
-			bostr.write(toLatin1(getAlkutietue() + "\n"));
+			bostr.write(toLatin1(getAlkutietueWithCheck() + "\n"));
 			bostr.flush();
 			composeRecords();
-			bostr.write(toLatin1(getLopputietue() + "\n"));
+			bostr.write(toLatin1(convertedLopputietue(writes) + "\n"));
 			bostr.flush();
 			bostr.close();
 			LOG.info(String.format(INFO_MESS_1, writes, writesTries-writes));
@@ -499,5 +511,43 @@ public abstract class AbstractOPTIWriter {
     
     protected void info(String infoMsg) {
 		LOG.info(infoMsg);
+	}
+    
+	private boolean isValidAlkuLopputietue(String stringToTest) {
+	   	Pattern r = Pattern.compile(ALKULOPPUTIETUE_FORMAT);
+	   	return (r.matcher(stringToTest)).matches();
+	}
+	
+	private boolean isValidAlkutietue(String stringToTest) throws IOException {
+		if (!isValidAlkuLopputietue(stringToTest)) {
+			throw new IOException(String.format(ERR_MESS_6, stringToTest)); 
+		}
+		return true;
+	}
+
+	private boolean isValidLopputietue(String stringToTest) throws IOException {
+		if (!isValidAlkuLopputietue(stringToTest)) {
+			throw new IOException(String.format(ERR_MESS_7, stringToTest)); 
+		}
+		return true;
+	}
+
+	//i.e.  999LOPPU???? -> 999LOPPU057
+	private String convertedLopputietue(int numOfRecords) throws IOException {
+		String lopputietueToConvert = getLopputietueWithCheck();
+		if (!isValidLopputietue(lopputietueToConvert)) {
+			return null;
+		}
+		Pattern r = Pattern.compile(ALKULOPPUTIETUE_FORMAT);
+    	Matcher m=r.matcher(lopputietueToConvert);
+        if(!m.find() || m.groupCount()!=1 || m.group(1)==null) {
+        	throw new IOException(String.format(ERR_MESS_7, lopputietueToConvert));
+        }
+        int numOfQuestionMarks = m.group(1).length();
+        if((""+numOfRecords).length()>numOfQuestionMarks) {
+        	throw new IOException(String.format(ERR_MESS_8, ""+numOfRecords, lopputietueToConvert));
+        }
+        return lopputietueToConvert.substring(0, lopputietueToConvert.length()-numOfQuestionMarks)
+        		+StringUtils.leftPad(""+numOfRecords, numOfQuestionMarks, '0');
 	}
 }
