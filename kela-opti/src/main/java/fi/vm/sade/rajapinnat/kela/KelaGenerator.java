@@ -51,7 +51,7 @@ public class KelaGenerator {
     @Autowired
     private WriteOPTIYT optiytWriter;
     @Autowired
-    private WriteORGOID orgoidWriter;
+    private WriteOPTIOR optiorWriter;
     
     @Autowired
     private OrganisaatioContainer orgContainer;
@@ -77,13 +77,13 @@ public class KelaGenerator {
         long startTime = time;
         orgContainer.fetchOrganisaatiot();;
         LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        writeKelaFile(optiorWriter);
         writeKelaFile(optiliWriter);
         writeKelaFile(optiniWriter);
         writeKelaFile(optiolWriter);
         writeKelaFile(optituWriter); 
         writeKelaFile(optiyhWriter);
         writeKelaFile(optiytWriter);
-        writeKelaFile(orgoidWriter);
         LOG.info("All files generated");
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
     }
@@ -113,13 +113,13 @@ public class KelaGenerator {
     public void transferFiles() throws Exception {
         LOG.info("transferFiles: target url: " + mkTargetUrl(protocol, username, host, targetPath, "???", dataTimeout));
         targetUrl = mkTargetUrl(protocol, username, host, targetPath, password, dataTimeout);
+        sendFile(optiorWriter);
         sendFile(optiliWriter);
         sendFile(optiniWriter);
         sendFile(optiolWriter);
         sendFile(optituWriter);
         sendFile(optiyhWriter);
         sendFile(optiytWriter);
-        sendFile(orgoidWriter);
         LOG.info("Files transferred");
     }
     
