@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,17 +123,39 @@ public class OrganisaatioContainer {
             }
         }
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
-        LOG.info(String.format("found valid oppilaitos: %s (%s rejected) and valid toimipiste: %s (%s rejected)", 
+        LOG.info(String.format("found valid oppilaitos: %s (%s rejected : %s not in koodisto, %s not toinen aste, %s invalid yhteystieto)\nfound valid toimipiste: %s (%s rejected)", 
         		oppilaitokset.size(),
         		oppilaitoksetR.size()-oppilaitokset.size(),
+        	    notInKoodisto,
+        	    notOppilaitosToinenAste,
+        	    notIntactYhteystiedot,
         		toimipisteet.size(),
         		opetuspisteet.size()-toimipisteet.size()));
     }
     
+    int notInKoodisto=0;
+    int notOppilaitosToinenAste=0;
+    int notIntactYhteystiedot=0;
     public boolean isOppilaitosWritable(OrganisaatioPerustieto curOppilaitos) {
-        return isOppilaitosInKoodisto(curOppilaitos) 
-                && isOppilaitosToinenAste(curOppilaitos) 
-                && hasOppilaitosIntactYhteystiedot(curOppilaitos);
+    	if (!isOppilaitosInKoodisto(curOppilaitos)) {
+    		notInKoodisto++;
+    		LOG.warn("not in koodisto");
+    		return false;
+    	}
+    	
+    	if (!isOppilaitosToinenAste(curOppilaitos)) {
+    		notOppilaitosToinenAste++;
+    		LOG.warn("not in toinen aste");
+    		return false;
+    	}
+
+    	if (!hasOppilaitosIntactYhteystiedot(curOppilaitos)) {
+    		notIntactYhteystiedot++;
+    		LOG.warn("no yhteystieto");
+    		return false;
+    	}
+    	LOG.warn("ok oppilaitos");
+    	return true;
     }
 
     public boolean hasOppilaitosIntactYhteystiedot(
@@ -148,7 +171,11 @@ public class OrganisaatioContainer {
         if (!StringUtils.isEmpty(oppilaitoskoodi)) {
             koodit = getKoodisByArvoAndKoodisto(oppilaitoskoodi, oppilaitosnumerokoodisto);
         }
-        return koodit != null && !koodit.isEmpty();
+        boolean ret = koodit != null && !koodit.isEmpty();
+        if (!ret) {
+        	LOG.warn("not found koodi: "+oppilaitoskoodi+" koodisto "+oppilaitosnumerokoodisto);
+        }
+        return ret;
     }
 
     public boolean isOppilaitosToinenAste(
@@ -158,7 +185,7 @@ public class OrganisaatioContainer {
     }
 
     protected boolean isTyyppiToinenaste(String opTyyppi) {
-        return opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
+    	boolean ret= opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
                 || opTyyppiAmmatillisetErikoisoppilaitokset.equals(opTyyppi)
                 || opTyyppiAmmatillisetOppilaitokset.equals(opTyyppi)
                 || opTyyppiAmmattillisetErityisoppilaitokset.equals(opTyyppi)
@@ -166,6 +193,11 @@ public class OrganisaatioContainer {
                 || opTyyppiLukiot.equals(opTyyppi)
                 || opTyyppiLukiotJaPeruskoulut.equals(opTyyppi)
                 || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
+        if (!ret) {
+        	LOG.warn("not toinen aste : "+opTyyppi);
+        }
+    	
+        return ret; 
     }
     
     public boolean isToimipisteWritable(OrganisaatioPerustieto curToimipiste) {
