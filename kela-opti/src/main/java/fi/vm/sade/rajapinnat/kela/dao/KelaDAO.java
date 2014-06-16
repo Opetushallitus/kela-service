@@ -18,6 +18,8 @@ package fi.vm.sade.rajapinnat.kela.dao;
 import java.util.List;
 
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 
@@ -36,5 +38,13 @@ public interface KelaDAO {
     Long getKayntiosoiteIdForOrganisaatio(Long id);
     
     List<Organisaatiosuhde> findAllLiitokset();
+
+	Koulutusmoduuli getKoulutusmoduuli(String oid);
+
+	List<String> getParentOids(String oid);
+
+	List<String> getChildrenOids(String oid);
+
+	KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid);
 
 }

@@ -15,6 +15,7 @@
  */
 package fi.vm.sade.rajapinnat.kela.dao.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
@@ -72,6 +75,88 @@ public class KelaDAOImpl implements KelaDAO {
     }
 
     @Override
+    public Koulutusmoduuli getKoulutusmoduuli(String oid) {
+        try {
+        	Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) tarjontaEm.createQuery("FROM "+Koulutusmoduuli.class.getName()+" WHERE oid=?")
+            .setParameter(1, oid)
+            .getSingleResult();
+            return koulutusmoduuli;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid) {
+        try {
+        	KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) tarjontaEm.createQuery("FROM "+KoulutusmoduuliToteutus.class.getName()+" WHERE oid=?")
+            .setParameter(1, oid)
+            .getSingleResult();
+            return koulutusmoduuliToteutus;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public  List<String> getParentOids(String oid) {
+    	ArrayList<String> resultList = new  ArrayList<String>();
+    	_getParentOids(oid,resultList);
+    	return resultList;
+    }
+
+    @SuppressWarnings("unchecked")
+	private void _getParentOids(String rootOid,List<String> resultList) {
+    	if (resultList.contains(rootOid)) {
+    		return;
+    	}
+		String qString=
+				"select km.oid "+
+				"from koulutus_sisaltyvyys ks,"+
+				"	koulutusmoduuli km,"+
+				"	koulutusmoduuli km2,"+
+				"	koulutus_sisaltyvyys_koulutus ksk "+
+				"   where "+
+				" km.id=ks.parent_id and "+
+				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
+				" ksk.koulutusmoduuli_id=km2.id and "+
+				" km2.oid = ?";
+		for (String oid : (List<String>) tarjontaEm.createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
+			_getParentOids(oid, resultList);
+			resultList.add(oid);
+		}
+    }
+    
+    @Override
+    public  List<String> getChildrenOids(String oid) {
+    	ArrayList<String> resultList = new  ArrayList<String>();
+    	_getChildrenOids(oid,resultList);
+    	return resultList;
+    }
+
+    @SuppressWarnings("unchecked")
+	private void _getChildrenOids(String rootOid,List<String> resultList) {
+    	if (resultList.contains(rootOid)) {
+    		return;
+    	}
+		String qString=
+				"select km.oid "+
+				"from koulutus_sisaltyvyys ks,"+
+				"	koulutusmoduuli km,"+
+				"	koulutusmoduuli km2,"+
+				"	koulutus_sisaltyvyys_koulutus ksk "+
+				" where "+
+				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
+				" ksk.koulutusmoduuli_id=km.id and  "+
+				" ks.parent_id=km2.id and "+
+				" km2.oid = ?";
+		for (String oid : (List<String>) tarjontaEm.createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
+			_getChildrenOids(oid, resultList);
+			resultList.add(oid);
+		}
+    }
+    
+    @Override
     public Organisaatio findOrganisaatioByOid(String oid) {
         try {
             return (Organisaatio) organisaatioEm.createQuery("FROM "+Organisaatio.class.getName()+" WHERE oid=?")
@@ -82,6 +167,7 @@ public class KelaDAOImpl implements KelaDAO {
         }
     }
 
+  
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         try {
@@ -131,6 +217,4 @@ public class KelaDAOImpl implements KelaDAO {
     public void setOrganisaatioDbUrl(String organisaatioDbUrl) {
         this.organisaatioDbUrl = organisaatioDbUrl;
     }
-
-
 }
