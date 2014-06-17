@@ -100,18 +100,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
     
     private Object getTutkintotunniste(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
-	    String koodiUri = koulutusPerustieto.getKoulutuskoodi().getUri();
-	    List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
-	    KoodiType koulutuskoodi = null;
-	    if (!koodis.isEmpty()) {
-	        koulutuskoodi = koodis.get(0);
-	    }
-	    KoodiType kelaKoodi = getRinnasteinenKoodi(koulutuskoodi, kelaTutkintokoodisto);
-	    if (null == kelaKoodi) {
-	    	return StringUtils.leftPad("", 6);
-	    }
-	    //KelaKoodi.getKoodiArvo() is 10 chars long. 4 left ones should be zeroes, and 6 right ones make up the kelakoodi. Otherwise it is error.
-	    return stripPreceedingZeros(kelaKoodi.getKoodiArvo(), 6,  "kelakoodi");
+    	return getTutkintotunniste(koulutusPerustieto.getKoulutuskoodi());
     }
 
     private String getKoulutuslaji() {
@@ -218,8 +207,12 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		String kandi_koulutus_uri;
 		KoulutusmoduuliToteutus komoto = kelaDAO.getKoulutusmoduuliToteutus(koulutusPerustieto.getKomotoOid());
 		Koulutusmoduuli koulutusmoduuli = kelaDAO.getKoulutusmoduuli(koulutusPerustieto.getKoulutusmoduuli());
+		if (komoto==null || koulutusmoduuli==null) {
+			return "   "; //ei JULKAISTU
+		}
 		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKandi_koulutus_uri();
 		kandi_koulutus_uri = emptyString(komoto.getKandi_koulutus_uri()) ? koulutusmoduuli.getKandi_koulutus_uri() : komoto.getKandi_koulutus_uri();
+		
 		/*
 		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja kandi_koulutus_uri ei tyhjä => 060 = alempi+ylempi
 		 */
@@ -238,14 +231,16 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		boolean alempia=false;
 		for (String oid : relativesList) {
 			koulutusmoduuli = kelaDAO.getKoulutusmoduuli(oid);
-			if (!ylempia) {
-				ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
-			}
-			if (!alempia) {
-				alempia = alempi(koulutusmoduuli.getKoulutusUri());
-			}
-			if (ylempia && alempia) {
-				break;
+			if (koulutusmoduuli!=null) {
+				if (!ylempia) {
+					ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
+				}
+				if (!alempia) {
+					alempia = alempi(koulutusmoduuli.getKoulutusUri());
+				}
+				if (ylempia && alempia) {
+					break;
+				}
 			}
 		}
 		/*

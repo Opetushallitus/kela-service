@@ -66,8 +66,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     }
 
     private String getOphTutkintotunniste(KoodiType ophTutkinto) throws OPTFormatException {
-        //KelaKoodi.ophTutkinto() is 10 chars long. 4 left ones should be zeroes, and 6 right ones make up the ophtutkinto-koodiarvo. Otherwise it is error.
-    	return stripPreceedingZeros(ophTutkinto.getKoodiArvo(), 6, "ophtutkinto - koodiarvo");
+    	return StringUtils.rightPad(ophTutkinto.getKoodiArvo(), 6, "ophtutkinto - koodiarvo");
     }
 
     private String getKelaTutkintoTunniste(KoodiType kelaTutkinto) {
@@ -96,7 +95,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
 		KoodiType kelaTutkinto = (KoodiType) args[0];
-		KoodiType ophTutkinto = (KoodiType) args[0];
+		KoodiType ophTutkinto = (KoodiType) args[1];
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //26 fields + EOL
                 getKelaTutkintoTunniste(kelaTutkinto),//TUT_ID
                 getOphTutkintotunniste(ophTutkinto),//Tilastokeskuksen koulutuskoodi

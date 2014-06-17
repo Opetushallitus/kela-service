@@ -49,6 +49,7 @@ import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 /**
  * 
@@ -484,22 +485,6 @@ public abstract class AbstractOPTIWriter {
 		return StringUtils.leftPad(str, len, '0');
 	}
 	
-    
-    protected String stripPreceedingZeros(String str, int len, String humanName) throws OPTFormatException {
-    	if (str.length()>len) {
-	    	try {
-	    		int nolla = Integer.parseInt(str.substring(0,str.length()-len));
-	    		if (nolla!=0) {
-	    			throw new NumberFormatException();
-	    		}
-	    	} catch(NumberFormatException nfe) {
-	    		error(String.format(ERR_MESS_5, humanName, str, len));
-	    	}
-	    	str=str.substring(str.length()-len);
-	    }
-    	return strFormatter(str, len, humanName);
-    }
-
     protected void error(String errorMsg) throws OPTFormatException {
 		LOG.error(errorMsg);
 		throw new OPTFormatException();
@@ -550,4 +535,15 @@ public abstract class AbstractOPTIWriter {
         return lopputietueToConvert.substring(0, lopputietueToConvert.length()-numOfQuestionMarks)
         		+StringUtils.leftPad(""+numOfRecords, numOfQuestionMarks, '0');
 	}
+	
+    protected String getTutkintotunniste(KoodistoKoodi koodistoKoodi) throws OPTFormatException {
+	    String koodiUri = koodistoKoodi.getUri();
+	    List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
+	    KoodiType koulutuskoodi = null;
+	    if (!koodis.isEmpty()) {
+	        koulutuskoodi = koodis.get(0);
+	        return StringUtils.rightPad(koulutuskoodi.getKoodiArvo(),6,"kela - tutkintotunniste");
+	    }
+	    return StringUtils.leftPad("", 6);
+    }
 }
