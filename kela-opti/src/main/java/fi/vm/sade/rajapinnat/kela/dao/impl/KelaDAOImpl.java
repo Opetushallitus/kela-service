@@ -66,7 +66,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Hakukohde findHakukohdeByOid(String oid) {
         try {
-            return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=?")
+            return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
                                 .setParameter(1, oid)
                                 .getSingleResult();
         } catch (Exception ex) {
@@ -77,7 +77,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Koulutusmoduuli getKoulutusmoduuli(String oid) {
         try {
-        	Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) tarjontaEm.createQuery("FROM "+Koulutusmoduuli.class.getName()+" WHERE oid=?")
+        	Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) tarjontaEm.createQuery("FROM "+Koulutusmoduuli.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
             .setParameter(1, oid)
             .getSingleResult();
             return koulutusmoduuli;
@@ -89,7 +89,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid) {
         try {
-        	KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) tarjontaEm.createQuery("FROM "+KoulutusmoduuliToteutus.class.getName()+" WHERE oid=?")
+        	KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) tarjontaEm.createQuery("FROM "+KoulutusmoduuliToteutus.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
             .setParameter(1, oid)
             .getSingleResult();
             return koulutusmoduuliToteutus;
@@ -117,6 +117,7 @@ public class KelaDAOImpl implements KelaDAO {
 				"	koulutusmoduuli km2,"+
 				"	koulutus_sisaltyvyys_koulutus ksk "+
 				"   where "+
+				" km.tila='JULKAISTU' and "+
 				" km.id=ks.parent_id and "+
 				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
 				" ksk.koulutusmoduuli_id=km2.id and "+
@@ -148,7 +149,9 @@ public class KelaDAOImpl implements KelaDAO {
 				" where "+
 				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
 				" ksk.koulutusmoduuli_id=km.id and  "+
+				" km.tila='JULKAISTU' and "+
 				" ks.parent_id=km2.id and "+
+				" km2.tila='JULKAISTU' and "+
 				" km2.oid = ?";
 		for (String oid : (List<String>) tarjontaEm.createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
 			_getChildrenOids(oid, resultList);
