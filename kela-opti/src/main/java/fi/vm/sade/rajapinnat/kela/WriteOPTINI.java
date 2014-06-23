@@ -152,8 +152,8 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
                 getSisainenKoodi(orgE),//Sisainen koodi
-                getOpPisteenOppilaitosnumero(curOrganisaatio),//OPE_OPPILNRO
-                getOpPisteenJarjNro(orgE),//OPE_OPJNO
+                StringUtils.leftPad("", 5),//OPE_OPPILNRO
+                StringUtils.leftPad("", 2),//OPE_OPJNO
                 getOppilaitosNro(curOrganisaatio),//OPPILNRO
                 StringUtils.leftPad("", 3),//KIELI
                 getOrganisaatioNimi(curOrganisaatio, orgE.getKielet()),//Nimi

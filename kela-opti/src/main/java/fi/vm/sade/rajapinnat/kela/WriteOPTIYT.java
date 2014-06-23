@@ -138,7 +138,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
 	private String getYhtId(OrganisaatioPerustieto organisaatio) throws OPTFormatException {
 		Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
-		return numFormatter("" + kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()), 10, "YhtId");
+		return numFormatter("" + kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()), 10, "Yhteystietojen yksilöivä tunniste (YHT_ID), käyntiosoite id");
 	}
 	
 	@Value("${OPTIYT.postinumeroField:postinumeroUri}")

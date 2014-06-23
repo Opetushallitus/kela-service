@@ -16,12 +16,12 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,154 +75,235 @@ public class OrganisaatioContainer {
     protected String oppilaitosnumerokoodisto;
     protected String toimipistekoodisto;
     
-    //TOINEN ASTE KOODI URIS
-    protected String opTyyppiLukiot;
-    protected String opTyyppiLukiotJaPeruskoulut;
-    protected String opTyyppiAmmatillisetOppilaitokset;
-    protected String opTyyppiAmmattillisetErityisoppilaitokset;
-    protected String opTyyppiAmmatillisetErikoisoppilaitokset;
-    protected String opTyyppiAmmatillisetAikuiskoulutuseskukset;
-    protected String opTyyppiKansanopistot;
-    protected String opTyyppiMusiikkioppilaitokset;
+    protected String [] toinenAsteUris;
+    protected String [] korkeakouluUris;
     
+    private List<OrganisaatioPerustieto> searchBasicOrganisaatios(OrganisaatioSearchCriteria criteria,OrganisaatioTyyppi tyyppi) {
+    	//because OrganisaatioTyyppi filter of criteria does not work!
+    	List<OrganisaatioPerustieto> ret = new ArrayList<OrganisaatioPerustieto>();
+    	List<OrganisaatioPerustieto> all=organisaatioSearchService.searchBasicOrganisaatios(criteria);
+        if (all.size()>=10000) {
+        	LOG.warn("Query resulted >= 10000 rows, which is the hard limit for returned rows. There may be more rows that are not returned because of this limitation! Please check.");
+        }
+        for (OrganisaatioPerustieto curOppilaitos : organisaatioSearchService.searchBasicOrganisaatios(criteria)) {
+        	if (curOppilaitos.getOrganisaatiotyypit().contains(tyyppi)) {
+        		ret.add(curOppilaitos);
+        	}
+        }
+        return ret;
+    }
+
+    private static class OrganisaatioCounts {
+    	int total=0;
+    	int rejectedTotal=0;
+    	int notInKoodisto=0;
+    	int notOppilaitosToinenAsteOrKk=0;
+    	int noParentToimipiste=0;
+    	int notFoundInDb = 0;
+    	int notIntactYhteystiedot=0;
+    }
+    
+    private OrganisaatioCounts oppilaitosCounts;
+    private OrganisaatioCounts toimipisteCounts;
+
     public void fetchOrganisaatiot() {
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustieto>();
         oppilaitokset = new ArrayList<OrganisaatioPerustieto>();
         orgOidList = new ArrayList<String>();
         OrganisaatioSearchCriteria criteria = new OrganisaatioSearchCriteria();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.TOIMIPISTE.value());
-        List<OrganisaatioPerustieto> oppilaitoksetR = organisaatioSearchService.searchBasicOrganisaatios(criteria);
-        if (oppilaitoksetR.size()==10000) {
-        	LOG.warn("Query resulted exactly 10000 rows, which is the hard limit for returned rows. There may be more rows that are not returned because of this limitation! Please check.");
-        }
+        List<OrganisaatioPerustieto> oppilaitoksetR = searchBasicOrganisaatios(criteria,OrganisaatioTyyppi.OPPILAITOS);
+
+        /* for debug:
+		try {
+			BufferedOutputStream bostr = new BufferedOutputStream(new FileOutputStream(new File("oppilaitokset.txt")));
+			for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
+				bostr.write((curOppilaitos.getOid() + "\n").getBytes());
+
+				bostr.flush();
+				if (!curOppilaitos.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+					bostr.write(("ei oppilaitos " + curOppilaitos.getNimi("FI") + " : " + curOppilaitos.getOrganisaatiotyypit()).getBytes());
+				}
+			}
+			bostr.close();
+			System.out.println("OPPILAITOS lkm :" + oppilaitoksetR.size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+
         long startTime = System.currentTimeMillis();
         LOG.info("oppilaitokset....");
+        oppilaitosCounts = new OrganisaatioCounts();
+        toimipisteCounts = new OrganisaatioCounts();
         for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
-            LOG.debug("Oppilaitos: " + curOppilaitos.getNimi("fi"));
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
                 oppilaitokset.add(curOppilaitos);
                 orgOidList.add(curOppilaitos.getOid());
             }
         }
-        
-        LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");        
+        oppilaitosCounts.total=oppilaitokset.size();
+        oppilaitosCounts.rejectedTotal=oppilaitoksetR.size()-oppilaitokset.size();
+        LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+                
         toimipisteet = new ArrayList<OrganisaatioPerustieto>();
         criteria = new OrganisaatioSearchCriteria();
-        criteria.setOrganisaatioTyyppi(OrganisaatioTyyppi.TOIMIPISTE.value());
-        criteria.getOidRestrictionList().addAll(orgOidList);
-        
-        List<OrganisaatioPerustieto> opetuspisteet = organisaatioSearchService.searchBasicOrganisaatios(criteria);
+        List<OrganisaatioPerustieto> opetuspisteet = searchBasicOrganisaatios(criteria,OrganisaatioTyyppi.TOIMIPISTE);
+        /* for debug:
+		try {
+			BufferedOutputStream bostr = new BufferedOutputStream(new FileOutputStream(new File("toimipisteet.txt")));
+			for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
+				bostr.write((curToimipiste.getOid() + "\n").getBytes());
+				if (!curToimipiste.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
+					bostr.write(("ei toimipiste " + curToimipiste.getNimi("FI") + " : " + curToimipiste.getOrganisaatiotyypit()).getBytes());
+				}
+			}
+			bostr.close();
+			System.out.println("TOIMIPISTE lkm :" + opetuspisteet.size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+
         startTime = System.currentTimeMillis();
-        LOG.info("opetuspisteet....");
+        LOG.info("toimipisteet....");
         for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
-            LOG.debug("Toimipiste: " + curToimipiste.getNimi("fi"));
             if (isToimipisteWritable(curToimipiste)) {
                 toimipisteet.add(curToimipiste);
                 orgOidList.add(curToimipiste.getOid());
             }
         }
+        toimipisteCounts.total = opetuspisteet.size();
+        toimipisteCounts.rejectedTotal = opetuspisteet.size()-toimipisteet.size();
+        
+        logToimipisteHaku(oppilaitosCounts,toimipisteCounts);
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
-        LOG.info(String.format("found valid oppilaitos: %s (%s rejected : %s not in koodisto, %s not toinen aste, %s invalid yhteystieto)\nfound valid toimipiste: %s (%s rejected)", 
-        		oppilaitokset.size(),
-        		oppilaitoksetR.size()-oppilaitokset.size(),
-        	    notInKoodisto,
-        	    notOppilaitosToinenAste,
-        	    notIntactYhteystiedot,
-        		toimipisteet.size(),
-        		opetuspisteet.size()-toimipisteet.size()));
     }
     
-    int notInKoodisto=0;
-    int notOppilaitosToinenAste=0;
-    int notIntactYhteystiedot=0;
+    private void logToimipisteHaku(OrganisaatioCounts oppilaitosCounts, OrganisaatioCounts toimipisteCounts) {
+    	LOG.info(              "Oppilaitos fetched from solr:");
+    	LOG.info(String.format("    total valid oppilaitos: %s",oppilaitosCounts.total));
+    	LOG.info(String.format("    total rejected oppilaitos: %s",oppilaitosCounts.rejectedTotal));
+    	LOG.info(              "    oppilaitos warnings:");
+    	LOG.info(String.format("        oppilaitos not found in opetuspisteet-koodisto: %s", oppilaitosCounts.notInKoodisto));
+    	LOG.info(String.format("        oppilaitos has not valid käyntiosoite: %s", oppilaitosCounts.notIntactYhteystiedot));
+    	LOG.info(              "    oppilaitos skipped:");
+    	LOG.info(String.format("        oppilaitos not found in DB: %s",oppilaitosCounts.noParentToimipiste));
+    	LOG.info(String.format("        oppilaitos not toinen aste or korkeakoulu %s",oppilaitosCounts.notOppilaitosToinenAsteOrKk));
+    	LOG.info(              "Toimipisteet fetched from solr:");
+    	LOG.info(String.format("    total valid toimipiste: %s",toimipisteCounts.total));
+    	LOG.info(String.format("    total rejected toimipiste: %s",toimipisteCounts.rejectedTotal));
+    	LOG.info(String.format("    toimipiste warnings:"));
+    	LOG.info(String.format("        toimipiste not found in oppilaitosnumero-koodisto: %s", toimipisteCounts.notInKoodisto));
+    	LOG.info(String.format("        toimipiste has not valid käyntiosoite: %s", toimipisteCounts.notIntactYhteystiedot));
+    	LOG.info(              "    toimipiste skipped:");
+    	LOG.info(String.format("        toimipiste has no parent defined or not in opetuspisteet: %s",toimipisteCounts.noParentToimipiste));
+    	LOG.info(String.format("        toimipiste not found in DB: %s",toimipisteCounts.noParentToimipiste));
+    }
+
     public boolean isOppilaitosWritable(OrganisaatioPerustieto curOppilaitos) {
-    	if (!isOppilaitosInKoodisto(curOppilaitos)) {
-    		notInKoodisto++;
-    		LOG.warn("not in koodisto");
+    	Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
+    	if (null == orgE) {
+    		LOG.error(curOppilaitos.getNimi()+" : there is no organisaatio in DB although it was found in index (org.oid: "+curOppilaitos.getOid()+")  - skipped");
+    		oppilaitosCounts.notFoundInDb++;
     		return false;
     	}
+    	if (!isOppilaitosInKoodisto(curOppilaitos)) {
+    		LOG.warn(curOppilaitos.getNimi() +" has not valid entry in 'oppilaitosnumero -koodisto' (oppilaitoskoodi: "+curOppilaitos.getOppilaitosKoodi()+") (org.oid: "+curOppilaitos.getOid()+")");
+    		oppilaitosCounts.notInKoodisto++;
+    		//return false;
+    	}
     	
-    	if (!isOppilaitosToinenAste(curOppilaitos)) {
-    		notOppilaitosToinenAste++;
-    		LOG.warn("not in toinen aste");
+    	if (!isOppilaitosToinenAsteOrKorkeakoulu(curOppilaitos)) {
+    		LOG.debug("not korkeakoulu or toinen aste - skipped");
+    		oppilaitosCounts.notOppilaitosToinenAsteOrKk++;
     		return false;
     	}
 
-    	if (!hasOppilaitosIntactYhteystiedot(curOppilaitos)) {
-    		notIntactYhteystiedot++;
-    		LOG.warn("no yhteystieto");
-    		return false;
+    	if (!hasOppilaitosIntactYhteystiedot(orgE)) {
+    		LOG.warn(curOppilaitos.getNimi() +" has not valid entry in käyntiosoite -entry in yhteystieto (org.oid: "+curOppilaitos.getOid()+")");
+    		oppilaitosCounts.notIntactYhteystiedot++;
+    		//return false;
     	}
-    	LOG.warn("ok oppilaitos");
     	return true;
     }
 
-    public boolean hasOppilaitosIntactYhteystiedot(
-            OrganisaatioPerustieto curOppilaitos) {
-        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
+    private boolean hasOppilaitosIntactYhteystiedot(Organisaatio orgE) {
         return kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()) != null;
     }
 
     public boolean isOppilaitosInKoodisto(OrganisaatioPerustieto curOppilaitos) {
-        LOG.debug("isOppilaitosInKoodisto: " + curOppilaitos.getNimi("fi") + ", " + curOppilaitos.getOppilaitosKoodi());
         String oppilaitoskoodi = curOppilaitos.getOppilaitosKoodi();
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (!StringUtils.isEmpty(oppilaitoskoodi)) {
             koodit = getKoodisByArvoAndKoodisto(oppilaitoskoodi, oppilaitosnumerokoodisto);
         }
-        boolean ret = koodit != null && !koodit.isEmpty();
-        if (!ret) {
-        	LOG.warn("not found koodi: "+oppilaitoskoodi+" koodisto "+oppilaitosnumerokoodisto);
-        }
-        return ret;
+        return koodit != null && !koodit.isEmpty();
     }
 
-    public boolean isOppilaitosToinenAste(
+    public boolean isOppilaitosToinenAsteOrKorkeakoulu(
             OrganisaatioPerustieto curOppilaitos) {
         String opTyyppi = curOppilaitos.getOppilaitostyyppi();
-        return  isTyyppiToinenaste(opTyyppi);
-    }
-
-    protected boolean isTyyppiToinenaste(String opTyyppi) {
-    	boolean ret= opTyyppiAmmatillisetAikuiskoulutuseskukset.equals(opTyyppi) 
-                || opTyyppiAmmatillisetErikoisoppilaitokset.equals(opTyyppi)
-                || opTyyppiAmmatillisetOppilaitokset.equals(opTyyppi)
-                || opTyyppiAmmattillisetErityisoppilaitokset.equals(opTyyppi)
-                || opTyyppiKansanopistot.equals(opTyyppi)
-                || opTyyppiLukiot.equals(opTyyppi)
-                || opTyyppiLukiotJaPeruskoulut.equals(opTyyppi)
-                || opTyyppiMusiikkioppilaitokset.equals(opTyyppi);
-        if (!ret) {
-        	LOG.warn("not toinen aste : "+opTyyppi);
-        }
-    	
-        return ret; 
+        return  isTyyppiToinenaste(opTyyppi) || isTyyppiKorkeakoulu(opTyyppi);
     }
     
+    int toinenAste=0;
+    protected boolean isTyyppiToinenaste(String opTyyppi) {
+    	for (String toinenAsteUri : this.toinenAsteUris) {
+    		if (toinenAsteUri.equals(opTyyppi)) {
+    			toinenAste++;
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    int korkeakoulu=0;
+    protected boolean isTyyppiKorkeakoulu(String opTyyppi) {
+    	for (String korkeakouluUri : this.korkeakouluUris) {
+    		if (korkeakouluUri.equals(opTyyppi)) {
+    			korkeakoulu++;
+    			return true;
+			}
+    	}
+    	return false;
+    }
+
     public boolean isToimipisteWritable(OrganisaatioPerustieto curToimipiste) {
         LOG.debug("isToimpisteWRitable method " + curToimipiste.getNimi("fi"));
         if (curToimipiste.getParentOid() == null) {
+        	toimipisteCounts.noParentToimipiste++;
+        	LOG.error(curToimipiste.getNimi()+" : has no parentoid (org.oid: "+curToimipiste.getOid()+") - skipped");
             return false;
         }
         
         OrganisaatioPerustieto parentToimipiste = oppilaitosoidOppilaitosMap.get(curToimipiste.getParentOid());
         if (parentToimipiste == null) {
+        	LOG.error(curToimipiste.getNimi()+" : parentoid (parentoid: "+curToimipiste.getParentOid()+") not found in oppilaitokset (org.oid: "+curToimipiste.getOid()+")  - skipped");
+        	toimipisteCounts.noParentToimipiste++;
             return false;
         }
         
         Organisaatio toimipisteE = kelaDAO.findOrganisaatioByOid(curToimipiste.getOid());
-        
         if (null==toimipisteE) {
-        	LOG.warn(String.format("There is no organisaatio for oid %s in DB although it was found in index.",curToimipiste.getOid()));
+        	LOG.error(curToimipiste.getNimi()+" : there is no organisaatio in DB although it was found in index (org.oid: "+curToimipiste.getOid()+")  - skipped");
+        	toimipisteCounts.notFoundInDb++;
+        	return false;
         }
+        
         List<KoodiType> koodit = new ArrayList<KoodiType>();
         if (null!= toimipisteE && !StringUtils.isEmpty(parentToimipiste.getOppilaitosKoodi()) && !StringUtils.isEmpty(toimipisteE.getOpetuspisteenJarjNro())) {
             String toimipistearvo = String.format("%s%s", parentToimipiste.getOppilaitosKoodi(), toimipisteE.getOpetuspisteenJarjNro());
             koodit = getKoodisByArvoAndKoodisto(toimipistearvo, toimipistekoodisto);
+            if (koodit.isEmpty()) {
+            	LOG.warn(toimipisteE.getNimi() +" has not valid entry in 'opetuspiste -koodisto' (value: "+toimipistearvo+") (org.oid: "+toimipisteE.getOid()+")");
+            	toimipisteCounts.notInKoodisto++;
+            }
         }
         
-        return null!=toimipisteE && null!=koodit && !koodit.isEmpty() && null!=(kelaDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId()));
+        if (null == kelaDAO.getKayntiosoiteIdForOrganisaatio(toimipisteE.getId())){
+        	LOG.warn(toimipisteE.getNimi() +" has not valid entry in käyntiosoite -entry in yhteystieto (org.oid: "+toimipisteE.getOid()+")");
+        	toimipisteCounts.notIntactYhteystiedot++;
+        }
+        return true;
     }
     
     public List<OrganisaatioPerustieto> getOppilaitokset() {
@@ -240,7 +321,7 @@ public class OrganisaatioContainer {
     public List<String> getOrgOidList() {
         return orgOidList;
     }
-    
+
     @Value("${koodisto-uris.oppilaitosnumero}")
     public void setOppilaitosnumerokoodisto(String oppilaitosnumerokoodisto) {
         this.oppilaitosnumerokoodisto = oppilaitosnumerokoodisto;
@@ -250,51 +331,19 @@ public class OrganisaatioContainer {
     public void setToimipistekoodisto(String toimipistekoodisto) {
         this.toimipistekoodisto = toimipistekoodisto;
     }
-    
-    @Value("${lukiot-uri}")
-    public void setOpTyyppiLukiot(String opTyyppiLukiot) {
-        this.opTyyppiLukiot = opTyyppiLukiot;
+
+    @Value("${toinenaste-uris}")
+    public void setToinenAsteUris(String toinenasteUris) {
+    	this.toinenAsteUris = toinenasteUris.split(",");
+    	LOG.info("accepting toinenaste -uris: "+Arrays.toString(this.toinenAsteUris));
     }
 
-    @Value("${lukiotjaperuskoulut-uri}")
-    public void setOpTyyppiLukiotJaPeruskoulut(String opTyyppiLukiotJaPeruskoulut) {
-        this.opTyyppiLukiotJaPeruskoulut = opTyyppiLukiotJaPeruskoulut;
-    }
-    
-    @Value("${ammatillisetoppilaitokset-uri}")
-    public void setOpTyyppiAmmatillisetOppilaitokset(
-            String opTyyppiAmmatillisetOppilaitokset) {
-        this.opTyyppiAmmatillisetOppilaitokset = opTyyppiAmmatillisetOppilaitokset;
+    @Value("${korkeakoulu-uris}")
+    public void setKorkeakouluUris(String korkeakouluUris) {
+        this.korkeakouluUris = korkeakouluUris.split(",");
+        LOG.info("accepting korkeakoulu -uris: "+Arrays.toString(this.korkeakouluUris));
     }
 
-    @Value("${ammatilliseterityisoppilaitokset-uri}")
-    public void setOpTyyppiAmmattillisetErityisoppilaitokset(
-            String opTyyppiAmmattillisetErityisoppilaitokset) {
-        this.opTyyppiAmmattillisetErityisoppilaitokset = opTyyppiAmmattillisetErityisoppilaitokset;
-    }
-
-    @Value("${ammatilliseterikoisoppilaitokset-uri}")
-    public void setOpTyyppiAmmatillisetErikoisoppilaitokset(
-            String opTyyppiAmmatillisetErikoisoppilaitokset) {
-        this.opTyyppiAmmatillisetErikoisoppilaitokset = opTyyppiAmmatillisetErikoisoppilaitokset;
-    }
-
-    @Value("${ammatillisetaikuiskoulutuskeskukset-uri}")
-    public void setOpTyyppiAmmatillisetAikuiskoulutuseskukset(
-            String opTyyppiAmmatillisetAikuiskoulutuseskukset) {
-        this.opTyyppiAmmatillisetAikuiskoulutuseskukset = opTyyppiAmmatillisetAikuiskoulutuseskukset;
-    }
-
-    @Value("${kansanopistot-uri}")
-    public void setOpTyyppiKansanopistot(String opTyyppiKansanopistot) {
-        this.opTyyppiKansanopistot = opTyyppiKansanopistot;
-    }
-
-    @Value("${musiikkioppilaitokset-uri}")
-    public void setOpTyyppiMusiikkioppilaitokset(String opTyyppiMusiikkioppilaitokset) {
-        this.opTyyppiMusiikkioppilaitokset = opTyyppiMusiikkioppilaitokset;
-    }
-    
     private  List<KoodistoType> cachedKoodistoResult;
     private String cachedKoodistoUri;
     private List<KoodistoType> searchKoodistos(String koodistoUri) {

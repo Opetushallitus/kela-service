@@ -49,6 +49,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	private final static String ERR_MESS_OPTIOR_2="could not write toimipiste %s : invalid values.";
 	private final static String ERR_MESS_OPTIOR_3="incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTIOR_4="could not find oppilaitos for toimipiste with OID %s";
+	private final static String ERR_MESS_OPTIOR_5="toimipiste should have parentoidpath";
 	
 	private final static String WARN_MESS_OPTIOR_1="perhaps toimipiste %s should not have oppilaitoskoodi (%s)";
 
@@ -92,6 +93,9 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 			if (org.getOppilaitoskoodi() != null) {
 				warn(String.format(WARN_MESS_OPTIOR_1, org.getOid(), org.getOppilaitoskoodi()));
 			} else {
+				if (null==org.getParentOidPath() ||org.getParentOidPath().length()==0 ) {
+					error(ERR_MESS_OPTIOR_5);
+				}
 				String[] parentsOids = org.getParentOidPath().split("" + PARENTPATH_SEPARATOR);
 				for (String parentOID : parentsOids) {
 					if (parentOID.length() > 0 && this.orgContainer.getOppilaitosoidOppilaitosMap().containsKey(parentOID)) {

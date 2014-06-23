@@ -16,15 +16,12 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
@@ -35,7 +32,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Component
 @Configurable
 public class WriteOPTIOL extends AbstractOPTIWriter {
-    
+	
 	private String FILENAME_SUFFIX;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
@@ -44,43 +41,39 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 	private final static String ERR_MESS_OPTIOL_2="incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTIOL_3="OID cannot not be null";
 	private final static String ERR_MESS_OPTIOL_4="Could not retreive organisaatiotyyppi";
-	
+	private final static String ERR_MESS_OPTIOL_5="could not write toimipiste %s : invalid values.";
     public WriteOPTIOL() {
         super();
     }
-
-    private String getKoulJarjTunnus(OrganisaatioPerustieto curOppilaitos) {
-        String parentOid = curOppilaitos.getParentOid();
-        String tunnus = "";
-        if (curOppilaitos.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.KOULUTUSTOIMIJA)) {
-            tunnus = (curOppilaitos.getYtunnus() != null) ? curOppilaitos.getYtunnus() : curOppilaitos.getVirastoTunnus();
-        } else if (parentOid != null) {
-            Organisaatio parent = this.kelaDAO.findOrganisaatioByOid(parentOid);
-            tunnus = (parent.getYtunnus() != null) ? parent.getYtunnus() : parent.getVirastotunnus();
-        }
-        return StringUtils.leftPad(tunnus, 10, '0');
-    }
-
+    
 	@Override
 	public void composeRecords() throws IOException {
-        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
-            try {
-            	writeRecord(curOppilaitos);
-            } catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOL_1, curOppilaitos.getOid()));
+		for (OrganisaatioPerustieto ol : this.orgContainer.getOppilaitokset()) {
+			try {
+				this.writeRecord(ol, "02");
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(ERR_MESS_OPTIOL_1, ol.getOid()));
 			}
-        }
+		}
+		for (OrganisaatioPerustieto tp : this.orgContainer.getToimipisteet()) {
+			try {
+				this.writeRecord(tp, "03");
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(ERR_MESS_OPTIOL_5, tp.getOid()));
+			}
+		}
 	}
 
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
 		OrganisaatioPerustieto curOppilaitos = (OrganisaatioPerustieto) args[0];
+		String organisaatioTyyppi = (String) args[1];
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
         String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//19 fields + EOL
                 getOppilaitosNro(curOppilaitos),//OPPIL_NRO
                 getOrgOid(orgE),
-                getOrganisaatioTyyppi(curOppilaitos),
-                getKoulJarjTunnus(curOppilaitos),//StringUtils.leftPad("", 10),//Koulutuksen jarjestajan tunnus
+                organisaatioTyyppi,
+                StringUtils.leftPad("", 10),//Koulutuksen jarjestajan tunnus
                 getYhteystietojenTunnus(orgE),//Yhteystietojen tunnus
                 getOppilaitostyyppitunnus(curOppilaitos),//OTY_ID
                 numFormatter("0", 10, null), //0-merkkeja
@@ -99,14 +92,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
                 "\n");
         return record;
 	}
-	
-	private String getOrganisaatioTyyppi(OrganisaatioPerustieto curOppilaitos) throws OPTFormatException {
-		List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
-		if (koodis.isEmpty()) {
-			error(ERR_MESS_OPTIOL_4);
-		}
-		return strFormatter(koodis.get(0).getKoodiArvo(),2,"organisaatiotyyppi");
-	}
+
 	private String getOrgOid(Organisaatio org) throws OPTFormatException {
 		if(null==org.getOid()) {
 			error(String.format(ERR_MESS_OPTIOL_3));

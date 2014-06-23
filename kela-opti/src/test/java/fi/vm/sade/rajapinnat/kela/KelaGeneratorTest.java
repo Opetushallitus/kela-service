@@ -113,7 +113,6 @@ public class KelaGeneratorTest {
         testDataGenerator.generateTarjontaData();
         testDataGenerator.createOrganisaatioData();
         testDataGenerator.createLiitosData();
-        
     }
     
     @Test

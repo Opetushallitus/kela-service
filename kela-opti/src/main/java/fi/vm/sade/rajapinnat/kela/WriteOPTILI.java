@@ -17,6 +17,7 @@ package fi.vm.sade.rajapinnat.kela;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -60,6 +61,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	private final static String ERR_MESS_OPTILI_3="incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTILI_4="OID cannot not be null";
 	private final static String ERR_MESS_OPTILI_5="hakukohde %s has no koulutukset";
+	private final static String ERR_MESS_OPTILI_6="invalid OID: '%s'";
+	private final static String ERR_MESS_OPTILI_7="komotoOID cannot not be null";
 	
     private final static String INFO_MESS_OPTILI_1="fetched %s hakukohde from index.";
     
@@ -67,7 +70,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         super();
     }
 
-    private boolean isHakukohdeToinenaste(String tarjoajaOid) {
+    private boolean isHakukohdeOppilaitos(String tarjoajaOid) {
         return this.orgContainer.getOrgOidList().contains(tarjoajaOid);
     }
 
@@ -84,8 +87,11 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     private String getAlkamiskausi(HakukohdePerustieto curTulos) {
         String kausi = curTulos.getKoulutuksenAlkamiskausi().getUri();
-        kausi = kausi.substring(0, 1);
-        return StringUtils.rightPad(kausi, 12);
+        if (null != kausi && kausi.length()>=1) {
+        	kausi = kausi.substring(0, 1).toUpperCase();
+        	return StringUtils.rightPad(kausi, 12);
+        }
+        return StringUtils.rightPad("", 12);
     }
 
     private String getAlkupvm() {
@@ -100,7 +106,10 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
     
     private Object getTutkintotunniste(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
-    	return getTutkintotunniste(koulutusPerustieto.getKoulutuskoodi());
+    	if (koulutusPerustieto.getKoulutuskoodi()==null) {
+    		error(String.format(ERR_MESS_8));
+    	}
+    	return getTutkintotunniste(koulutusPerustieto.getKoulutuskoodi(),"koulutusPerustieto nimi: "+koulutusPerustieto.getNimi()+" komoto-oid: "+koulutusPerustieto.getKomotoOid());
     }
 
     private String getKoulutuslaji() {
@@ -166,12 +175,13 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	@Override
 	public void composeRecords() throws IOException {
         HakukohteetKysely kysely = new HakukohteetKysely();
+        //kysely.setHakuOid("1.2.246.562.29.55394580975");
         HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
         info(String.format(INFO_MESS_OPTILI_1, vastaus.getHitCount()));
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
         	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
             try {
-            	if (isHakukohdeToinenaste(tarjoajaOid)) {
+            	if (isHakukohdeOppilaitos(tarjoajaOid)) {
             		KoulutuksetVastaus koulutuksetVastaus = haeKoulutukset(curTulos.getOid());
             		if (koulutuksetVastaus.getHitCount()==0) {
             			error(String.format(ERR_MESS_OPTILI_5, curTulos.getOid()));
@@ -267,8 +277,13 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		return "   ";
 	}
 	
+	Pattern isInteger;
+	
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
+		if (isInteger==null) {
+			 isInteger = Pattern.compile("\\d+");
+		}
 		HakukohdePerustieto curTulos=(HakukohdePerustieto) args[0];
 		OrganisaatioDTO organisaatioDTO=(OrganisaatioDTO) args[1];
 		KoulutusPerustieto koulutusPerustieto = (KoulutusPerustieto) args[2];
@@ -286,7 +301,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("",5), //OPL_SUUNT
                 getHakukohteenNimi(curTulos),//Hakukohteen nimi
                 StringUtils.leftPad("",1),//filler
-                getTutkinnonTaso(koulutusPerustieto),//
+                getTutkinnonTaso(koulutusPerustieto),//TUT_TASO
                 getTutkintotunniste(koulutusPerustieto),//TUT_ID = koulutuskoodi
                 getOrgOid(curTulos), //hakukohde OID
                 StringUtils.leftPad("",3), //filler
@@ -312,8 +327,22 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 DEFAULT_DATE, //Loppupaiva, voimassaolon loppu
                 StringUtils.leftPad("",1), //OPL_TULOSTUS
                 StringUtils.leftPad("",15), //OPL_OMISTAJA
-                StringUtils.leftPad("",22), //Tyhjaa
+                getKomotoOid(koulutusPerustieto) ,//KOU_OID
                 "\n");
+	}
+
+	private String getKomotoOid(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
+		if(null==koulutusPerustieto.getKomotoOid()) {
+			error(String.format(ERR_MESS_OPTILI_7));
+		}
+		String oid = koulutusPerustieto.getKomotoOid().substring(koulutusPerustieto.getKomotoOid().lastIndexOf('.') + 1);
+		if (oid == null || oid.length() == 0) {
+			error(String.format(ERR_MESS_OPTILI_3, koulutusPerustieto.getKomotoOid()));
+		}
+		if (!isInteger.matcher(oid).matches()) {
+			error(String.format(ERR_MESS_OPTILI_6, koulutusPerustieto.getKomotoOid()));
+		}
+		return strFormatter(oid, 22, "KOMOTOOID");
 	}
 
 	private String getOrgOid(OrganisaatioDTO org) throws OPTFormatException {
@@ -326,14 +355,17 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		}
 		return strFormatter(oid, 22, "OID");
 	}
-
+	
 	private String getOrgOid(HakukohdePerustieto pt) throws OPTFormatException {
 		if(null==pt.getOid()) {
 			error(String.format(ERR_MESS_OPTILI_4));
 		}
 		String oid = pt.getOid().substring(pt.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTILI_3, pt.getOid()));
+			error(String.format(ERR_MESS_OPTILI_3, oid));
+		}
+		if (!isInteger.matcher(oid).matches()) {
+			error(String.format(ERR_MESS_OPTILI_6, pt.getOid()));
 		}
 		return strFormatter(oid, 22, "OID");
 	}
@@ -341,7 +373,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	private String getHakukohteenNimi(HakukohdePerustieto curTulos) throws OPTFormatException {
 		return strCutter(curTulos.getNimi("fi"), 40, "hakukohteen nimi");
 	}
-	
+        
 	@Override
 	public String getAlkutietue() {
 		return ALKUTIETUE;

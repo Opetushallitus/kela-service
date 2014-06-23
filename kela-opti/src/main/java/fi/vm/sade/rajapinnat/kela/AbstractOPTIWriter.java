@@ -86,7 +86,10 @@ public abstract class AbstractOPTIWriter {
 	protected final static String ERR_MESS_6="Alkutietue '%s' must match "+ALKULOPPUTIETUE_FORMAT;
 	protected final static String ERR_MESS_7="Lopputietue '%s' must match "+ALKULOPPUTIETUE_FORMAT;
 	protected final static String ERR_MESS_8="Number of rows (%s) will not fit into lopputietue '%s'";
-
+	protected final static String ERR_MESS_9="Kela koulutuskoodi not found for koodistokoodi %s";
+	protected final static String ERR_MESS_10="Opplaitosnro not found for oppilaitos %s";
+	protected final static String ERR_MESS_11="Koodisto koodi has no uri ('%s') - %s";
+	
     protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     
     protected final static String INFO_MESS_1="%s records written, %s skipped.";
@@ -288,10 +291,13 @@ public abstract class AbstractOPTIWriter {
         return null;
     }
     
-    protected String getOppilaitosNro(OrganisaatioPerustieto curOrganisaatio) {
+    protected String getOppilaitosNro(OrganisaatioPerustieto curOrganisaatio) throws OPTFormatException {
         String opnro = "";
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             opnro = curOrganisaatio.getOppilaitosKoodi();
+            if (null == opnro || opnro.length()==0) {
+            	error(String.format(ERR_MESS_10, curOrganisaatio.getOid()));
+            }
         }
         return StringUtils.leftPad(opnro, 5);
     }
@@ -332,6 +338,9 @@ public abstract class AbstractOPTIWriter {
     
     protected String getOppilaitostyyppitunnus(
             OrganisaatioPerustieto curOppilaitos) {
+    	if (null == curOppilaitos.getOppilaitostyyppi() || curOppilaitos.getOppilaitostyyppi().length()==0) {
+    		return StringUtils.leftPad("", 10, '0');
+    	}
         List<KoodiType> koodis = getKoodisByUriAndVersio(curOppilaitos.getOppilaitostyyppi());        
         KoodiType olTyyppiKoodi = null;
         if (!koodis.isEmpty()) {
@@ -536,14 +545,19 @@ public abstract class AbstractOPTIWriter {
         		+StringUtils.leftPad(""+numOfRecords, numOfQuestionMarks, '0');
 	}
 	
-    protected String getTutkintotunniste(KoodistoKoodi koodistoKoodi) throws OPTFormatException {
+    protected String getTutkintotunniste(KoodistoKoodi koodistoKoodi, String humanname) throws OPTFormatException {
 	    String koodiUri = koodistoKoodi.getUri();
+	    if (koodiUri==null) {
+	    	warn(String.format(ERR_MESS_11, koodistoKoodi.getNimi(), humanname));
+	    	return "";
+	    }
 	    List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
 	    KoodiType koulutuskoodi = null;
 	    if (!koodis.isEmpty()) {
 	        koulutuskoodi = koodis.get(0);
 	        return StringUtils.rightPad(koulutuskoodi.getKoodiArvo(),6,"kela - tutkintotunniste");
 	    }
-	    return StringUtils.leftPad("", 6);
+	    error(String.format(ERR_MESS_9,koodistoKoodi.getUri()));
+	    return null; //not reached
     }
 }
