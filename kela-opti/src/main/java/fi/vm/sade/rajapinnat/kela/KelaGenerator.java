@@ -16,6 +16,7 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -205,13 +206,27 @@ public class KelaGenerator {
     }
     
     public static void main (String[] args) {
+    	if (args.length>0) {
+    		LOG.info("mode: " +Arrays.toString(args));
+    	}
+    	boolean sendonly = (args.length==1 && args[0].equalsIgnoreCase("-sendonly"));
+    	boolean generateonly = (args.length==1 && args[0].equalsIgnoreCase("-generateonly"));
+
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
-        kelaGenerator.generateKelaFiles();
-        try {
-            kelaGenerator.transferFiles();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        if (!sendonly) {
+        	kelaGenerator.generateKelaFiles();
+        }else{
+        	LOG.info("skipped generate files");
+        }
+        if (!generateonly) {
+        	try {
+        		kelaGenerator.transferFiles();
+        	} catch (Exception ex) {
+        		ex.printStackTrace();
+        	}
+        }else{
+        	LOG.info("skipped transfer files");
         }
     }
 }
