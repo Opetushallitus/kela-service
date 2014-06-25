@@ -183,20 +183,20 @@ public class OrganisaatioContainer {
     	LOG.info(String.format("    total valid oppilaitos: %s",oppilaitosCounts.total));
     	LOG.info(String.format("    total rejected oppilaitos: %s",oppilaitosCounts.rejectedTotal));
     	LOG.info(              "    oppilaitos warnings:");
-    	LOG.info(String.format("        oppilaitos not found in opetuspisteet-koodisto: %s", oppilaitosCounts.notInKoodisto));
+    	LOG.info(String.format("        oppilaitos not found in oppilaitosnumero-koodisto: %s", oppilaitosCounts.notInKoodisto));
     	LOG.info(String.format("        oppilaitos has not valid käyntiosoite: %s", oppilaitosCounts.notIntactYhteystiedot));
     	LOG.info(              "    oppilaitos skipped:");
-    	LOG.info(String.format("        oppilaitos not found in DB: %s",oppilaitosCounts.noParentToimipiste));
+    	LOG.info(String.format("        oppilaitos not found in DB: %s",oppilaitosCounts.notFoundInDb));
     	LOG.info(String.format("        oppilaitos not toinen aste or korkeakoulu %s",oppilaitosCounts.notOppilaitosToinenAsteOrKk));
     	LOG.info(              "Toimipisteet fetched from solr:");
     	LOG.info(String.format("    total valid toimipiste: %s",toimipisteCounts.total));
     	LOG.info(String.format("    total rejected toimipiste: %s",toimipisteCounts.rejectedTotal));
     	LOG.info(String.format("    toimipiste warnings:"));
-    	LOG.info(String.format("        toimipiste not found in oppilaitosnumero-koodisto: %s", toimipisteCounts.notInKoodisto));
+    	LOG.info(String.format("        toimipiste not found in opetuspisteet-koodisto: %s", toimipisteCounts.notInKoodisto));
     	LOG.info(String.format("        toimipiste has not valid käyntiosoite: %s", toimipisteCounts.notIntactYhteystiedot));
     	LOG.info(              "    toimipiste skipped:");
-    	LOG.info(String.format("        toimipiste has no parent defined or not in opetuspisteet: %s",toimipisteCounts.noParentToimipiste));
-    	LOG.info(String.format("        toimipiste not found in DB: %s",toimipisteCounts.noParentToimipiste));
+    	LOG.info(String.format("        toimipiste has no parent defined or not in oppilaitokset: %s",toimipisteCounts.noParentToimipiste));
+    	LOG.info(String.format("        toimipiste not found in DB: %s",toimipisteCounts.notFoundInDb));
     }
 
     public boolean isOppilaitosWritable(OrganisaatioPerustieto curOppilaitos) {

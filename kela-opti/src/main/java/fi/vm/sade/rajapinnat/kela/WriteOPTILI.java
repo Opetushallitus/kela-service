@@ -129,11 +129,13 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
 
     private String getOppilaitosnumero(OrganisaatioDTO organisaatio) {
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            return String.format("%s", organisaatio.getOppilaitosKoodi());
-        } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-            return String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
-        }
+    	if (null != organisaatio.getTyypit()) {
+    		if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+    			return String.format("%s", organisaatio.getOppilaitosKoodi());
+    		} else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
+    			return String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
+    		}
+    	}
         return StringUtils.leftPad("", 5);
     }
 
