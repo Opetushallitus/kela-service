@@ -85,7 +85,7 @@ public class OrganisaatioContainer {
         if (all.size()>=10000) {
         	LOG.warn("Query resulted >= 10000 rows, which is the hard limit for returned rows. There may be more rows that are not returned because of this limitation! Please check.");
         }
-        for (OrganisaatioPerustieto curOppilaitos : organisaatioSearchService.searchBasicOrganisaatios(criteria)) {
+        for (OrganisaatioPerustieto curOppilaitos : all) {
         	if (curOppilaitos.getOrganisaatiotyypit().contains(tyyppi)) {
         		ret.add(curOppilaitos);
         	}

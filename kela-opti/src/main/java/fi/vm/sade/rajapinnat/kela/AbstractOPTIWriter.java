@@ -495,12 +495,12 @@ public abstract class AbstractOPTIWriter {
 	}
 	
     protected void error(String errorMsg) throws OPTFormatException {
-		LOG.error(errorMsg);
+		LOG.error("("+getFilenameSuffix()+") "+errorMsg);
 		throw new OPTFormatException();
 	}
 
     protected void warn(String warnMsg) {
-    	LOG.warn(warnMsg);
+    	LOG.warn("("+getFilenameSuffix()+") " +warnMsg);
 	}
     
     protected void info(String infoMsg) {
