@@ -63,7 +63,7 @@ public abstract class AbstractOPTIWriter {
     
     public abstract String getAlkutietue();
     public abstract String getLopputietue();
-    public abstract String getFilenameSuffix();
+    public abstract String getFileIdentifier();
     public abstract String getPath();
     
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
@@ -171,7 +171,7 @@ public abstract class AbstractOPTIWriter {
 	}
     
     private void createFileName() {
-    	createFileNames(getPath(),getFilenameSuffix());
+    	createFileNames(getPath(),"."+getFileIdentifier());
     }
 
     private void createFileNames(String path, String name) {
@@ -495,12 +495,12 @@ public abstract class AbstractOPTIWriter {
 	}
 	
     protected void error(String errorMsg) throws OPTFormatException {
-		LOG.error("("+getFilenameSuffix()+") "+errorMsg);
+		LOG.error("("+getFileIdentifier()+") "+errorMsg);
 		throw new OPTFormatException();
 	}
 
     protected void warn(String warnMsg) {
-    	LOG.warn("("+getFilenameSuffix()+") " +warnMsg);
+    	LOG.warn("("+getFileIdentifier()+") " +warnMsg);
 	}
     
     protected void info(String infoMsg) {

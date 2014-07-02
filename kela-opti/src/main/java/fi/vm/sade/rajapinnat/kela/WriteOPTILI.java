@@ -50,7 +50,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
     
-    private String FILENAME_SUFFIX;
+    private String FILEIDENTIFIER;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
     private String KOULUTUSLAJI;
@@ -158,9 +158,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTILI.filenameSuffix:.OPTILI}")
-    public void setFilenameSuffix(String filenameSuffix) {
-        this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTILI.fileIdentifier:OPTILI}")
+    public void setFilenameSuffix(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
 	@Value("${OPTILI.koulutuslaji:N }")
@@ -387,8 +387,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	}
 
 	@Override
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	@Override

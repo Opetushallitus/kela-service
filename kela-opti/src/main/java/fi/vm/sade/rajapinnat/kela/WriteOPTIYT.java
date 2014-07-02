@@ -44,7 +44,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	@Autowired
 	private ApplicationContext appContext;
 
-	private String FILENAME_SUFFIX;
+	private String FILEIDENTIFIER;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
 	private String POSTINUMERO_FIELD = "postinumeroUri";
@@ -161,9 +161,9 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTIYT.filenameSuffix:.OPTIYT}")
-    public void setFilenameSuffix(String filenameSuffix) {
-        this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTIYT.fileIdentifier:OPTIYT}")
+    public void setFileIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
 	@Override
@@ -177,8 +177,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	}
 
 	@Override
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	@Override

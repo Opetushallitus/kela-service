@@ -39,7 +39,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Configurable
 public class WriteOPTINI extends AbstractOPTIWriter {
 
-	private String FILENAME_SUFFIX;
+	private String FILEIDENTIFIER;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
     
@@ -189,9 +189,9 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTINI.filenameSuffix:.OPTINI}")
-    public void setFilenameSuffix(String filenameSuffix) {
-        this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTINI.filenameSuffix:OPTINI}")
+    public void setFileIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
 	@Override
@@ -205,8 +205,8 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 	}
 
 	@Override
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	@Override

@@ -33,7 +33,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 @Component
 @Configurable
 public class WriteOPTIYH extends AbstractOPTIWriter {
-    private String FILENAME_SUFFIX;
+    private String FILEIDENTIFIER;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
     
@@ -112,9 +112,9 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTIYH.filenameSuffix:.OPTIYH}")
-    public void setFilenameSuffix(String filenameSuffix) {
-        this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTIYH.fileIdentifier:OPTIYH}")
+    public void setFilenIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
 	@Override
@@ -128,8 +128,8 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
 	}
 
 	@Override
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	@Override

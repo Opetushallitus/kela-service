@@ -39,7 +39,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 
 	private final static String ERR_MESS_OPTITU_1 = "could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values.";
     
-    private String FILENAME_SUFFIX;
+    private String FILEIDENTIFIER;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
 
@@ -137,9 +137,9 @@ public class WriteOPTITU extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTITU.filenameSuffix:.OPTITU}")
-    public void setFilenameSuffix(String filenameSuffix) {
-        this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTITU.fileIdentifier:OPTITU}")
+    public void setFileIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
 	@Override
@@ -153,8 +153,8 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 	}
 
 	@Override
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	@Override

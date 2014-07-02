@@ -33,15 +33,14 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Configurable
 public class WriteOPTIOL extends AbstractOPTIWriter {
 	
-	private String FILENAME_SUFFIX;
+	private String FILEIDENTIFIER;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
     
 	private final static String ERR_MESS_OPTIOL_1 = "could not write oppilaitos %s : invalid values.";
 	private final static String ERR_MESS_OPTIOL_2="incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTIOL_3="OID cannot not be null";
-	private final static String ERR_MESS_OPTIOL_4="Could not retreive organisaatiotyyppi";
-	private final static String ERR_MESS_OPTIOL_5="could not write toimipiste %s : invalid values.";
+	private final static String ERR_MESS_OPTIOL_4="could not write toimipiste %s : invalid values.";
     public WriteOPTIOL() {
         super();
     }
@@ -59,7 +58,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 			try {
 				this.writeRecord(tp, "03");
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOL_5, tp.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIOL_4, tp.getOid()));
 			}
 		}
 	}
@@ -112,17 +111,17 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 		return LOPPUTIETUE;
 	}
 
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	public String getPath() {
 		return "";
 	}
 	
-	@Value("${OPTIOL.filenameSuffix:.OPTIOL}")
-	public void setFilenameSuffix(String filenameSuffix) {
-		this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTIOL.fileIdentifier:OPTIOL}")
+	public void setFileIdentifier(String fileIdentifier) {
+		this.FILEIDENTIFIER = fileIdentifier;
 	}
 
 	@Value("${OPTIOL.alkutietue}")

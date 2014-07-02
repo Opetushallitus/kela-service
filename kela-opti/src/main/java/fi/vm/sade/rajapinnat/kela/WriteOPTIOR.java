@@ -40,7 +40,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	@Autowired
 	private ApplicationContext appContext;
 	
-	private String FILENAME_SUFFIX;
+	private String FILEIDENTIFIER;
 	private String PARENTPATH_SEPARATOR;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
@@ -158,9 +158,9 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTIOR.filenameSuffix:.OPTIOR}")
-    public void setFilenameSuffix(String filenameSuffix) {
-        this.FILENAME_SUFFIX = filenameSuffix;
+	@Value("${OPTIOR.fileIdentifier:OPTIOR}")
+    public void setFileIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
 	@Override
@@ -174,8 +174,8 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	}
 
 	@Override
-	public String getFilenameSuffix() {
-		return FILENAME_SUFFIX;
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
 	}
 
 	@Override
