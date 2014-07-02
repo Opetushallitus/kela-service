@@ -49,15 +49,23 @@ public class KelaDAOImpl implements KelaDAO {
     private static final String KAYNTIOSOITE = "kaynti";
     
     private String tarjontaDbUrl;
+    private String tarjontaDbUsername;
+    private String tarjontaDbPassword;
     private String organisaatioDbUrl;
+    private String organisaatioDbUsername;
+    private String organisaatioDbPassword;
     
     @PostConstruct
     public void initEntityManagers () {
         Map<String, String> tarjontaDbProperties = new HashMap<String, String>(); 
         tarjontaDbProperties.put("hibernate.connection.url", tarjontaDbUrl);
+        tarjontaDbProperties.put("hibernate.connection.username", tarjontaDbUsername);
+        tarjontaDbProperties.put("hibernate.connection.password", tarjontaDbPassword);
         
         Map<String, String> organisaatioDbProperties = new HashMap<String, String>(); 
         organisaatioDbProperties.put("hibernate.connection.url", organisaatioDbUrl);
+        organisaatioDbProperties.put("hibernate.connection.username", organisaatioDbUsername);
+        organisaatioDbProperties.put("hibernate.connection.password", organisaatioDbPassword);
         
         tarjontaEm = Persistence.createEntityManagerFactory("tarjontaKela", tarjontaDbProperties).createEntityManager();
         organisaatioEm = Persistence.createEntityManagerFactory("organisaatioKela", organisaatioDbProperties).createEntityManager();
@@ -203,21 +211,57 @@ public class KelaDAOImpl implements KelaDAO {
                  .getResultList();
     }
     
-    public String getTarjontaDbUrl() {
-        return tarjontaDbUrl;
-    }
-
-    @Value("${kela-tarjontadburl}")
+    @Value("${kela-tarjontadb.url}")
     public void setTarjontaDbUrl(String tarjontaDbUrl) {
         this.tarjontaDbUrl = tarjontaDbUrl;
     }
 
-    public String getOrganisaatioDbUrl() {
-        return organisaatioDbUrl;
+    public String getTarjontaDbUrl() {
+        return tarjontaDbUrl;
     }
 
-    @Value("${kela-organisaatiodburl}")
+    @Value("${kela-tarjontadb.username}")
+	public void setTarjontaDbUsername(String tarjontaDbUsername) {
+		this.tarjontaDbUsername = tarjontaDbUsername;
+	}
+
+    public String getTarjontaDbUsername() {
+		return tarjontaDbUsername;
+	}
+    
+    @Value("${kela-tarjontadb.password}")
+	public void setTarjontaDbPassword(String tarjontaDbPassword) {
+		this.tarjontaDbPassword = tarjontaDbPassword;
+	}
+
+	public String getTarjontaDbPassword() {
+		return tarjontaDbPassword;
+	}
+
+	@Value("${kela-organisaatiodb.url}")
     public void setOrganisaatioDbUrl(String organisaatioDbUrl) {
         this.organisaatioDbUrl = organisaatioDbUrl;
     }
+
+	public String getOrganisaatioDbUrl() {
+        return organisaatioDbUrl;
+    }
+
+	@Value("${kela-organisaatiodb.username}")
+	public void setOrganisaatioDbUsername(String organisaatioDbUsername) {
+		this.organisaatioDbUsername = organisaatioDbUsername;
+	}
+
+	public String getOrganisaatioDbUsername() {
+		return organisaatioDbUsername;
+	}
+
+	@Value("${kela-organisaatiodb.password}")
+	public void setOrganisaatioDbPassword(String organisaatioDbPassword) {
+		this.organisaatioDbPassword = organisaatioDbPassword;
+	}
+
+	public String getOrganisaatioDbPassword() {
+		return organisaatioDbPassword;
+	}
 }
