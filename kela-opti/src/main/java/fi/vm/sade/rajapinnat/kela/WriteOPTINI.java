@@ -189,7 +189,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         this.LOPPUTIETUE = lopputietue;
     }
 	
-	@Value("${OPTINI.filenameSuffix:OPTINI}")
+	@Value("${OPTINI.fileIdentifier:OPTINI}")
     public void setFileIdentifier(String fileIdentifier) {
         this.FILEIDENTIFIER = fileIdentifier;
     }
