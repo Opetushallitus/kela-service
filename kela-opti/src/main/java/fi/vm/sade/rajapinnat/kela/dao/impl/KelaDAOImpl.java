@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +44,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
  */
 @Repository
 public class KelaDAOImpl implements KelaDAO { 
-    
+	
     private EntityManager tarjontaEm;
     private EntityManager organisaatioEm;
     
@@ -73,14 +75,16 @@ public class KelaDAOImpl implements KelaDAO {
 
     @Override
     public Hakukohde findHakukohdeByOid(String oid) {
-        try {
+    	try {
             return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
                                 .setParameter(1, oid)
                                 .getSingleResult();
-        } catch (Exception ex) {
+        } catch (NoResultException ex) {
             return null;
-        }
-    }
+
+        } catch (NonUniqueResultException ex) {
+            return null;
+        }    }
 
     @Override
     public Koulutusmoduuli getKoulutusmoduuli(String oid) {
@@ -89,8 +93,10 @@ public class KelaDAOImpl implements KelaDAO {
             .setParameter(1, oid)
             .getSingleResult();
             return koulutusmoduuli;
-        } catch (Exception ex) {
-            return null;
+        } catch (NoResultException ex) {
+        	return null;
+        } catch (NonUniqueResultException ex) {
+        	return null;
         }
     }
 
@@ -101,9 +107,12 @@ public class KelaDAOImpl implements KelaDAO {
             .setParameter(1, oid)
             .getSingleResult();
             return koulutusmoduuliToteutus;
-        } catch (Exception ex) {
-            return null;
-        }
+	    } catch (NoResultException ex) {
+	        return null;
+	
+	    } catch (NonUniqueResultException ex) {
+	        return null;
+	    }
     }
 
     @Override
@@ -173,9 +182,12 @@ public class KelaDAOImpl implements KelaDAO {
             return (Organisaatio) organisaatioEm.createQuery("FROM "+Organisaatio.class.getName()+" WHERE oid=?")
                                 .setParameter(1, oid)
                                 .getSingleResult();
-        } catch (Exception ex) {
-            return null;
-        }
+	    } catch (NoResultException ex) {
+	        return null;
+	
+	    } catch (NonUniqueResultException ex) {
+	        return null;
+	    }
     }
 
   
@@ -185,7 +197,10 @@ public class KelaDAOImpl implements KelaDAO {
             return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
-        } catch (Exception ex) {
+        } catch (NoResultException ex) {
+            return null;
+
+        } catch (NonUniqueResultException ex) {
             return null;
         }
     }
@@ -197,11 +212,13 @@ public class KelaDAOImpl implements KelaDAO {
                 .setParameter(1, id)
                 .setParameter(2, KAYNTIOSOITE)
                 .getSingleResult();
-        } catch (Exception ex) {
+        } catch (NoResultException ex) {
+            return null;
+
+        } catch (NonUniqueResultException ex) {
             return null;
         }
     }
-    
 
     @SuppressWarnings("unchecked")
     @Override
