@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +52,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Configurable
 public class OrganisaatioContainer {
     
-    private static final Logger LOG = LoggerFactory.getLogger(OrganisaatioContainer.class);
+    private static final Logger LOG = Logger.getLogger(KelaGenerator.class);
     
     @Autowired
     protected OrganisaatioSearchService organisaatioSearchService;
@@ -105,8 +104,20 @@ public class OrganisaatioContainer {
     
     private OrganisaatioCounts oppilaitosCounts;
     private OrganisaatioCounts toimipisteCounts;
-
-    public void fetchOrganisaatiot() {
+ 
+    private boolean stopThread=false;
+    public void stop() {
+    	LOG.info("container stopping.");
+    	stopThread=true;
+    }
+    
+    private void checkStop() throws UserStopRequestException {
+    	if (stopThread) {
+    		throw new UserStopRequestException();
+    	}
+    }
+    
+    public void fetchOrganisaatiot() throws UserStopRequestException {
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustieto>();
         oppilaitokset = new ArrayList<OrganisaatioPerustieto>();
         orgOidList = new ArrayList<String>();
@@ -131,10 +142,17 @@ public class OrganisaatioContainer {
 		}*/
 
         long startTime = System.currentTimeMillis();
-        LOG.info("oppilaitokset....");
+        LOG.info("Retrieving oppilaitokset....");
         oppilaitosCounts = new OrganisaatioCounts();
         toimipisteCounts = new OrganisaatioCounts();
+        int i=0;
         for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
+        	/*i++;
+        	if (i>200) { 
+        		LOG.error("MUISTA:::::::::::::::::::_---------------------------POISTAA DEBUG");
+        		break; 
+        	} */
+        	checkStop();
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
                 oppilaitokset.add(curOppilaitos);
@@ -148,6 +166,7 @@ public class OrganisaatioContainer {
         toimipisteet = new ArrayList<OrganisaatioPerustieto>();
         criteria = new OrganisaatioSearchCriteria();
         List<OrganisaatioPerustieto> opetuspisteet = searchBasicOrganisaatios(criteria,OrganisaatioTyyppi.TOIMIPISTE);
+        
         /* for debug:
 		try {
 			BufferedOutputStream bostr = new BufferedOutputStream(new FileOutputStream(new File("toimipisteet.txt")));
@@ -164,8 +183,9 @@ public class OrganisaatioContainer {
 		}*/
 
         startTime = System.currentTimeMillis();
-        LOG.info("toimipisteet....");
+        LOG.info("Retrieving toimipisteet....");
         for (OrganisaatioPerustieto curToimipiste : opetuspisteet) {
+        	checkStop();
             if (isToimipisteWritable(curToimipiste)) {
                 toimipisteet.add(curToimipiste);
                 orgOidList.add(curToimipiste.getOid());
@@ -209,7 +229,7 @@ public class OrganisaatioContainer {
     	if (!isOppilaitosInKoodisto(curOppilaitos)) {
     		LOG.warn(curOppilaitos.getNimi() +" has not valid entry in 'oppilaitosnumero -koodisto' (oppilaitoskoodi: "+curOppilaitos.getOppilaitosKoodi()+") (org.oid: "+curOppilaitos.getOid()+")");
     		oppilaitosCounts.notInKoodisto++;
-    		//return false;
+    		//return false; --not fatal?
     	}
     	
     	if (!isOppilaitosToinenAsteOrKorkeakoulu(curOppilaitos)) {
@@ -221,7 +241,7 @@ public class OrganisaatioContainer {
     	if (!hasOppilaitosIntactYhteystiedot(orgE)) {
     		LOG.warn(curOppilaitos.getNimi() +" has not valid entry in käyntiosoite -entry in yhteystieto (org.oid: "+curOppilaitos.getOid()+")");
     		oppilaitosCounts.notIntactYhteystiedot++;
-    		//return false;
+    		//return false; --not fatal?
     	}
     	return true;
     }

@@ -74,7 +74,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     }
 
 	@Override
-	public void composeRecords() throws IOException {
+	public void composeRecords() throws IOException, UserStopRequestException {
         SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();
         criteria.setKoodistoUri(kelaTutkintokoodisto);
         criteria.setKoodistoVersioSelection(SearchKoodisByKoodistoVersioSelectionType.LATEST);
@@ -155,10 +155,5 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
-	}
-
-	@Override
-	public String getPath() {
-		return "";
 	}
 }

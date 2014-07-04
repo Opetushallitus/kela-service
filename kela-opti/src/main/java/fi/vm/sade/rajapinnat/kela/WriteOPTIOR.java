@@ -58,7 +58,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	}
 	
 	@Override
-	public void composeRecords() throws IOException {
+	public void composeRecords() throws IOException, UserStopRequestException {
 		for (OrganisaatioPerustieto ol : this.orgContainer.getOppilaitokset()) {
 			try {
 				this.writeRecord(ol, OrgType.OPPILAITOS);
@@ -176,10 +176,5 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
-	}
-
-	@Override
-	public String getPath() {
-		return "";
 	}
 }

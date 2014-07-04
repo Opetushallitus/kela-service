@@ -57,7 +57,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		super();
 	}
 
-	public void composeRecords() throws IOException {
+	public void composeRecords() throws IOException, UserStopRequestException {
 		if (organisaatioResource == null) {
 			organisaatioResource = (OrganisaatioResource) appContext.getBean("organisaatioResource"); // @Autowired did not work
 		}
@@ -179,10 +179,5 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
-	}
-
-	@Override
-	public String getPath() {
-		return "";
 	}
 }

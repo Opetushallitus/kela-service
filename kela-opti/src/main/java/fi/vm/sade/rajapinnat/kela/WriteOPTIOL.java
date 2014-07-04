@@ -46,7 +46,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
     }
     
 	@Override
-	public void composeRecords() throws IOException {
+	public void composeRecords() throws IOException, UserStopRequestException {
 		for (OrganisaatioPerustieto ol : this.orgContainer.getOppilaitokset()) {
 			try {
 				this.writeRecord(ol, "02");
@@ -113,10 +113,6 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
-	}
-
-	public String getPath() {
-		return "";
 	}
 	
 	@Value("${OPTIOL.fileIdentifier:OPTIOL}")

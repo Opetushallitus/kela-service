@@ -175,7 +175,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
 	}
 	@Override
-	public void composeRecords() throws IOException {
+	public void composeRecords() throws IOException, UserStopRequestException{
         HakukohteetKysely kysely = new HakukohteetKysely();
         //kysely.setHakuOid("1.2.246.562.29.55394580975");
         HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
@@ -373,7 +373,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	}
 	
 	private String getHakukohteenNimi(HakukohdePerustieto curTulos) throws OPTFormatException {
-		return strCutter(curTulos.getNimi("fi"), 40, "hakukohteen nimi");
+		return strCutter(curTulos.getNimi("fi"), 40, "hakukohteen nimi", false);
 	}
         
 	@Override
@@ -389,10 +389,5 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
-	}
-
-	@Override
-	public String getPath() {
-		return "";
 	}
 }

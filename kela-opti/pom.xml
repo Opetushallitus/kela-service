@@ -12,16 +12,7 @@
   <name>Rajapinnat :: KELA :: Kela OPTI - ${version}</name>
   <packaging>jar</packaging>
   <description>Kelan OPTI-tiedonsiirrot</description>
-  
-  <properties>
-     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <organisaatio.api.version>9.4.1</organisaatio.api.version>
-      <authentication.api.version>7.0-SNAPSHOT</authentication.api.version>
-      <generic.version>7.0-SNAPSHOT</generic.version>
-      <koodisto.api.version>9.4</koodisto.api.version>
-      <tarjonta.api.version>9.4.1</tarjonta.api.version>
-  </properties>
-    
+
   <build>
     <plugins>
         <plugin>

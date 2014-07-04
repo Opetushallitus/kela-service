@@ -10,7 +10,7 @@
   <name>Rajapinnat :: KELA :: parent - ${version}</name>
   
   <modules>
-  	<module>kela-tkuva</module>
 	<module>kela-opti</module>
+	<module>kela-service</module>
   </modules>
 </project>

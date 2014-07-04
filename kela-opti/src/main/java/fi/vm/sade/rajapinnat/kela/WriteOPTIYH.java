@@ -46,7 +46,7 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
     }
 
 	@Override
-	public void composeRecords() throws IOException {
+	public void composeRecords() throws IOException, UserStopRequestException {
 		List<Organisaatiosuhde> liitokset = this.kelaDAO.findAllLiitokset();
 		if (liitokset != null) {
 			for (Organisaatiosuhde curLiitos : liitokset) {
@@ -130,10 +130,5 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
-	}
-
-	@Override
-	public String getPath() {
-		return "";
 	}
 }

@@ -28,8 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,15 +57,15 @@ import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 @Configurable
 public abstract class AbstractOPTIWriter {
 
-    public abstract void composeRecords() throws IOException;
+    public abstract void composeRecords() throws IOException, UserStopRequestException;
     public abstract String composeRecord(Object... args) throws OPTFormatException;
     
     public abstract String getAlkutietue();
     public abstract String getLopputietue();
     public abstract String getFileIdentifier();
-    public abstract String getPath();
+
     
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractOPTIWriter.class);
+    protected static final Logger LOG = Logger.getLogger(KelaGenerator.class);
 
 	protected String CHARSET;
 	protected Charset LATIN1;
@@ -75,7 +74,7 @@ public abstract class AbstractOPTIWriter {
     protected String NAMEPREFIX;
     protected String DEFAULT_DATE;
     protected String DIR_SEPARATOR;
-
+    protected String logFileName;
 	public final static String ALKULOPPUTIETUE_FORMAT="0+ALKU|9+LOPPU(\\?+)";
 
     protected final static String ERR_MESS_1="invalid number (%s) : '%s'";
@@ -171,18 +170,16 @@ public abstract class AbstractOPTIWriter {
 	}
     
     private void createFileName() {
-    	createFileNames(getPath(),"."+getFileIdentifier());
+    	createFileNames("."+getFileIdentifier());
     }
 
-    private void createFileNames(String path, String name) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
-        if (StringUtils.isEmpty(path)) {
-            path = createPath();
-        }
-        fileLocalName = NAMEPREFIX + sdf.format(new Date()) + name;
+    private void createFileNames(String suffix) {
+    	String path = createPath();
+    	SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
+        fileLocalName = NAMEPREFIX + sdf.format(new Date()) + suffix;
         fileName =  path + fileLocalName;//NAMEPREFIX + sdf.format(new Date()) + name;
     }
-    
+
     private String createPath() {
         File pathF = new File(path);
         if (!pathF.exists()) {
@@ -431,7 +428,7 @@ public abstract class AbstractOPTIWriter {
 	private int writesTries = 0;
     private int writes = 0;
     
-	public void writeStream() {
+	public void writeStream() throws UserStopRequestException {
 		createFileName();
 		writesTries = 0;
 	    writes = 0;
@@ -453,8 +450,17 @@ public abstract class AbstractOPTIWriter {
 		}
 	}
     
+	private static boolean stopRequest = false;
 	
-	public void writeRecord(Object... args) throws IOException, OPTFormatException {
+	public void stop() {
+		info(this.getFileIdentifier()+" generation stopping.");
+		stopRequest=true;
+    }
+	
+	public void writeRecord(Object... args) throws IOException, OPTFormatException, UserStopRequestException {
+			if (stopRequest) {
+				throw new UserStopRequestException();
+			}
 			++writesTries;
 			bostr.write(toLatin1(composeRecord(args)));
 			bostr.flush();
@@ -471,11 +477,11 @@ public abstract class AbstractOPTIWriter {
 		return StringUtils.rightPad(str, len);
 	}
     
-    protected String strCutter(String str, int len, String humanName) throws OPTFormatException {
+    protected String strCutter(String str, int len, String humanName, boolean warn) throws OPTFormatException {
 		if (null == str) {
 			error(String.format(ERR_MESS_2, humanName, str, len));
 		}
-		if(str.length() > len) {
+		if(str.length() > len && warn) {
 			warn(String.format(WARN_MESS_1, str, len, humanName));
 			return str.substring(0,len);
 		}
@@ -498,11 +504,9 @@ public abstract class AbstractOPTIWriter {
 		LOG.error("("+getFileIdentifier()+") "+errorMsg);
 		throw new OPTFormatException();
 	}
-
     protected void warn(String warnMsg) {
     	LOG.warn("("+getFileIdentifier()+") " +warnMsg);
 	}
-    
     protected void info(String infoMsg) {
 		LOG.info(infoMsg);
 	}
