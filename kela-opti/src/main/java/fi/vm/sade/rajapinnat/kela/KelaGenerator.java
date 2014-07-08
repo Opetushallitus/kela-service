@@ -17,7 +17,12 @@ package fi.vm.sade.rajapinnat.kela;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -39,11 +44,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Configurable
 public class KelaGenerator implements Runnable {
-    
 	
     private static final Logger LOG = Logger.getLogger(KelaGenerator.class);
 
-
+    Map<String,AbstractOPTIWriter> allOptiWriters = new HashMap<String,AbstractOPTIWriter>();
     @Autowired
     private WriteOPTILI optiliWriter;
     @Autowired
@@ -59,7 +63,9 @@ public class KelaGenerator implements Runnable {
     @Autowired
     private WriteOPTIOR optiorWriter;
     @Autowired
-    private WriteLOG optiLog;  // NOTE: the only purpouse of this class is to neatly get LOG file name 
+    private WriteLOG optiLog;  // NOTE: the only purpose of this class is to neatly get LOG file name 
+
+	private List<AbstractOPTIWriter> selectedOptiWriters = new LinkedList<AbstractOPTIWriter>();
 
     @Autowired
     private OrganisaatioContainer orgContainer;
@@ -100,13 +106,9 @@ public class KelaGenerator implements Runnable {
         long startTime = time;
         orgContainer.fetchOrganisaatiot();
         LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
-        writeKelaFile(optiorWriter);
-        writeKelaFile(optiliWriter);
-        writeKelaFile(optiniWriter);
-        writeKelaFile(optiolWriter);
-        writeKelaFile(optituWriter); 
-        writeKelaFile(optiyhWriter);
-        writeKelaFile(optiytWriter);
+        for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
+        	writeKelaFile(optiWriter);
+        }
         LOG.info("All files generated");
         LOG.info("Generation time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
     }
@@ -136,13 +138,9 @@ public class KelaGenerator implements Runnable {
     public void transferFiles() throws Exception {
         LOG.info("transferFiles: target url: " + mkTargetUrl(protocol, username, host, targetPath, "???", dataTimeout));
         targetUrl = mkTargetUrl(protocol, username, host, targetPath, password, dataTimeout);
-        sendFile(optiorWriter);
-        sendFile(optiliWriter);
-        sendFile(optiniWriter);
-        sendFile(optiolWriter);
-        sendFile(optituWriter);
-        sendFile(optiyhWriter);
-        sendFile(optiytWriter);
+        for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
+        	sendFile(optiWriter);
+        }
         LOG.info("Files transferred");
     }
     
@@ -237,13 +235,14 @@ public class KelaGenerator implements Runnable {
     	}
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
-        kelaGenerator.setSendonly(args.length==1 && args[0].equalsIgnoreCase("-sendonly"));
-        kelaGenerator.setGenerateonly(args.length==1 && args[0].equalsIgnoreCase("-generateonly"));
+        if(args.length==1 && args[0].startsWith("--options=")) {
+        	kelaGenerator.setOptions(args[0].split("=")[1]);
+        };
         kelaGenerator.run();
     }
 
-    public void interrupt() {
-    	runState = RunState.INTERRUPT_REQUESTED;
+    public void stop() {
+    	runState = RunState.STOP_REQUESTED;
     	LOG.warn("Generation interrupt-request received.");
     	if (orgContainer!=null) {
     		orgContainer.stop();
@@ -256,13 +255,13 @@ public class KelaGenerator implements Runnable {
     public enum RunState {
     	IDLE,
     	RUNNING,
-    	INTERRUPT_REQUESTED,
-    	INTERRUPTED,
+    	STOP_REQUESTED,
+    	STOPPED,
     	ERROR,
     	DONE
     	
     }
-    public static final List<RunState> startableStates=Arrays.asList( RunState.IDLE, RunState.ERROR, RunState.INTERRUPTED, RunState.DONE);
+    public static final List<RunState> startableStates=Arrays.asList( RunState.IDLE, RunState.ERROR, RunState.STOPPED, RunState.DONE);
     
     public static final String LOGGERNAME="KelaGeneratorLogger";
 
@@ -275,10 +274,39 @@ public class KelaGenerator implements Runnable {
     	 fa.setAppend(true);
     }
     
-    private void initLogger() {
+    @PostConstruct
+    private void init() {
     	fa.setFile(optiLog.getFileName());
     	LOG.addAppender(fa);
     	fa.activateOptions();
+    	
+        allOptiWriters.put(optiliWriter.getFileIdentifier().toUpperCase(), optiliWriter);
+        allOptiWriters.put(optiniWriter.getFileIdentifier().toUpperCase(), optiniWriter);
+        allOptiWriters.put(optiolWriter.getFileIdentifier().toUpperCase(), optiolWriter);
+        allOptiWriters.put(optituWriter.getFileIdentifier().toUpperCase(), optituWriter);
+        allOptiWriters.put(optiyhWriter.getFileIdentifier().toUpperCase(), optiyhWriter);
+        allOptiWriters.put(optiytWriter.getFileIdentifier().toUpperCase(), optiytWriter);
+        allOptiWriters.put(optiorWriter.getFileIdentifier().toUpperCase(), optiorWriter);
+        selectedOptiWriters.addAll(allOptiWriters.values()); //default
+    }
+
+    public void setOptions(String opts) {
+    	selectedOptiWriters =  new LinkedList<AbstractOPTIWriter>();
+    	String[] options = opts.split(",");
+    	for (String option : options) {
+    		if (option.equalsIgnoreCase("SENDONLY")) {
+    			setSendonly(true);
+    		} else if (option.equalsIgnoreCase("GENERATEONLY")) {
+    			setGenerateonly(true);
+    		} else if (allOptiWriters.containsKey(option.toUpperCase())) {
+    			selectedOptiWriters.add(allOptiWriters.get(option.toUpperCase()));
+    		} else {
+    			throw new RuntimeException("Unknown option: "+option);
+    		}
+    	}
+    	if (selectedOptiWriters.size()==0) {
+    		selectedOptiWriters.addAll(allOptiWriters.values()); //default
+    	}
     }
 
     private void releaseLogger() {
@@ -288,9 +316,11 @@ public class KelaGenerator implements Runnable {
     private RunState runState = RunState.IDLE;
 	@Override
 	public void run() {
+		Ticker ticker  = new Ticker(this, tickerInterval);
+		Thread tickerTrhead =  new Thread(ticker);
 		startTime = System.currentTimeMillis();
-		initLogger();
 		runState = RunState.RUNNING;
+		tickerTrhead.start();
 		try {
 	        if (!sendonly) {
 	        	this.generateKelaFiles();
@@ -304,15 +334,17 @@ public class KelaGenerator implements Runnable {
 	        }
 	        runState = RunState.DONE;
 		} catch (UserStopRequestException e) {
-			runState = RunState.INTERRUPTED;
-			LOG.error("User interrupted.");
+			runState = RunState.STOPPED;
+			LOG.error("Interrupted.");
 		} catch (Exception ex) {
 			runState = RunState.ERROR;
 			LOG.error(ex.getMessage());
     		ex.printStackTrace();
     	} finally {
     		releaseLogger();
+    		ticker.stop();
     		endTime=System.currentTimeMillis();
+    		LOG.info("duration: "+(long)((endTime-startTime)/1000.0)+"s.");
     	}
 	}
 	
@@ -346,7 +378,44 @@ public class KelaGenerator implements Runnable {
     		return "process:["+runState+"] phase:["+phase+"] time:["+time+"s] logfile:["+logFileName+"]";
     	}
     }
+    
 
+	private int tickerInterval = 0;
+	@Value("${ticker.interval:0}")
+	public void setTickerInterval(String tickerInterval) {
+		this.tickerInterval = Integer.parseInt(tickerInterval);
+	}
+	
+	public static class Ticker implements Runnable {
+		KelaGenerator kg;
+		boolean stop = false;
+		int tickerInterval = 0;
+		
+		public void stop() {
+			stop = true;
+		}
+
+		public Ticker(KelaGenerator kg, int tickerInterval) {
+			super();
+			this.kg = kg;
+			this.tickerInterval = tickerInterval;
+		}
+
+		@Override
+		public void run() {
+			if (tickerInterval > 0) {
+				LOG.info("(TICKER) interval: "+tickerInterval+"s");
+				try {
+					while (!stop) {
+						Thread.sleep(tickerInterval * 1000);
+						LOG.info("(TICKER) "+kg.getThreadState());
+					}
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+	}
+    
 	public KelaGeneratorProgress getThreadState() {
 		return new KelaGeneratorProgress(
 				runState,

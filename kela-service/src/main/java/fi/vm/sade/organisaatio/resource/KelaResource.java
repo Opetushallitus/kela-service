@@ -25,6 +25,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
@@ -39,12 +40,9 @@ import fi.vm.sade.rajapinnat.kela.KelaGenerator;
 @Api(value = "/kela", description = "Kelan operaatiot")
 public class KelaResource {
     
-    private KelaGenerator kelaGenerator;
-    private Thread kelaGeneratorThread;
-    
     public enum Command {
     	START,
-    	INTERRUPT,
+    	STOP,
     	STATUS,
     	LOG
     }
@@ -52,19 +50,24 @@ public class KelaResource {
     public enum Response
     {
     	UNKNOWN_COMMAND,
-    	STARTED,
     	ALREADY_RUNNING,
-    	INTERRUPT_REQUESTED,
+    	STARTED,
+    	STOP_REQUESTED,
+    	STATUS,
     	NOT_STARTED,
-    	LOG,
     	FILE_NOT_FOUND
     }
+
+    private KelaGenerator kelaGenerator;
+    private Thread kelaGeneratorThread;
     
     @GET
     @Path("/export")
     @Produces("text/plain")
     @ApiOperation(value = "Vie Kelan tiedot", notes = "Operaatio vie Kelan tiedot.", response = String.class)
-    public synchronized String exportKela(@QueryParam("command") final String command) {
+    public synchronized String exportKela(@QueryParam("command") final String command,
+    		@QueryParam("options") final String options
+    		) {
     	Command cmd;
     	try {
     		cmd = Command.valueOf(command);
@@ -72,21 +75,24 @@ public class KelaResource {
     		return Response.UNKNOWN_COMMAND.name()+": "+command;
     	}
     	switch (cmd) {
-    		case START:  return start();
-    		case INTERRUPT:  return stop(); 
+    		case START:  return start(options);
+    		case STOP:  return stop(); 
     		case STATUS: return status();
     		case LOG: return log();
     	}
     	return null; //should never be reached
     }
     
-    private String start() {
-        final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
+    private String start(String options) {
     	if (kelaGenerator!=null && !KelaGenerator.startableStates.contains(kelaGenerator.getThreadState().getRunState())) {
     		return Response.ALREADY_RUNNING.name();
     	}
+    	final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
     	kelaGenerator = context.getBean(KelaGenerator.class);
         kelaGeneratorThread = new Thread((Runnable) kelaGenerator);
+        if (!StringUtils.isEmpty(options)) {
+        	kelaGenerator.setOptions(options);
+        }
         kelaGeneratorThread.start();
         return Response.STARTED.name();
     }
@@ -95,15 +101,15 @@ public class KelaResource {
     	if (kelaGenerator==null) {
     		return Response.NOT_STARTED.name();
     	}
-    	kelaGenerator.interrupt();
-        return Response.INTERRUPT_REQUESTED.name();
+    	kelaGenerator.stop();
+        return Response.STOP_REQUESTED.name();
     }
     
     private String status() {
     	if (null == kelaGenerator) {
     		return Response.NOT_STARTED.name();
     	}
-    	return "STATUS: "+kelaGenerator.getThreadState();
+    	return Response.STATUS.name()+": "+kelaGenerator.getThreadState();
     }
 
     private String log() {
