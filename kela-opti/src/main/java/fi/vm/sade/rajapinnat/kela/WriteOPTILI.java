@@ -106,10 +106,10 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
     
     private Object getTutkintotunniste(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
-    	if (koulutusPerustieto.getKoulutuskoodi()==null) {
+    	if (koulutusPerustieto.getKoulutusKoodi()==null) {
     		error(String.format(ERR_MESS_8));
     	}
-    	return getTutkintotunniste(koulutusPerustieto.getKoulutuskoodi(),"koulutusPerustieto nimi: "+koulutusPerustieto.getNimi()+" komoto-oid: "+koulutusPerustieto.getKomotoOid());
+    	return getTutkintotunniste(koulutusPerustieto.getKoulutusKoodi(),"koulutusPerustieto nimi: "+koulutusPerustieto.getNimi()+" komoto-oid: "+koulutusPerustieto.getKomotoOid());
     }
 
     private String getKoulutuslaji() {

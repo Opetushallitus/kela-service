@@ -40,6 +40,7 @@ import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.api.search.OrganisaatioSearchCriteria;
 import fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService;
+import fi.vm.sade.organisaatio.service.search.SearchCriteria;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 
@@ -80,7 +81,10 @@ public class OrganisaatioContainer {
     private List<OrganisaatioPerustieto> searchBasicOrganisaatios(OrganisaatioSearchCriteria criteria,OrganisaatioTyyppi tyyppi) {
     	//because OrganisaatioTyyppi filter of criteria does not work!
     	List<OrganisaatioPerustieto> ret = new ArrayList<OrganisaatioPerustieto>();
-    	List<OrganisaatioPerustieto> all=organisaatioSearchService.searchBasicOrganisaatios(criteria);
+    	SearchCriteria searchCriteria = new SearchCriteria();
+    	searchCriteria.setLakkautetut(false);
+    	searchCriteria.setAktiiviset(true);
+    	List<OrganisaatioPerustieto> all=organisaatioSearchService.searchHierarchy(searchCriteria);
         if (all.size()>=10000) {
         	LOG.warn("Query resulted >= 10000 rows, which is the hard limit for returned rows. There may be more rows that are not returned because of this limitation! Please check.");
         }
@@ -147,11 +151,6 @@ public class OrganisaatioContainer {
         toimipisteCounts = new OrganisaatioCounts();
         int i=0;
         for (OrganisaatioPerustieto curOppilaitos : oppilaitoksetR) {
-        	/*i++;
-        	if (i>200) { 
-        		LOG.error("MUISTA:::::::::::::::::::_---------------------------POISTAA DEBUG");
-        		break; 
-        	} */
         	checkStop();
             if (isOppilaitosWritable(curOppilaitos)) {
                 oppilaitosoidOppilaitosMap.put(curOppilaitos.getOid(), curOppilaitos);
