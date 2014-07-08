@@ -92,9 +92,6 @@ public abstract class AbstractOPTIWriter {
     protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     
     protected final static String INFO_MESS_1="%s records written, %s skipped.";
-
-    /*@Autowired
-    protected TarjontaPublicService tarjontaService;*/
     
     @Autowired
     protected TarjontaSearchService tarjontaSearchService;

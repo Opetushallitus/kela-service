@@ -39,10 +39,6 @@
                   serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
                   address="${koodisto.public.webservice.url.backend:http://NO_KOODISTO_WEBSERVICE_URL_CONFIGURED}"/>
 
-    <jaxws:client id="tarjontaPublicService"
-                  serviceClass="fi.vm.sade.tarjonta.service.TarjontaPublicService"
-                  address="${tarjonta.public.webservice.url.backend:http://NO_TARJONTA_PUBLIC_WEBSERVICE_URL_CONFIGURED}"/>
-
     <jaxws:client id="organisaatioService"
                   serviceClass="fi.vm.sade.organisaatio.api.model.OrganisaatioService"
                   address="${organisaatio.webservice.url.backend:http://NO_ORGANISAATIO_WEBSERVICE_URL_CONFIGURED}"/>
