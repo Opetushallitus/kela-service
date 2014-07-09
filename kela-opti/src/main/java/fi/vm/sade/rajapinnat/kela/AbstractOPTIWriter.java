@@ -166,6 +166,7 @@ public abstract class AbstractOPTIWriter {
 		DIR_SEPARATOR = dirSeparator;
 	}
     
+    static private Date startDate = new Date();
     private void createFileName() {
     	createFileNames("."+getFileIdentifier());
     }
@@ -173,7 +174,7 @@ public abstract class AbstractOPTIWriter {
     private void createFileNames(String suffix) {
     	String path = createPath();
     	SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
-        fileLocalName = NAMEPREFIX + sdf.format(new Date()) + suffix;
+        fileLocalName = NAMEPREFIX + sdf.format(startDate) + suffix;
         fileName =  path + fileLocalName;//NAMEPREFIX + sdf.format(new Date()) + name;
     }
 

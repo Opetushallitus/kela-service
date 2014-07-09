@@ -258,6 +258,7 @@ public class KelaGenerator implements Runnable {
     	STOP_REQUESTED,
     	STOPPED,
     	ERROR,
+    	TRANSFER,
     	DONE
     	
     }
@@ -291,9 +292,14 @@ public class KelaGenerator implements Runnable {
     }
 
     public void setOptions(String opts) {
+    	if (!runState.equals(RunState.IDLE)) {
+    		LOG.error("options may only be set when process is not running or run.");
+    		return;
+    	}
     	selectedOptiWriters =  new LinkedList<AbstractOPTIWriter>();
     	String[] options = opts.split(",");
-    	for (String option : options) {
+    	for (String optionUnTrimmed : options) {
+    		String option=optionUnTrimmed.trim();
     		if (option.equalsIgnoreCase("SENDONLY")) {
     			setSendonly(true);
     		} else if (option.equalsIgnoreCase("GENERATEONLY")) {
@@ -328,6 +334,7 @@ public class KelaGenerator implements Runnable {
 	        	LOG.info("Skipped generate files");
 	        }
 	        if (!generateonly) {
+	        	runState = RunState.TRANSFER;
 	        	this.transferFiles();
 	        }else{
 	        	LOG.info("Skipped transfer files");
