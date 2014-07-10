@@ -7,7 +7,7 @@
   </parent>
   <artifactId>kela</artifactId>
   <packaging>pom</packaging>
-  <name>Rajapinnat :: KELA :: parent - ${version}</name>
+  <name>Rajapinnat :: KELA :: parent - ${project.version}</name>
   
   <modules>
 	<module>kela-opti</module>

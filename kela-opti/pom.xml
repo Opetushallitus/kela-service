@@ -9,7 +9,7 @@
   </parent>
   
   <artifactId>kela-opti</artifactId>
-  <name>Rajapinnat :: KELA :: Kela OPTI - ${version}</name>
+  <name>Rajapinnat :: KELA :: Kela OPTI - ${project.version}</name>
   <packaging>jar</packaging>
   <description>Kelan OPTI-tiedonsiirrot</description>
 
