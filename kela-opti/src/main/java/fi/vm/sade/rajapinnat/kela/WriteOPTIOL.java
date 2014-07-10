@@ -51,14 +51,14 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 			try {
 				this.writeRecord(ol, "02");
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOL_1, ol.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIOL_1, ol.getOid()+" "+ol.getNimi()));
 			}
 		}
 		for (OrganisaatioPerustieto tp : this.orgContainer.getToimipisteet()) {
 			try {
 				this.writeRecord(tp, "03");
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOL_4, tp.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIOL_4, tp.getOid()+" "+tp.getNimi()));
 			}
 		}
 	}

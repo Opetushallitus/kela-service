@@ -55,7 +55,7 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
 						this.writeRecord(curLiitos);
 					}
 				} catch (OPTFormatException e) {
-					LOG.error(String.format(ERR_MESS_OPTIYH_2, curLiitos.getChild().getOid(), curLiitos.getParent().getOid()));
+					LOG.error(String.format(ERR_MESS_OPTIYH_2, curLiitos.getChild().getOid()+" "+curLiitos.getChild().getNimi(), curLiitos.getParent().getOid()+" "+curLiitos.getParent().getNimi()));
 				}
 			}
 		}

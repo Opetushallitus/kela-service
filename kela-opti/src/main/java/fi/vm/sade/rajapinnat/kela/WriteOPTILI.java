@@ -194,7 +194,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             		}
                 } 
             } catch (OPTFormatException e) {
-					LOG.error(String.format(ERR_MESS_OPTILI_1, curTulos.getOid(), tarjoajaOid));
+					LOG.error(String.format(ERR_MESS_OPTILI_1, (curTulos.getOid()+" "+curTulos.getNimi()), tarjoajaOid));
 			}
         }
     }

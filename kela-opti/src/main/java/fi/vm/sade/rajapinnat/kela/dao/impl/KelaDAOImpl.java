@@ -49,6 +49,7 @@ public class KelaDAOImpl implements KelaDAO {
     private EntityManager organisaatioEm;
     
     private static final String KAYNTIOSOITE = "kaynti";
+    private static final String PUHELIN = "puhelin";
     
     private String tarjontaDbUrl;
     private String tarjontaDbUsername;
@@ -205,6 +206,30 @@ public class KelaDAOImpl implements KelaDAO {
         }
     }
 
+    @Override
+    public String getPuhelinnumero(String orgOid) throws NonUniqueResultException {
+        try {
+            return (String) organisaatioEm.createQuery("SELECT puhelinnumero FROM " + Yhteystieto.class.getName() + " WHERE organisaatio_id IN (SELECT id FROM "+ Organisaatio.class.getName() + " WHERE OID=?) AND tyyppi = ? AND dType='Puhelinnumero'")
+                .setParameter(1, orgOid)
+                .setParameter(2, PUHELIN)
+                .getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public String getEmail(String orgOid) throws NonUniqueResultException {
+        try {
+            return (String) organisaatioEm.createQuery("SELECT email FROM " + Yhteystieto.class.getName() + " WHERE organisaatio_id IN (SELECT id FROM "+ Organisaatio.class.getName() + " WHERE OID=?) AND dType='Email'")
+                .setParameter(1, orgOid)
+                .getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+    
+    
     @Override
     public Long getKayntiosoiteIdForOrganisaatio(Long id) {
         try {

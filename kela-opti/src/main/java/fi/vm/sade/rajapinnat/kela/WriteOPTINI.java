@@ -133,7 +133,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 			try {
 				writeRecord(curOppilaitos);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTINI_1, curOppilaitos.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTINI_1, curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
 			} 
 		}
 
@@ -141,7 +141,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 			try {
 				writeRecord(curToimipiste);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTINI_2, curToimipiste.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTINI_2, curToimipiste.getOid()+" "+curToimipiste.getNimi()));
 			}
 		}
 	}

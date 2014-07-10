@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NonUniqueResultException;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -53,6 +55,10 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	private final static String ERR_MESS_OPTIYT_1 = "could not write oppilaitos %s : invalid values.";
 	private final static String ERR_MESS_OPTIYT_2 = "could not write toimipiste %s : invalid values.";
 
+	private final static String WARN_MESS_OPTIYT_1 = "Yhteystieto of %s - %s is empty (org.oid=%s).";
+	private final static String WARN_MESS_OPTIYT_2 = "Yhteystieto of %s - %s is not unique (org.oid=%s).";
+
+
 	public WriteOPTIYT() {
 		super();
 	}
@@ -65,7 +71,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			try {
 				writeRecord(curOppilaitos);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIYT_1, curOppilaitos.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIYT_1, curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
 			} 
 		}
 
@@ -73,7 +79,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			try {
 				writeRecord(curToimipiste);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIYT_2, curToimipiste.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIYT_2, curToimipiste.getOid()+" "+curToimipiste.getNimi()));
 			}
 		}
 	}
@@ -81,7 +87,9 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
 		OrganisaatioPerustieto organisaatio = (OrganisaatioPerustieto) args[0];
+		
 		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
+		
 		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields + EOL
 				getYhtId(organisaatio),// YHT_ID
 				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO
@@ -89,8 +97,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 				DEFAULT_DATE,// 01.01.0001-merkkijono
 				getKatuosoite(orgR.getKayntiosoite()),// Katuosoite tai kayntiosoite
 				getPostilokero(orgR.getPostiosoite()),// Postilokero
-				getSimpleYhteystieto(orgR.getPuhelinnumero(), 60),// Puhelinnumero
-				getSimpleYhteystieto(orgR.getEmailOsoite(), 80),// Sahkopostiosoite
+				getSimpleYhteystietoPuhnro(orgR),// Puhelinnumero
+				getSimpleYhteystietoSPosti(orgR),// Sahkopostiosoite
 				getSimpleYhteystieto(orgR.getFaksinumero(), 20),// Fax-numero
 				getSimpleYhteystieto(orgR.getWwwOsoite(), 80),// Kotisivujen osoite
 				StringUtils.leftPad("", 15),// Postinumero (YHT_ULK_PTNUMERO)
@@ -109,6 +117,34 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			return strFormatter(katuos, 10, "postilokero");
 		}
 		return StringUtils.rightPad("", 10);
+	}
+
+	private String getSimpleYhteystietoPuhnro(OrganisaatioRDTO org) throws OPTFormatException {
+		String pnro = null;
+		try {
+			pnro = kelaDAO.getPuhelinnumero(org.getOid());
+		} catch (NonUniqueResultException e) {
+			LOG.warn(String.format(WARN_MESS_OPTIYT_2, org.getNimi(), "puhelinnro", org.getOid()));
+		}
+		String yhteystieto = getSimpleYhteystieto(pnro,60);
+		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
+			LOG.warn(String.format(WARN_MESS_OPTIYT_1, org.getNimi(), "puhelinnro", org.getOid()));
+		}
+		return yhteystieto;
+	}
+	
+	private String getSimpleYhteystietoSPosti(OrganisaatioRDTO org) throws OPTFormatException {
+		String sp=null;
+		try {
+			sp = kelaDAO.getEmail(org.getOid());
+		} catch (NonUniqueResultException e) {
+			LOG.warn(String.format(WARN_MESS_OPTIYT_2, org.getNimi(), "email", org.getOid()));
+		}
+		String yhteystieto = getSimpleYhteystieto(sp,80);
+		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
+			LOG.warn(String.format(WARN_MESS_OPTIYT_1, org.getNimi(), "email", org.getOid()));
+		}
+		return yhteystieto;
 	}
 
 	private String getSimpleYhteystieto(String yhteystieto, int pad) throws OPTFormatException {

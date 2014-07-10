@@ -22,7 +22,18 @@ public class Yhteystieto {
     @Column(name="osoitetyyppi")
     private String osoiteTyyppi;
     
+    @Column(name="puhelinnumero")
+    private String puhelinnumero;
     
+    @Column(name="email")
+    private String email;
+    
+    @Column(name="tyyppi")
+    private String tyyppi;
+
+    @Column(name="dtype")
+    private String dtype;
+
     public String getOsoiteTyyppi() {
         return osoiteTyyppi;
     }
@@ -39,7 +50,23 @@ public class Yhteystieto {
         this.id = id;
     }
 
-    public Long getOrganisaatioId() {
+    public String getPuhelinnumero() {
+		return puhelinnumero;
+	}
+
+	public void setPuhelinnumero(String puhelinnumero) {
+		this.puhelinnumero = puhelinnumero;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Long getOrganisaatioId() {
         return organisaatioId;
     }
 
@@ -47,4 +74,20 @@ public class Yhteystieto {
         this.organisaatioId = organisaatioId;
     }
 
+	public String getTyyppi() {
+		return tyyppi;
+	}
+
+	public void setTyyppi(String tyyppi) {
+		this.tyyppi = tyyppi;
+	}
+
+	public String getDtype() {
+		return dtype;
+	}
+
+	public void setDtype(String dtype) {
+		this.dtype = dtype;
+	}
+    
 }

@@ -17,6 +17,8 @@ package fi.vm.sade.rajapinnat.kela.dao;
 
 import java.util.List;
 
+import javax.persistence.NonUniqueResultException;
+
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
@@ -46,5 +48,9 @@ public interface KelaDAO {
 	List<String> getChildrenOids(String oid);
 
 	KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid);
+
+	String getPuhelinnumero(String orgOid) throws NonUniqueResultException;
+
+	String getEmail(String orgOid) throws NonUniqueResultException;
 
 }

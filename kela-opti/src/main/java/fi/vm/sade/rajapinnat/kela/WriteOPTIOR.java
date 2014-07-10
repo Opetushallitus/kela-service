@@ -63,14 +63,14 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 			try {
 				this.writeRecord(ol, OrgType.OPPILAITOS);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOR_1, ol.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIOR_1, ol.getOid()+" "+ol.getNimi()));
 			}
 		}
 		for (OrganisaatioPerustieto tp : this.orgContainer.getToimipisteet()) {
 			try {
 				this.writeRecord(tp, OrgType.TOIMIPISTE);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOR_2, tp.getOid()));
+				LOG.error(String.format(ERR_MESS_OPTIOR_2, tp.getOid()+" "+tp.getNimi()));
 			}
 		}
 	}
