@@ -144,7 +144,10 @@ public class KelaGenerator implements Runnable {
         LOG.info("Files transferred");
     }
     
-    private void sendFile(AbstractOPTIWriter writer) {
+    private void sendFile(AbstractOPTIWriter writer) throws UserStopRequestException {
+		if (runState.equals(RunState.STOP_REQUESTED)) {
+			throw new UserStopRequestException();
+		}
     	LOG.info("Sending: " + writer.getFileName()+"...");
     	producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
     	LOG.info("Done.");
@@ -242,6 +245,10 @@ public class KelaGenerator implements Runnable {
     }
 
     public void stop() {
+    	if (!runState.equals(RunState.RUNNING) && !runState.equals(RunState.TRANSFER)) {
+    		LOG.warn("Generation interrupt-request received - but generation is not running.");
+    		return;
+    	}
     	runState = RunState.STOP_REQUESTED;
     	LOG.warn("Generation interrupt-request received.");
     	if (orgContainer!=null) {

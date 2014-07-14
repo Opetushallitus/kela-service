@@ -57,12 +57,14 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     
     private final static String ERR_MESS_OPTILI_1="could not write hakukohde %s, tarjoaja %s : invalid values.";
     private final static String ERR_MESS_OPTILI_2="hakukohde %s not found in DB although found in index.";
-    
+        
 	private final static String ERR_MESS_OPTILI_3="incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTILI_4="OID cannot not be null";
 	private final static String ERR_MESS_OPTILI_5="hakukohde %s has no koulutukset";
 	private final static String ERR_MESS_OPTILI_6="invalid OID: '%s'";
 	private final static String ERR_MESS_OPTILI_7="komotoOID cannot not be null";
+	private final static String ERR_MESS_OPTILI_8="OPPIL_NRO may not be missing (org.oid=%s).";
+	private final static String ERR_MESS_OPTILI_9="HAK_NIMI may not be missing (org.oid=%s).";
 	
     private final static String INFO_MESS_OPTILI_1="fetched %s hakukohde from index.";
     
@@ -116,7 +118,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return KOULUTUSLAJI;
     }
 
-    @SuppressWarnings("unused")
 	private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
             return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
@@ -128,21 +129,25 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return "01";
     }
 
-    private String getOppilaitosnumero(OrganisaatioDTO organisaatio) {
+    private String getOppilaitosnumero(OrganisaatioDTO organisaatio) throws OPTFormatException {
+    	String oppil_nro = "";
     	if (null != organisaatio.getTyypit()) {
     		if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-    			return String.format("%s", organisaatio.getOppilaitosKoodi());
+    			oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
     		} else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-    			return String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
+    			oppil_nro = String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
     		}
     	}
-        return StringUtils.leftPad("", 5);
+    	if (StringUtils.isEmpty(oppil_nro.trim())){
+    		error(String.format(ERR_MESS_OPTILI_8,organisaatio.getOid()+" "+organisaatio.getNimi()));
+    	}
+        return strFormatter(oppil_nro, 5, "OPPIL_NRO");
     }
 
     private String getHakukohdeId(HakukohdePerustieto curTulos) throws OPTFormatException {
         Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getOid());
         if (hakukE==null) {
-        	error(String.format(ERR_MESS_OPTILI_2,curTulos.getOid()));
+        	error(String.format(ERR_MESS_OPTILI_2,curTulos.getOid()+" "+curTulos.getNimi()));
         }
         String hakukohdeId = String.format("%s", hakukE.getId());
         return numFormatter(hakukohdeId, 10, "hakukohdeid");
@@ -177,7 +182,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException{
         HakukohteetKysely kysely = new HakukohteetKysely();
-        //kysely.setHakuOid("1.2.246.562.29.55394580975");
         HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
         info(String.format(INFO_MESS_OPTILI_1, vastaus.getHitCount()));
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
@@ -186,7 +190,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             	if (isHakukohdeOppilaitos(tarjoajaOid)) {
             		KoulutuksetVastaus koulutuksetVastaus = haeKoulutukset(curTulos.getOid());
             		if (koulutuksetVastaus.getHitCount()==0) {
-            			error(String.format(ERR_MESS_OPTILI_5, curTulos.getOid()));
+            			error(String.format(ERR_MESS_OPTILI_5, curTulos.getOid()+" "+curTulos.getNimi()));
             		}
             		OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
             		for (KoulutusPerustieto koulutusPerustieto : koulutuksetVastaus.getKoulutukset()) {
@@ -293,7 +297,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 getHakukohdeId(curTulos),//Sisainen koodi
                 getOppilaitosnumero(organisaatioDTO),//OPPIL_NRO
                 getOrgOid(organisaatioDTO), //OrganisaatioOID
-                StringUtils.leftPad("",2),//OPJNO
+                getOpetuspisteenJarjNro(curTulos, organisaatioDTO),//OPJNO
                 StringUtils.leftPad("",12),//Op. linjan tai koulutuksen jarjestysnro
                 getKoulutuslaji(),//Koulutuslaji
                 StringUtils.leftPad("",2),//Opintolinjan kieli
@@ -339,10 +343,10 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		}
 		String oid = koulutusPerustieto.getKomotoOid().substring(koulutusPerustieto.getKomotoOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTILI_3, koulutusPerustieto.getKomotoOid()));
+			error(String.format(ERR_MESS_OPTILI_3, koulutusPerustieto.getKomotoOid()+" "+koulutusPerustieto.getNimi()));
 		}
 		if (!isInteger.matcher(oid).matches()) {
-			error(String.format(ERR_MESS_OPTILI_6, koulutusPerustieto.getKomotoOid()));
+			error(String.format(ERR_MESS_OPTILI_6, koulutusPerustieto.getKomotoOid()+" "+koulutusPerustieto.getNimi()));
 		}
 		return strFormatter(oid, 22, "KOMOTOOID");
 	}
@@ -353,7 +357,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		}
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTILI_3, org.getOid()));
+			error(String.format(ERR_MESS_OPTILI_3, org.getOid()+" "+org.getNimi()));
 		}
 		return strFormatter(oid, 22, "OID");
 	}
@@ -364,16 +368,26 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		}
 		String oid = pt.getOid().substring(pt.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTILI_3, oid));
+			error(String.format(ERR_MESS_OPTILI_3, oid+" "+pt.getNimi()));
 		}
 		if (!isInteger.matcher(oid).matches()) {
-			error(String.format(ERR_MESS_OPTILI_6, pt.getOid()));
+			error(String.format(ERR_MESS_OPTILI_6, pt.getOid()+" "+pt.getNimi()));
 		}
 		return strFormatter(oid, 22, "OID");
 	}
 	
 	private String getHakukohteenNimi(HakukohdePerustieto curTulos) throws OPTFormatException {
-		return strCutter(curTulos.getNimi("fi"), 40, "hakukohteen nimi", false);
+		String hakNimi=curTulos.getNimi("fi");
+		if (StringUtils.isEmpty(hakNimi)) {
+			hakNimi=curTulos.getNimi("sv");
+		}
+		if (StringUtils.isEmpty(hakNimi)) {
+			hakNimi=curTulos.getNimi("en");
+		}
+		if (StringUtils.isEmpty(hakNimi)) {
+			error(String.format(ERR_MESS_OPTILI_9, curTulos.getOid()+" "+curTulos.getNimi()));
+		}
+		return strCutter(hakNimi, 40, "hakukohteen nimi", false);
 	}
         
 	@Override

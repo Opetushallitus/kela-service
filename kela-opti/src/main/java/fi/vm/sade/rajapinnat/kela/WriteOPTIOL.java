@@ -98,7 +98,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 		}
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTIOL_2, org.getOid()));
+			error(String.format(ERR_MESS_OPTIOL_2, org.getOid()+" "+org.getNimi()));
 		}
 		return strFormatter(oid, 22, "OID");
 	}

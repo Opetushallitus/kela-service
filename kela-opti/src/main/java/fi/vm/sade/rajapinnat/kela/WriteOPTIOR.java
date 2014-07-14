@@ -32,26 +32,18 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Component
 @Configurable
 public class WriteOPTIOR extends AbstractOPTIWriter {
-	private enum OrgType {
-		OPPILAITOS, 
-		TOIMIPISTE
-	}
 
 	@Autowired
 	private ApplicationContext appContext;
 	
 	private String FILEIDENTIFIER;
-	private String PARENTPATH_SEPARATOR;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
 
 	private final static String ERR_MESS_OPTIOR_1="could not write oppilaitos %s : invalid values.";
 	private final static String ERR_MESS_OPTIOR_2="could not write toimipiste %s : invalid values.";
 	private final static String ERR_MESS_OPTIOR_3="incorrect OID : '%s'";
-	private final static String ERR_MESS_OPTIOR_4="could not find oppilaitos for toimipiste with OID %s";
-	private final static String ERR_MESS_OPTIOR_5="toimipiste should have parentoidpath";
-	
-	private final static String WARN_MESS_OPTIOR_1="perhaps toimipiste %s should not have oppilaitoskoodi (%s)";
+	private final static String ERR_MESS_OPTIOR_4="could not find oppilaitos (OPPIL_NRO) for organisaatio with OID %s";
 
 	public WriteOPTIOR() {
 		super();
@@ -87,33 +79,12 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 		return record;
 	}
 
-	private String findOppilaitosNumero(Organisaatio org, OrgType orgType) throws OPTFormatException {
-		String olKoodi = org.getOppilaitoskoodi();
-		if (orgType.equals(OrgType.TOIMIPISTE)) {
-			if (org.getOppilaitoskoodi() != null) {
-				warn(String.format(WARN_MESS_OPTIOR_1, org.getOid(), org.getOppilaitoskoodi()));
-			} else {
-				if (null==org.getParentOidPath() ||org.getParentOidPath().length()==0 ) {
-					error(ERR_MESS_OPTIOR_5);
-				}
-				String[] parentsOids = org.getParentOidPath().split("" + PARENTPATH_SEPARATOR);
-				for (String parentOID : parentsOids) {
-					if (parentOID.length() > 0 && this.orgContainer.getOppilaitosoidOppilaitosMap().containsKey(parentOID)) {
-						olKoodi = this.orgContainer.getOppilaitosoidOppilaitosMap().get(parentOID).getOppilaitosKoodi();
-						break;
-					}
-				}
-			}
-		}
-		return olKoodi;
-	}
-
 	private String getOPPIL_NRO(Organisaatio org, OrgType orgType) throws OPTFormatException {
-		String olKoodi = findOppilaitosNumero(org, orgType);
+		String olKoodi = getOppilaitosNro(org, orgType);
 		if (olKoodi == null || olKoodi.length() == 0) {
-			error(String.format(ERR_MESS_OPTIOR_4, org.getOid()));
+			error(String.format(ERR_MESS_OPTIOR_4, org.getOid()+" "+org.getNimi()));
 		}
-		return strFormatter(olKoodi, orgType, null, 5, "oppilaitoskoodi");
+		return strFormatter(olKoodi, orgType, null, 5, "oppilaitosnumero");
 	}
 
 	private String getOPJNO(Organisaatio org, OrgType orgType) throws OPTFormatException {
@@ -123,7 +94,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	private String getOID(Organisaatio org, OrgType orgType) throws OPTFormatException {
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTIOR_3, org.getOid()));
+			error(String.format(ERR_MESS_OPTIOR_3, org.getOid()+" "+org.getNimi()));
 		}
 		return strFormatter(oid, orgType, null, 22, "OID");
 	}
@@ -142,11 +113,6 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 		Organisaatio org = kelaDAO.findOrganisaatioByOid(orgPerustieto.getOid());
 		return org;
 	}
-
-	@Value("${organisaatiot.parentPathSeparator:\\|}")
-    public void setParentPathSeparator(String parentPathSeparator) {
-        this.PARENTPATH_SEPARATOR = parentPathSeparator;
-    }
 	
 	@Value("${OPTIOR.alkutietue}")
     public void setAlkutietue(String alkutietue) {

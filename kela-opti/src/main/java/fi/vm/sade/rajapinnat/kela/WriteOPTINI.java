@@ -47,19 +47,24 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 	private final static String ERR_MESS_OPTINI_2 = "could not write toimipiste %s : invalid values.";
 	private final static String ERR_MESS_OPTINI_3 = "incorrect OID : '%s'";
 	private final static String ERR_MESS_OPTINI_4 = "OID cannot not be null";
+	private final static String ERR_MESS_OPTINI_5 = "NIMI cannot not be null (%s)";
+	private final static String ERR_MESS_OPTINI_6 = "NIMIL cannot not be null (%s)";
+	private final static String ERR_MESS_OPTINI_7 = "Opplaitosnumero not found for organisaatio %s";
 
     public WriteOPTINI() {
         super();
     }
     
     private String getOrganisaatioLyhytNimi(
-            OrganisaatioPerustieto curOrganisaatio, Organisaatio orgE, List<String> kielet) {
+            OrganisaatioPerustieto curOrganisaatio, Organisaatio orgE, List<String> kielet) throws OPTFormatException {
         List<KoodiType> koodit = new ArrayList<KoodiType>();
+        String opKoodi="";
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            koodit = orgContainer.getKoodisByArvoAndKoodisto(curOrganisaatio.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);
+        	opKoodi=curOrganisaatio.getOppilaitosKoodi();
+            koodit = orgContainer.getKoodisByArvoAndKoodisto(opKoodi, orgContainer.oppilaitosnumerokoodisto);
         } else if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-            String opArvo = String.format("%s%s", getOpPisteenOppilaitosnumero(curOrganisaatio), getOpPisteenJarjNro(orgE));
-            koodit = orgContainer.getKoodisByArvoAndKoodisto(opArvo, orgContainer.toimipistekoodisto);
+            opKoodi = String.format("%s%s", getOppilaitosNro(curOrganisaatio), getToimipisteenJarjNro(orgE));
+            koodit = orgContainer.getKoodisByArvoAndKoodisto(opKoodi, orgContainer.toimipistekoodisto);
         }
         String lyhytNimi = "";
         if (koodit != null && !koodit.isEmpty()) {
@@ -67,6 +72,9 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         }
         if (lyhytNimi.length() > 40) {
             lyhytNimi = lyhytNimi.substring(0, 40);
+        }
+        if (StringUtils.isEmpty(lyhytNimi.trim())) {
+        	error(String.format(ERR_MESS_OPTINI_6, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()+" tyyppi: "+curOrganisaatio.getOrganisaatiotyypit()+" koodi:"+opKoodi));
         }
         return StringUtils.rightPad(lyhytNimi, 40);
     }
@@ -92,7 +100,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     }
 
     private String getOrganisaatioNimi(
-            OrganisaatioPerustieto curOrganisaatio, List<String> kielet) {
+            OrganisaatioPerustieto curOrganisaatio, List<String> kielet) throws OPTFormatException {
         String nimi = "";
         if (kielet.contains(kieliFi) && curOrganisaatio.getNimi("fi") != null) {
             nimi = curOrganisaatio.getNimi("fi");//getNimiFi();
@@ -106,6 +114,9 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         }
         if (nimi.length() > 180) {
             nimi = nimi.substring(0, 180);
+        }
+        if (StringUtils.isEmpty(nimi.trim())) {
+        	error(String.format(ERR_MESS_OPTINI_5, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()));
         }
         return StringUtils.rightPad(nimi, 180);
     }
@@ -145,7 +156,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 			}
 		}
 	}
-
+	
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
 		OrganisaatioPerustieto curOrganisaatio = (OrganisaatioPerustieto) args[0];
@@ -154,7 +165,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
                 getSisainenKoodi(orgE),//Sisainen koodi
                 StringUtils.leftPad("", 5),//OPE_OPPILNRO
                 StringUtils.leftPad("", 2),//OPE_OPJNO
-                getOppilaitosNro(curOrganisaatio),//OPPILNRO
+                _getOppilaitosNro(curOrganisaatio),//OPPILNRO
                 StringUtils.leftPad("", 3),//KIELI
                 getOrganisaatioNimi(curOrganisaatio, orgE.getKielet()),//Nimi
                 getOrganisaatioLyhytNimi(curOrganisaatio, orgE, orgE.getKielet()),//Nimen lyhenne
@@ -168,13 +179,28 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         return record;
 	}
 
+	private String _getOppilaitosNro(OrganisaatioPerustieto curOrganisaatio) throws OPTFormatException {
+    	String opnro = "";
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE) 
+                && !curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        	StringUtils.leftPad("", 5);
+        } 
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        	opnro = StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
+        }
+        if (null == opnro || StringUtils.isEmpty(opnro)) {
+        	error(String.format(ERR_MESS_OPTINI_7, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()));
+        }
+        return opnro;
+    }
+	
 	private String getOrgOid(OrganisaatioPerustieto org) throws OPTFormatException {
 		if(null==org.getOid()) {
 			error(String.format(ERR_MESS_OPTINI_4));
 		}
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTINI_3, org.getOid()));
+			error(String.format(ERR_MESS_OPTINI_3, org.getOid()+" "+org.getNimi()));
 		}
 		return strFormatter(oid, 22, "OID");
 	}

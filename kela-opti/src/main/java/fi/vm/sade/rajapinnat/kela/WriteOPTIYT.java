@@ -54,7 +54,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
 	private final static String ERR_MESS_OPTIYT_1 = "could not write oppilaitos %s : invalid values.";
 	private final static String ERR_MESS_OPTIYT_2 = "could not write toimipiste %s : invalid values.";
-
+	private final static String ERR_MESS_OPTIYT_3 = "YHT ID cannot be empty %s : invalid values.";
+	
 	private final static String WARN_MESS_OPTIYT_1 = "Yhteystieto of %s - %s is empty (org.oid=%s).";
 	private final static String WARN_MESS_OPTIYT_2 = "Yhteystieto of %s - %s is not unique (org.oid=%s).";
 
@@ -174,6 +175,10 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
 	private String getYhtId(OrganisaatioPerustieto organisaatio) throws OPTFormatException {
 		Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
+		Long yhtId = kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId());
+		if (yhtId==null) {
+			error(String.format(ERR_MESS_OPTIYT_3, organisaatio.getOid()+" "+organisaatio.getNimi()));
+		}
 		return numFormatter("" + kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()), 10, "Yhteystietojen yksilöivä tunniste (YHT_ID), käyntiosoite id");
 	}
 	
