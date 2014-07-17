@@ -80,20 +80,34 @@ public class KelaGenerator implements Runnable {
 
     private String host;
     private String username;
-    private String password;
+    private String password="<not set>";
     private String sourcePath;
     private String targetPath;
     private String dataTimeout;
 
-	private boolean sendonly = false;
-	private boolean generateonly = false;
+	private boolean send = true;
+	private boolean generate = true;
+	private boolean init = true;
 
-	public void setSendonly(boolean sendonly) {
-		this.sendonly = sendonly;
+	public void setSendonly() {
+		generate = false;
+		init = false;
 	}
 
-	public void setGenerateonly(boolean generateonly) {
-		this.generateonly = generateonly;
+	public void setGenerateonly() {
+		send = false;
+	}
+
+	public void setInitonly() {
+		this.send = false;
+		this.generate = false;
+	}
+
+	private void initReports() throws UserStopRequestException {
+        LOG.info("Fetching organisaatiot from index...");
+        long startTime = System.currentTimeMillis();
+        orgContainer.fetchOrganisaatiot();
+        LOG.info("Fetch time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
 	}
 
 	/**
@@ -101,11 +115,7 @@ public class KelaGenerator implements Runnable {
 	 * @throws UserStopRequestException 
      */
     public void generateKelaFiles() throws UserStopRequestException {
-        LOG.info("Fetching organisaatiot from index...");
-        long time = System.currentTimeMillis();
-        long startTime = time;
-        orgContainer.fetchOrganisaatiot();
-        LOG.info("Fetch time: " + (System.currentTimeMillis() - time)/1000.0 + " seconds");
+        long startTime = System.currentTimeMillis();;
         for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
         	writeKelaFile(optiWriter);
         }
@@ -139,7 +149,7 @@ public class KelaGenerator implements Runnable {
         LOG.info("transferFiles: target url: " + mkTargetUrl(protocol, username, host, targetPath, "???", dataTimeout));
         targetUrl = mkTargetUrl(protocol, username, host, targetPath, password, dataTimeout);
         for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
-        	sendFile(optiWriter);
+        	   	sendFile(optiWriter);
         }
         LOG.info("Files transferred");
     }
@@ -148,6 +158,7 @@ public class KelaGenerator implements Runnable {
 		if (runState.equals(RunState.STOP_REQUESTED)) {
 			throw new UserStopRequestException();
 		}
+		inTurn = writer;
     	LOG.info("Sending: " + writer.getFileName()+"...");
     	producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
     	LOG.info("Done.");
@@ -269,6 +280,13 @@ public class KelaGenerator implements Runnable {
     	DONE
     	
     }
+    
+    public enum StaticOptions {
+    	INIT,
+    	SENDONLY,
+    	GENERATEONLY
+    }
+
     public static final List<RunState> startableStates=Arrays.asList( RunState.IDLE, RunState.ERROR, RunState.STOPPED, RunState.DONE);
     
     public static final String LOGGERNAME="KelaGeneratorLogger";
@@ -303,20 +321,31 @@ public class KelaGenerator implements Runnable {
     		LOG.error("options may only be set when process is not running or run.");
     		return;
     	}
+
     	selectedOptiWriters =  new LinkedList<AbstractOPTIWriter>();
     	String[] options = opts.split(",");
     	for (String optionUnTrimmed : options) {
-    		String option=optionUnTrimmed.trim();
-    		if (option.equalsIgnoreCase("SENDONLY")) {
-    			setSendonly(true);
-    		} else if (option.equalsIgnoreCase("GENERATEONLY")) {
-    			setGenerateonly(true);
-    		} else if (allOptiWriters.containsKey(option.toUpperCase())) {
-    			selectedOptiWriters.add(allOptiWriters.get(option.toUpperCase()));
-    		} else {
-    			throw new RuntimeException("Unknown option: "+option);
+    		String option_s=optionUnTrimmed.trim().toUpperCase();
+    		if (allOptiWriters.containsKey(option_s)) {
+    			selectedOptiWriters.add(allOptiWriters.get(option_s));
+    			continue;
+    		}
+    		
+    		StaticOptions option;
+    		try {
+    			option = StaticOptions.valueOf(option_s);
+        	} catch (IllegalArgumentException e) {
+        			throw new RuntimeException("Unknown option: "+option_s);
+        	}
+
+    		switch (option) {
+	    		case GENERATEONLY: setGenerateonly(); break;
+	    		case SENDONLY	 : setSendonly(); break;
+	    		case INIT	     : setInitonly(); break;
+	    		default: throw new RuntimeException("Unknown option error: option="+option);
     		}
     	}
+
     	if (selectedOptiWriters.size()==0) {
     		selectedOptiWriters.addAll(allOptiWriters.values()); //default
     	}
@@ -335,12 +364,15 @@ public class KelaGenerator implements Runnable {
 		runState = RunState.RUNNING;
 		tickerTrhead.start();
 		try {
-	        if (!sendonly) {
+			if (init) {
+				initReports();
+			}
+	        if (generate) {
 	        	this.generateKelaFiles();
 	        }else{
 	        	LOG.info("Skipped generate files");
 	        }
-	        if (!generateonly) {
+	        if (send) {
 	        	runState = RunState.TRANSFER;
 	        	this.transferFiles();
 	        }else{
@@ -436,5 +468,21 @@ public class KelaGenerator implements Runnable {
 				(runState.equals(RunState.RUNNING) ? (inTurn==null ? "INIT" : inTurn.getFileIdentifier() ) : "NONE"),
 				optiLog.getFileName(),
 				(endTime>0 ? (long) ((endTime-startTime)/1000.0) : (long)((System.currentTimeMillis()-startTime)/1000.0)));
-	}	
+	}
+	
+	static void error(String format, Object...args) {
+		LOG.error(String.format(format, args));
+	}
+	
+	static void warn(String format, Object...args) {
+		LOG.warn(String.format(format, args));
+	}
+	
+	static void info(String format, Object...args) {
+		LOG.info(String.format(format, args));
+	}
+	
+	static void debug(String format, Object...args) {
+		LOG.debug(String.format(format, args));
+	}
 }
