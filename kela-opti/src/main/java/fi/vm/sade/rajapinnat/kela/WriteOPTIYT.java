@@ -52,12 +52,16 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	private String POSTINUMERO_FIELD = "postinumeroUri";
 	private String OSOITE_FIELD = "osoite";
 
-	private final static String ERR_MESS_OPTIYT_1 = "could not write oppilaitos %s : invalid values.";
-	private final static String ERR_MESS_OPTIYT_2 = "could not write toimipiste %s : invalid values.";
-	private final static String ERR_MESS_OPTIYT_3 = "YHT ID cannot be empty %s : invalid values.";
+    private final static String [] errors = {
+    	"could not write oppilaitos %s : invalid values.",
+    	"could not write toimipiste %s : invalid values.",
+    	"YHT ID cannot be empty %s : invalid values."
+    };
 	
-	private final static String WARN_MESS_OPTIYT_1 = "Yhteystieto of %s - %s is empty (org.oid=%s).";
-	private final static String WARN_MESS_OPTIYT_2 = "Yhteystieto of %s - %s is not unique (org.oid=%s).";
+    private final static String [] warnings = {
+    	"Yhteystieto of %s - %s is empty (org.oid=%s).",
+    	"Yhteystieto of %s - %s is not unique (org.oid=%s)."
+    };
 
 
 	public WriteOPTIYT() {
@@ -72,7 +76,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			try {
 				writeRecord(curOppilaitos);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIYT_1, curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
+				LOG.error(String.format(errors[0], curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
 			} 
 		}
 
@@ -80,7 +84,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			try {
 				writeRecord(curToimipiste);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIYT_2, curToimipiste.getOid()+" "+curToimipiste.getNimi()));
+				LOG.error(String.format(errors[1], curToimipiste.getOid()+" "+curToimipiste.getNimi()));
 			}
 		}
 	}
@@ -125,11 +129,11 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		try {
 			pnro = kelaDAO.getPuhelinnumero(org.getOid());
 		} catch (NonUniqueResultException e) {
-			LOG.warn(String.format(WARN_MESS_OPTIYT_2, org.getNimi(), "puhelinnro", org.getOid()));
+			warn(2, org.getNimi(), "puhelinnro", org.getOid());
 		}
 		String yhteystieto = getSimpleYhteystieto(pnro,60);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			LOG.warn(String.format(WARN_MESS_OPTIYT_1, org.getNimi(), "puhelinnro", org.getOid()));
+			warn(1, org.getNimi(), "puhelinnro", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -139,11 +143,11 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		try {
 			sp = kelaDAO.getEmail(org.getOid());
 		} catch (NonUniqueResultException e) {
-			LOG.warn(String.format(WARN_MESS_OPTIYT_2, org.getNimi(), "email", org.getOid()));
+			warn(2, org.getNimi(), "email", org.getOid());
 		}
 		String yhteystieto = getSimpleYhteystieto(sp,80);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			LOG.warn(String.format(WARN_MESS_OPTIYT_1, org.getNimi(), "email", org.getOid()));
+			warn(1, org.getNimi(), "email", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -177,7 +181,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
 		Long yhtId = kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId());
 		if (yhtId==null) {
-			error(String.format(ERR_MESS_OPTIYT_3, organisaatio.getOid()+" "+organisaatio.getNimi()));
+			error(3, organisaatio.getOid()+" "+organisaatio.getNimi());
 		}
 		return numFormatter("" + kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()), 10, "Yhteystietojen yksilöivä tunniste (YHT_ID), käyntiosoite id");
 	}
@@ -220,5 +224,20 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return warnings;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
 	}
 }

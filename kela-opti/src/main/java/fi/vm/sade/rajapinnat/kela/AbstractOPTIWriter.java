@@ -67,7 +67,9 @@ public abstract class AbstractOPTIWriter {
     public abstract String getAlkutietue();
     public abstract String getLopputietue();
     public abstract String getFileIdentifier();
-
+    public abstract String[] getErrors();
+    public abstract String[] getWarnings();
+    public abstract String[] getInfos();
     
     protected static final Logger LOG = Logger.getLogger(KelaGenerator.class);
 
@@ -82,6 +84,7 @@ public abstract class AbstractOPTIWriter {
 	public final static String ALKULOPPUTIETUE_FORMAT="0+ALKU|9+LOPPU(\\?+)";
 	private String PARENTPATH_SEPARATOR;
 
+	
     protected final static String ERR_MESS_1="invalid number (%s) : '%s'";
     protected final static String ERR_MESS_2="length of %s ('%s') should be max %s.";
     protected final static String ERR_MESS_3="File not found : '%s'";
@@ -520,15 +523,30 @@ public abstract class AbstractOPTIWriter {
 		return StringUtils.leftPad(str, len, '0');
 	}
 	
-    protected void error(String errorMsg) throws OPTFormatException {
-		LOG.error("("+getFileIdentifier()+") "+errorMsg);
+    private void error(String errorMsg) throws OPTFormatException {
+		KelaGenerator.error("("+getFileIdentifier()+") : "+errorMsg);
 		throw new OPTFormatException();
 	}
-    protected void warn(String warnMsg) {
-    	LOG.warn("("+getFileIdentifier()+") " +warnMsg);
+    
+    private void warn(String warnMsg) {
+    	KelaGenerator.warn("("+getFileIdentifier()+") : " +warnMsg);
 	}
-    protected void info(String infoMsg) {
-		LOG.info(infoMsg);
+
+    private void info(String infoMsg) {
+    	KelaGenerator.info("("+getFileIdentifier()+") : "+infoMsg);
+	}
+    
+    protected void error(int i, Object... args) throws OPTFormatException {
+    	KelaGenerator.error("("+getFileIdentifier()+i+") : "+getErrors()[i-1],args);
+		throw new OPTFormatException();
+	}
+    
+    protected void warn(int i, Object... args) {
+    	KelaGenerator.warn("("+getFileIdentifier()+i+") : " +getWarnings()[i-1],args);
+	}
+
+    protected void info(int i, Object... args) {
+    	KelaGenerator.info("("+getFileIdentifier()+i+") : "+getInfos()[i-1],args);
 	}
     
 	private boolean isValidAlkuLopputietue(String stringToTest) {

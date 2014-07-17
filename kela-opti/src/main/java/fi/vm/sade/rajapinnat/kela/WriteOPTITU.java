@@ -37,7 +37,9 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 @Configurable
 public class WriteOPTITU extends AbstractOPTIWriter {
 
-	private final static String ERR_MESS_OPTITU_1 = "could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values.";
+	private final static String [] errors = {
+		"could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values."
+	};
     
     private String FILEIDENTIFIER;
     private String ALKUTIETUE;
@@ -86,7 +88,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     			try {
     				writeRecord(curKelaTutkinto, curOphTutkinto);
     			} catch (OPTFormatException e) {
-    				LOG.error(String.format(ERR_MESS_OPTITU_1, curKelaTutkinto.getKoodiArvo(),curOphTutkinto.getKoodiArvo()));
+    				LOG.error(String.format(errors[0], curKelaTutkinto.getKoodiArvo(),curOphTutkinto.getKoodiArvo()));
     			} 
             }
         }
@@ -155,5 +157,20 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
 	}
 }

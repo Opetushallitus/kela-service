@@ -48,4 +48,20 @@ public class WriteLOG extends AbstractOPTIWriter {
 	public String getFileIdentifier() {
 		return "LOG";
 	}
+
+	@Override
+	public String[] getErrors() {
+		return null;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
+	}
+	
 }

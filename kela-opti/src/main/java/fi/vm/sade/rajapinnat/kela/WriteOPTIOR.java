@@ -39,11 +39,13 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	private String FILEIDENTIFIER;
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
-
-	private final static String ERR_MESS_OPTIOR_1="could not write oppilaitos %s : invalid values.";
-	private final static String ERR_MESS_OPTIOR_2="could not write toimipiste %s : invalid values.";
-	private final static String ERR_MESS_OPTIOR_3="incorrect OID : '%s'";
-	private final static String ERR_MESS_OPTIOR_4="could not find oppilaitos (OPPIL_NRO) for organisaatio with OID %s";
+	
+	private final static String [] errors = {
+		"could not write oppilaitos %s : invalid values.",
+		"could not write toimipiste %s : invalid values.",
+		"incorrect OID : '%s'",
+		"could not find oppilaitos (OPPIL_NRO) for organisaatio with OID %s"
+	};
 
 	public WriteOPTIOR() {
 		super();
@@ -55,14 +57,14 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 			try {
 				this.writeRecord(ol, OrgType.OPPILAITOS);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOR_1, ol.getOid()+" "+ol.getNimi()));
+				LOG.error(String.format(errors[0], ol.getOid()+" "+ol.getNimi()));
 			}
 		}
 		for (OrganisaatioPerustieto tp : this.orgContainer.getToimipisteet()) {
 			try {
 				this.writeRecord(tp, OrgType.TOIMIPISTE);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOR_2, tp.getOid()+" "+tp.getNimi()));
+				LOG.error(String.format(errors[1], tp.getOid()+" "+tp.getNimi()));
 			}
 		}
 	}
@@ -82,7 +84,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	private String getOPPIL_NRO(Organisaatio org, OrgType orgType) throws OPTFormatException {
 		String olKoodi = getOppilaitosNro(org, orgType);
 		if (olKoodi == null || olKoodi.length() == 0) {
-			error(String.format(ERR_MESS_OPTIOR_4, org.getOid()+" "+org.getNimi()));
+			error(4, org.getOid()+" "+org.getNimi());
 		}
 		return strFormatter(olKoodi, orgType, null, 5, "oppilaitosnumero");
 	}
@@ -94,7 +96,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	private String getOID(Organisaatio org, OrgType orgType) throws OPTFormatException {
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTIOR_3, org.getOid()+" "+org.getNimi()));
+			error(3, org.getOid()+" "+org.getNimi());
 		}
 		return strFormatter(oid, orgType, null, 22, "OID");
 	}
@@ -102,7 +104,7 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	private String strFormatter(String str, OrgType orgType, OrgType reqOrgType, int len, String humanName) throws OPTFormatException {
 		if (null == reqOrgType || reqOrgType.equals(orgType)) {
 			if (null == str || str.length() > len) {
-				error(String.format(ERR_MESS_2, humanName, str, len));
+				error(2, humanName, str, len);
 			}
 			return StringUtils.rightPad(str, len);
 		}
@@ -142,5 +144,20 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
 	}
 }

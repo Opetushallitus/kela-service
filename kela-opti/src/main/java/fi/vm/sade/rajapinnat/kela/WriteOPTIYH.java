@@ -37,9 +37,11 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
     
-	private final static String ERR_MESS_OPTIYH_1="incorrect OID : '%s'";
-	private final static String ERR_MESS_OPTIYH_2="invalid format for liitos OID1:%s OID2:%s";
-	private final static String ERR_MESS_OPTIYH_3="OID cannot not be null";
+    private final static String [] errors = {
+	    "incorrect OID : '%s'",
+	    "invalid format for liitos OID1:%s OID2:%s",
+	    "OID cannot not be null"
+    };
 	
     public WriteOPTIYH() {
         super();  
@@ -55,7 +57,7 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
 						this.writeRecord(curLiitos);
 					}
 				} catch (OPTFormatException e) {
-					LOG.error(String.format(ERR_MESS_OPTIYH_2, curLiitos.getChild().getOid()+" "+curLiitos.getChild().getNimi(), curLiitos.getParent().getOid()+" "+curLiitos.getParent().getNimi()));
+					LOG.error(String.format(errors[1], curLiitos.getChild().getOid()+" "+curLiitos.getChild().getNimi(), curLiitos.getParent().getOid()+" "+curLiitos.getParent().getNimi()));
 				}
 			}
 		}
@@ -85,11 +87,11 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
     
 	private String getOrgOid(Organisaatio org) throws OPTFormatException {
 		if(null==org.getOid()) {
-			error(String.format(ERR_MESS_OPTIYH_3));
+			error(3);
 		}
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTIYH_1, org.getOid()+" "+org.getNimi()));
+			error(1, org.getOid()+" "+org.getNimi());
 		}
 		return strFormatter(oid, 22, "OID");
 	}
@@ -130,5 +132,20 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
 	}
 }

@@ -37,11 +37,14 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 	private String ALKUTIETUE;
 	private String LOPPUTIETUE;
     
-	private final static String ERR_MESS_OPTIOL_1 = "could not write oppilaitos %s : invalid values.";
-	private final static String ERR_MESS_OPTIOL_2="incorrect OID : '%s'";
-	private final static String ERR_MESS_OPTIOL_3="OID cannot not be null";
-	private final static String ERR_MESS_OPTIOL_4="could not write toimipiste %s : invalid values.";
-    public WriteOPTIOL() {
+	private final static String [] errors = {
+		"could not write oppilaitos %s : invalid values.",
+		"incorrect OID : '%s'",
+		"OID cannot not be null",
+		"could not write toimipiste %s : invalid values."
+	};
+
+	public WriteOPTIOL() {
         super();
     }
     
@@ -51,14 +54,14 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 			try {
 				this.writeRecord(ol, "02");
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOL_1, ol.getOid()+" "+ol.getNimi()));
+				LOG.error(String.format(errors[0], ol.getOid()+" "+ol.getNimi()));
 			}
 		}
 		for (OrganisaatioPerustieto tp : this.orgContainer.getToimipisteet()) {
 			try {
 				this.writeRecord(tp, "03");
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTIOL_4, tp.getOid()+" "+tp.getNimi()));
+				LOG.error(String.format(errors[3], tp.getOid()+" "+tp.getNimi()));
 			}
 		}
 	}
@@ -94,11 +97,11 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 
 	private String getOrgOid(Organisaatio org) throws OPTFormatException {
 		if(null==org.getOid()) {
-			error(String.format(ERR_MESS_OPTIOL_3));
+			error(3);
 		}
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTIOL_2, org.getOid()+" "+org.getNimi()));
+			error(2, org.getOid()+" "+org.getNimi());
 		}
 		return strFormatter(oid, 22, "OID");
 	}
@@ -128,5 +131,20 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 	@Value("${OPTIOL.lopputietue}")
 	public void setLopputietue(String lopputietue) {
 		this.LOPPUTIETUE = lopputietue;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
 	}
 }

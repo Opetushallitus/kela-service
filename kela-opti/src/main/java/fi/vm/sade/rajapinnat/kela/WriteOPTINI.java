@@ -43,13 +43,15 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
     
-	private final static String ERR_MESS_OPTINI_1 = "could not write oppilaitos %s : invalid values.";
-	private final static String ERR_MESS_OPTINI_2 = "could not write toimipiste %s : invalid values.";
-	private final static String ERR_MESS_OPTINI_3 = "incorrect OID : '%s'";
-	private final static String ERR_MESS_OPTINI_4 = "OID cannot not be null";
-	private final static String ERR_MESS_OPTINI_5 = "NIMI cannot not be null (%s)";
-	private final static String ERR_MESS_OPTINI_6 = "NIMIL cannot not be null (%s)";
-	private final static String ERR_MESS_OPTINI_7 = "Opplaitosnumero not found for organisaatio %s";
+    private final static String[] errors = { 
+	    "could not write oppilaitos %s : invalid values.",
+	    "could not write toimipiste %s : invalid values.",
+	    "incorrect OID : '%s'",
+	    "OID cannot not be null",
+	    "NIMI cannot not be null (%s)",
+	    "NIMIL cannot not be null (%s)",
+	    "Opplaitosnumero not found for organisaatio %s"
+    };
 
     public WriteOPTINI() {
         super();
@@ -74,7 +76,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
             lyhytNimi = lyhytNimi.substring(0, 40);
         }
         if (StringUtils.isEmpty(lyhytNimi.trim())) {
-        	error(String.format(ERR_MESS_OPTINI_6, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()+" tyyppi: "+curOrganisaatio.getOrganisaatiotyypit()+" koodi:"+opKoodi));
+        	error(6, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()+" tyyppi: "+curOrganisaatio.getOrganisaatiotyypit()+" koodi:"+opKoodi);
         }
         return StringUtils.rightPad(lyhytNimi, 40);
     }
@@ -116,7 +118,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
             nimi = nimi.substring(0, 180);
         }
         if (StringUtils.isEmpty(nimi.trim())) {
-        	error(String.format(ERR_MESS_OPTINI_5, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()));
+        	error(5, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi());
         }
         return StringUtils.rightPad(nimi, 180);
     }
@@ -144,7 +146,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 			try {
 				writeRecord(curOppilaitos);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTINI_1, curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
+				LOG.error(String.format(errors[0], curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
 			} 
 		}
 
@@ -152,7 +154,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 			try {
 				writeRecord(curToimipiste);
 			} catch (OPTFormatException e) {
-				LOG.error(String.format(ERR_MESS_OPTINI_2, curToimipiste.getOid()+" "+curToimipiste.getNimi()));
+				LOG.error(String.format(errors[1], curToimipiste.getOid()+" "+curToimipiste.getNimi()));
 			}
 		}
 	}
@@ -189,18 +191,18 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         	opnro = StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
         }
         if (null == opnro || StringUtils.isEmpty(opnro)) {
-        	error(String.format(ERR_MESS_OPTINI_7, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()));
+        	error(7, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi());
         }
         return opnro;
     }
 	
 	private String getOrgOid(OrganisaatioPerustieto org) throws OPTFormatException {
 		if(null==org.getOid()) {
-			error(String.format(ERR_MESS_OPTINI_4));
+			error(4);
 		}
 		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
 		if (oid == null || oid.length() == 0) {
-			error(String.format(ERR_MESS_OPTINI_3, org.getOid()+" "+org.getNimi()));
+			error(3, org.getOid()+" "+org.getNimi());
 		}
 		return strFormatter(oid, 22, "OID");
 	}
@@ -233,5 +235,20 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 	@Override
 	public String getFileIdentifier() {
 		return FILEIDENTIFIER;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
 	}
 }
