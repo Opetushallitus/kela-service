@@ -26,8 +26,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import com.wordnik.swagger.annotations.Api;
@@ -39,8 +42,12 @@ import fi.vm.sade.rajapinnat.kela.KelaGenerator;
 @Component
 @Api(value = "/kela", description = "Kelan operaatiot")
 public class KelaResource {
-    
-    public enum Command {
+	 
+    @Autowired
+    @Qualifier("kelaTask")
+	private TaskExecutor taskExecutor;
+
+	public enum Command {
     	START,
     	STOP,
     	STATUS,
@@ -51,6 +58,7 @@ public class KelaResource {
     {
     	UNKNOWN_COMMAND,
     	ALREADY_RUNNING,
+    	FAILED,
     	STARTED,
     	STOP_REQUESTED,
     	STATUS,
@@ -87,13 +95,19 @@ public class KelaResource {
     	if (kelaGenerator!=null && !KelaGenerator.startableStates.contains(kelaGenerator.getThreadState().getRunState())) {
     		return Response.ALREADY_RUNNING.name();
     	}
-    	final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
-    	kelaGenerator = context.getBean(KelaGenerator.class);
-        kelaGeneratorThread = new Thread((Runnable) kelaGenerator);
-        if (!StringUtils.isEmpty(options)) {
-        	kelaGenerator.setOptions(options);
-        }
-        kelaGeneratorThread.start();
+    	try {
+    		final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
+    		kelaGenerator = context.getBean(KelaGenerator.class);
+    		kelaGeneratorThread = new Thread((Runnable) kelaGenerator);
+    		if (!StringUtils.isEmpty(options)) {
+    			kelaGenerator.setOptions(options);
+    		}
+    		taskExecutor.execute(kelaGeneratorThread);
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    		kelaGenerator=null;
+    		return Response.FAILED.name();
+    	}
         return Response.STARTED.name();
     }
     
