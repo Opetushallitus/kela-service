@@ -85,7 +85,8 @@ public class KelaDAOImpl implements KelaDAO {
 
         } catch (NonUniqueResultException ex) {
             return null;
-        }    }
+        }    
+    }
 
     @Override
     public Koulutusmoduuli getKoulutusmoduuli(String oid) {
@@ -207,7 +208,7 @@ public class KelaDAOImpl implements KelaDAO {
     }
 
     @Override
-    public String getPuhelinnumero(String orgOid) throws NonUniqueResultException {
+    public String getPuhelinnumero(String orgOid) {
     	@SuppressWarnings("unchecked")
         List<String> resultList =  organisaatioEm.createQuery("SELECT puhelinnumero FROM " + Yhteystieto.class.getName() + " WHERE organisaatio_id IN (SELECT id FROM "+ Organisaatio.class.getName() + " WHERE OID=?) AND tyyppi = ? AND dType='Puhelinnumero' order by id desc")
                 .setParameter(1, orgOid)
@@ -220,7 +221,7 @@ public class KelaDAOImpl implements KelaDAO {
     }
 
     @Override
-    public String getEmail(String orgOid) throws NonUniqueResultException {
+    public String getEmail(String orgOid) {
     	@SuppressWarnings("unchecked")
     	List<String> resultList =  organisaatioEm.createQuery("SELECT email FROM " + Yhteystieto.class.getName() + " WHERE organisaatio_id IN (SELECT id FROM "+ Organisaatio.class.getName() + " WHERE OID=?) AND dType='Email' order by id desc")
                 .setParameter(1, orgOid)
