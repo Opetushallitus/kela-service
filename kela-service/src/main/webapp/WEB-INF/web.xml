@@ -17,13 +17,12 @@
 
 	<context-param>
 		<param-name>webAppRootKey</param-name>
-		<param-value>vtj-service</param-value>
+		<param-value>kela-service</param-value>
 	</context-param>
 	
     <listener>
         <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
-	
     <filter>
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
