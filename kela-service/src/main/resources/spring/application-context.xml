@@ -16,24 +16,6 @@
             location="classpath:vtj-service.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties, file:///${user.home:''}/oph-configuration/override.properties"
             ignore-resource-not-found="true" properties-ref="defaultProps" />
 
-
-
-<!-- 
-    <bean id="defaultProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="properties">
-            <util:properties local-override="true">
-                <prop key="cas_key">organisaatio-service</prop>
-                <prop key="cas_service">${cas.service.organisaatio-service}</prop>
-                <prop key="cas_callback_url">${cas.callback.organisaatio-service}</prop>
-                <prop key="spring_security_default_access">permitAll</prop>
-            </util:properties>
-        </property>
-    </bean>
-    
-     -->
-    <!--  <import resource="file://${user.home:''}/oph-configuration/security-context-backend.xml"/>  -->
-
- 
     <bean id="defaultProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="properties">
             <util:properties local-override="true">

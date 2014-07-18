@@ -15,7 +15,10 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -272,6 +275,7 @@ public class KelaGenerator implements Runnable {
     
     public enum RunState {
     	IDLE,
+    	LOG_FILE_ERROR,
     	RUNNING,
     	STOP_REQUESTED,
     	STOPPED,
@@ -287,7 +291,7 @@ public class KelaGenerator implements Runnable {
     	GENERATEONLY
     }
 
-    public static final List<RunState> startableStates=Arrays.asList( RunState.IDLE, RunState.ERROR, RunState.STOPPED, RunState.DONE);
+    public static final List<RunState> startableStates=Arrays.asList( RunState.IDLE, RunState.LOG_FILE_ERROR, RunState.ERROR, RunState.STOPPED, RunState.DONE);
     
     public static final String LOGGERNAME="KelaGeneratorLogger";
 
@@ -302,6 +306,14 @@ public class KelaGenerator implements Runnable {
     
     @PostConstruct
     private void init() {
+    	//testopen log
+		File f = new File(optiLog.getFileName());
+	    if (!f.canWrite() ) 
+	    {
+	    	runState = RunState.LOG_FILE_ERROR;
+	    	return;
+	    }
+
     	fa.setFile(optiLog.getFileName());
     	LOG.addAppender(fa);
     	fa.activateOptions();
@@ -358,6 +370,8 @@ public class KelaGenerator implements Runnable {
     private RunState runState = RunState.IDLE;
 	@Override
 	public void run() {
+		if (!runState.equals(RunState.IDLE)) return;
+		
 		Ticker ticker  = new Ticker(this, tickerInterval);
 		Thread tickerTrhead =  new Thread(ticker);
 		startTime = System.currentTimeMillis();
