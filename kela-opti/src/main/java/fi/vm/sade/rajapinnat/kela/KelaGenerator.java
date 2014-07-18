@@ -19,6 +19,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -304,11 +305,22 @@ public class KelaGenerator implements Runnable {
     	 fa.setAppend(true);
     }
     
+    private boolean canWriteFile(String fileName) {
+		File f = new File(fileName);
+		
+		if (!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				return false;
+			}
+		}
+	    return f.canWrite(); 
+    }
+
     @PostConstruct
     private void init() {
-    	//testopen log
-		File f = new File(optiLog.getFileName());
-	    if (!f.canWrite() ) 
+	    if (!canWriteFile(optiLog.getFileName()) ) 
 	    {
 	    	runState = RunState.LOG_FILE_ERROR;
 	    	return;
