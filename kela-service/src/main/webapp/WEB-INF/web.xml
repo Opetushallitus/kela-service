@@ -17,7 +17,7 @@
 
 	<context-param>
 		<param-name>webAppRootKey</param-name>
-		<param-value>kela-service</param-value>
+		<param-value>vtj-service</param-value>
 	</context-param>
 	
     <listener>
