@@ -504,8 +504,10 @@ public abstract class AbstractOPTIWriter {
 		if (null == str) {
 			error(String.format(ERR_MESS_2, humanName, str, len));
 		}
-		if(str.length() > len && warn) {
-			warn(String.format(WARN_MESS_1, str, len, humanName));
+		if(str.length() > len) {
+			if (warn) {
+				warn(String.format(WARN_MESS_1, str, len, humanName));
+			}
 			return str.substring(0,len);
 		}
 		return StringUtils.rightPad(str, len);
