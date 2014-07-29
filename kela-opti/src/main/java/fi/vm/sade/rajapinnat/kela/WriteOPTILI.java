@@ -94,8 +94,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     private String getAlkamiskausi(HakukohdePerustieto curTulos) {
         String kausi = curTulos.getKoulutuksenAlkamiskausi().getUri();
-        if (null != kausi && kausi.length()>=1) {
-        	kausi = kausi.substring(0, 1).toUpperCase();
+        if (null != kausi && kausi.length()>=1 && kausi.startsWith("kausi_")) {
+        	kausi = kausi.substring(6, 7).toUpperCase(); //S or K
         	return StringUtils.rightPad(kausi, 12);
         }
         return StringUtils.rightPad("", 12);
