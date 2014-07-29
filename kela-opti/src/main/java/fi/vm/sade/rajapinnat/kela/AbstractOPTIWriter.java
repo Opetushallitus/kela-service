@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -97,9 +98,11 @@ public abstract class AbstractOPTIWriter {
 	protected final static String ERR_MESS_10="Opplaitosnro not found for organisaatio %s";
 	protected final static String ERR_MESS_11="Koodisto koodi has no uri ('%s') - %s";
 	protected final static String ERR_MESS_12="Toimipiste should have parentoidpath (%s)";
+	protected final static String ERR_MESS_13="Max errors (%s) exceeded. Aborting.";
 	
     protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     protected final static String WARN_MESS_2="Perhaps toimipiste %s should not have oppilaitoskoodi (%s)";
+    protected final static String WARN_MESS_3="Got exception: %s. Retry in %s seconds...";
     
     protected final static String INFO_MESS_1="%s records written, %s skipped.";
     
@@ -109,7 +112,7 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected OrganisaatioService organisaatioService;
     
-    @Autowired
+	@Autowired
     protected KoodiService koodiService;
     
     @Autowired
@@ -126,6 +129,9 @@ public abstract class AbstractOPTIWriter {
     private String fileName=null;
 
     private String path=null;
+
+    private int errorLimit = 0;
+    private int errorCoolDown = 10;
     
     private BufferedOutputStream bostr;
     
@@ -175,8 +181,27 @@ public abstract class AbstractOPTIWriter {
 	public void setDirSeparator(String dirSeparator) {
 		DIR_SEPARATOR = dirSeparator;
 	}
+
     
-    static private Date startDate = new Date();
+    public int getErrorLimit() {
+		return errorLimit;
+	}
+
+    @Value("${errorLimit:0}")
+    public void setErrorLimit(String errorLimit) {
+		this.errorLimit = Integer.valueOf(errorLimit);
+	}
+
+    public int getErrorCoolDown() {
+		return errorCoolDown;
+	}
+    
+    @Value("${errorCooldown:10}")
+	public void setErrorCoolDown(int errorCoolDown) {
+		this.errorCoolDown = errorCoolDown;
+	}
+
+	static private Date startDate = new Date();
     private void createFileName() {
     	createFileNames("."+getFileIdentifier());
     }
@@ -480,14 +505,39 @@ public abstract class AbstractOPTIWriter {
 		stopRequest=true;
     }
 	
+	private int errorCount=0;
 	public void writeRecord(Object... args) throws IOException, OPTFormatException, UserStopRequestException {
-			if (stopRequest) {
-				throw new UserStopRequestException();
+		if (stopRequest) {
+			throw new UserStopRequestException();
+		}
+		++writesTries;
+		String line = null;
+		while(true) {
+			try {
+				line=composeRecord(args);
+				break;
+			} catch(ClientWebApplicationException e /*CXF may throw*/) {
+				errorCount++;
+				warn(String.format(WARN_MESS_3,e.getCause(), getErrorCoolDown()));
+				if (stopRequest) {
+					throw new UserStopRequestException();
+				}
+				if (errorCount>getErrorLimit()) {
+					String errStr=String.format(ERR_MESS_13, getErrorLimit());
+					LOG.error(errStr);
+					throw new RuntimeException(errStr);
+				}
+				try {
+					Thread.sleep(getErrorCoolDown()*1000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+					throw new RuntimeException("Interrupted thread."+e1);
+				}
 			}
-			++writesTries;
-			bostr.write(toLatin1(composeRecord(args)));
-			bostr.flush();
-			++writes;
+		}
+		bostr.write(toLatin1(line));
+		bostr.flush();
+		++writes;
 	}
 	
     protected static class OPTFormatException extends Exception {
