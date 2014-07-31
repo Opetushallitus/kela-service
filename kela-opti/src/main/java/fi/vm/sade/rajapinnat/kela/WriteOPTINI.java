@@ -15,17 +15,13 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KieliType;
@@ -42,77 +38,35 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Component
 @Configurable
 public class WriteOPTINI extends AbstractOPTIWriter {
+
+	private String FILEIDENTIFIER;
+    private String ALKUTIETUE;
+    private String LOPPUTIETUE;
     
-    private static final String OPTINI = ".OPTINI";
-    
-    private static final String ALKUTIETUE = "0000000000ALKU\n";
-    private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
-    
-    
+    private final static String[] errors = { 
+	    "could not write oppilaitos %s : invalid values.",
+	    "could not write toimipiste %s : invalid values.",
+	    "incorrect OID : '%s'",
+	    "OID cannot not be null",
+	    "NIMI cannot not be null (%s)",
+	    "NIMIL cannot not be null (%s)",
+	    "Opplaitosnumero not found for organisaatio %s"
+    };
+
     public WriteOPTINI() {
         super();
-       
     }
-    
-    @Override
-    public void writeFile() throws IOException {
-        createFileName("", OPTINI);
-        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
-        bos.write(toLatin1(ALKUTIETUE));
-        
-        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
-                try {
-                    bos.write(toLatin1(createRecord(curOppilaitos)));   
-                    bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-        }
-        for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
-                try {
-                    bos.write(toLatin1(createRecord(curToimipiste)));
-                    bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-        }
-        
-        bos.write(toLatin1(LOPPUTIETUE));
-        bos.flush();
-        bos.close();
-    }
-    
-    
-    private String createRecord(OrganisaatioPerustieto curOrganisaatio) {
-        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
-                getSisainenKoodi(orgE),//Sisainen koodi
-                getOpPisteenOppilaitosnumero(curOrganisaatio),//OPE_OPPILNRO
-                getOpPisteenJarjNro(orgE),//OPE_OPJNO
-                getOppilaitosNro(curOrganisaatio),//OPPILNRO
-                StringUtils.leftPad("", 3),//KIELI
-                getOrganisaatioNimi(curOrganisaatio, orgE.getKielet()),//Nimi
-                getOrganisaatioLyhytNimi(curOrganisaatio, orgE, orgE.getKielet()),//Nimen lyhenne
-                StringUtils.leftPad(DEFAULT_DATE, 10),//Viimeisin paivityspaiva
-                StringUtils.leftPad("", 30),//Viimeisin paivittaja
-                "X",//Nimi on virallinen
-                StringUtils.leftPad(DEFAULT_DATE, 10),//Alkupaiva, voimassaolon alku
-                StringUtils.leftPad(DEFAULT_DATE, 10),//Loppupaiva, voimassaolon loppu
-                "\n");
-        
-        return record;
-    }
-    
-    
     
     private String getOrganisaatioLyhytNimi(
-            OrganisaatioPerustieto curOrganisaatio, Organisaatio orgE, List<String> kielet) {
+            OrganisaatioPerustieto curOrganisaatio, Organisaatio orgE, List<String> kielet) throws OPTFormatException {
         List<KoodiType> koodit = new ArrayList<KoodiType>();
+        String opKoodi="";
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-            koodit = orgContainer.getKoodisByArvoAndKoodisto(curOrganisaatio.getOppilaitosKoodi(), orgContainer.oppilaitosnumerokoodisto);
+        	opKoodi=curOrganisaatio.getOppilaitosKoodi();
+            koodit = orgContainer.getKoodisByArvoAndKoodisto(opKoodi, orgContainer.oppilaitosnumerokoodisto);
         } else if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-            String opArvo = String.format("%s%s", getOpPisteenOppilaitosnumero(curOrganisaatio), getOpPisteenJarjNro(orgE));
-            koodit = orgContainer.getKoodisByArvoAndKoodisto(opArvo, orgContainer.toimipistekoodisto);
+            opKoodi = String.format("%s%s", getOppilaitosNro(curOrganisaatio), getToimipisteenJarjNro(orgE));
+            koodit = orgContainer.getKoodisByArvoAndKoodisto(opKoodi, orgContainer.toimipistekoodisto);
         }
         String lyhytNimi = "";
         if (koodit != null && !koodit.isEmpty()) {
@@ -120,6 +74,9 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         }
         if (lyhytNimi.length() > 40) {
             lyhytNimi = lyhytNimi.substring(0, 40);
+        }
+        if (StringUtils.isEmpty(lyhytNimi.trim())) {
+        	error(6, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()+" tyyppi: "+curOrganisaatio.getOrganisaatiotyypit()+" koodi:"+opKoodi);
         }
         return StringUtils.rightPad(lyhytNimi, 40);
     }
@@ -145,7 +102,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     }
 
     private String getOrganisaatioNimi(
-            OrganisaatioPerustieto curOrganisaatio, List<String> kielet) {
+            OrganisaatioPerustieto curOrganisaatio, List<String> kielet) throws OPTFormatException {
         String nimi = "";
         if (kielet.contains(kieliFi) && curOrganisaatio.getNimi("fi") != null) {
             nimi = curOrganisaatio.getNimi("fi");//getNimiFi();
@@ -159,6 +116,9 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         }
         if (nimi.length() > 180) {
             nimi = nimi.substring(0, 180);
+        }
+        if (StringUtils.isEmpty(nimi.trim())) {
+        	error(5, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi());
         }
         return StringUtils.rightPad(nimi, 180);
     }
@@ -176,10 +136,119 @@ public class WriteOPTINI extends AbstractOPTIWriter {
         return "";
     }
 
-
-
-    private String getSisainenKoodi(Organisaatio orgE) {
-        
-        return StringUtils.leftPad(String.format("%s", orgE.getNimi().getId()), 10, '0');
+    private String getSisainenKoodi(Organisaatio orgE) throws OPTFormatException  {
+    	return numFormatter(""+orgE.getNimi().getId(), 10, "sisainen koodi");
     }
+
+	@Override
+	public void composeRecords() throws IOException, UserStopRequestException {
+		for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
+			try {
+				writeRecord(curOppilaitos);
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(errors[0], curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
+			} 
+		}
+
+		for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
+			try {
+				writeRecord(curToimipiste);
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(errors[1], curToimipiste.getOid()+" "+curToimipiste.getNimi()));
+			}
+		}
+	}
+	
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		OrganisaatioPerustieto curOrganisaatio = (OrganisaatioPerustieto) args[0];
+        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
+                getSisainenKoodi(orgE),//Sisainen koodi
+                StringUtils.leftPad("", 5),//OPE_OPPILNRO
+                StringUtils.leftPad("", 2),//OPE_OPJNO
+                _getOppilaitosNro(curOrganisaatio),//OPPILNRO
+                StringUtils.leftPad("", 3),//KIELI
+                getOrganisaatioNimi(curOrganisaatio, orgE.getKielet()),//Nimi
+                getOrganisaatioLyhytNimi(curOrganisaatio, orgE, orgE.getKielet()),//Nimen lyhenne
+                StringUtils.leftPad(DEFAULT_DATE, 10),//Viimeisin paivityspaiva
+                getOrgOid(curOrganisaatio), //Org OID
+                StringUtils.leftPad("", 8),//Viimeisin paivittaja
+                "X",//Nimi on virallinen
+                StringUtils.leftPad(DEFAULT_DATE, 10),//Alkupaiva, voimassaolon alku
+                StringUtils.leftPad(DEFAULT_DATE, 10),//Loppupaiva, voimassaolon loppu
+                "\n");
+        return record;
+	}
+
+	private String _getOppilaitosNro(OrganisaatioPerustieto curOrganisaatio) throws OPTFormatException {
+    	String opnro = "";
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE) 
+                && !curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        	StringUtils.leftPad("", 5);
+        } 
+        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        	opnro = StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
+        }
+        if (null == opnro || StringUtils.isEmpty(opnro)) {
+        	error(7, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi());
+        }
+        return opnro;
+    }
+	
+	private String getOrgOid(OrganisaatioPerustieto org) throws OPTFormatException {
+		if(null==org.getOid()) {
+			error(4);
+		}
+		String oid = org.getOid().substring(org.getOid().lastIndexOf('.') + 1);
+		if (oid == null || oid.length() == 0) {
+			error(3, org.getOid()+" "+org.getNimi());
+		}
+		return strFormatter(oid, 22, "OID");
+	}
+	
+	@Value("${OPTINI.alkutietue}")
+    public void setAlkutietue(String alkutietue) {
+        this.ALKUTIETUE = alkutietue;
+    }
+	
+	@Value("${OPTINI.lopputietue}")
+    public void setLopputietue(String lopputietue) {
+        this.LOPPUTIETUE = lopputietue;
+    }
+	
+	@Value("${OPTINI.fileIdentifier:OPTINI}")
+    public void setFileIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
+    }
+
+	@Override
+	public String getAlkutietue() {
+		return ALKUTIETUE;
+	}
+
+	@Override
+	public String getLopputietue() {
+		return LOPPUTIETUE;
+	}
+
+	@Override
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
+	}
+
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
+
+	@Override
+	public String[] getWarnings() {
+		return null;
+	}
+
+	@Override
+	public String[] getInfos() {
+		return null;
+	}
 }

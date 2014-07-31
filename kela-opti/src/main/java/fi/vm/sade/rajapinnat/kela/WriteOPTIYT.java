@@ -15,17 +15,17 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.NonUniqueResultException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -42,237 +42,202 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 @Component
 @Configurable
 public class WriteOPTIYT extends AbstractOPTIWriter {
-    
-    @Autowired
-    private ApplicationContext appContext;
-    
-    
 
-    private static final String OPTIYT = ".OPTIYT";
-    
-    private static final String ALKUTIETUE = "0000000000ALKU\n";
-    private static final String LOPPUTIETUE = "9999999999LOPPU??????\n";
-    private static final String POSTINUMERO_FIELD = "postinumeroUri"; 
-    
-    private static final String STREET_ADDRESS = "osoite";
+	@Autowired
+	private ApplicationContext appContext;
 
-    private static final String ADDRESS_DATA_TYPE = "osoiteTyyppi";
-    private static final String ADDRESS_DATA_TYPE_VISIT = "kaynti";
-    private static final String ADDRESS_DATA_TYPE_POSTAL = "posti";
-    private static final String LANG = "kieli";
-    private static final String LANG_FI = "fi";
-    private static final String LANG_SV = "sv";
+	private String FILEIDENTIFIER;
+	private String ALKUTIETUE;
+	private String LOPPUTIETUE;
+	private String POSTINUMERO_FIELD = "postinumeroUri";
+	private String OSOITE_FIELD = "osoite";
 
-    private static final String DATA_TYPE = "tyyppi";
-    private static final String DATA_TYPE_PHONE = "puhelin";
-    private static final String DATA_TYPE_FAX = "faksi";
-    private static final String DATA_TYPE_PHONE_NUMBER = "numero";
-    private static final String DATA_TYPE_EMAIL = "email";
-    private static final String DATA_TYPE_WWW = "www";
-    
-    
-    
-    public WriteOPTIYT() {
-        super();
-        
+    private final static String [] errors = {
+    	"could not write oppilaitos %s : invalid values.",
+    	"could not write toimipiste %s : invalid values.",
+    	"YHT ID cannot be empty %s : invalid values."
+    };
+	
+    private final static String [] warnings = {
+    	"Yhteystieto of %s - %s is empty (org.oid=%s).",
+    	"Yhteystieto of %s - %s is not unique (org.oid=%s)."
+    };
+
+
+	public WriteOPTIYT() {
+		super();
+	}
+
+	public void composeRecords() throws IOException, UserStopRequestException {
+		if (organisaatioResource == null) {
+			organisaatioResource = (OrganisaatioResource) appContext.getBean("organisaatioResource"); // @Autowired did not work
+		}
+		for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
+			try {
+				writeRecord(curOppilaitos);
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(errors[0], curOppilaitos.getOid()+" "+curOppilaitos.getNimi()));
+			} 
+		}
+
+		for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
+			try {
+				writeRecord(curToimipiste);
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(errors[1], curToimipiste.getOid()+" "+curToimipiste.getNimi()));
+			}
+		}
+	}
+
+	@Override
+	public String composeRecord(Object... args) throws OPTFormatException {
+		OrganisaatioPerustieto organisaatio = (OrganisaatioPerustieto) args[0];
+		
+		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
+		
+		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields + EOL
+				getYhtId(organisaatio),// YHT_ID
+				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO
+				StringUtils.leftPad("", 3),// Postinumeroon liittyva maatunnus
+				DEFAULT_DATE,// 01.01.0001-merkkijono
+				getKatuosoite(orgR.getKayntiosoite()),// Katuosoite tai kayntiosoite
+				getPostilokero(orgR.getPostiosoite()),// Postilokero
+				getSimpleYhteystietoPuhnro(orgR),// Puhelinnumero
+				getSimpleYhteystietoSPosti(orgR),// Sahkopostiosoite
+				getSimpleYhteystieto(orgR.getFaksinumero(), 20),// Fax-numero
+				getSimpleYhteystieto(orgR.getWwwOsoite(), 80),// Kotisivujen osoite
+				StringUtils.leftPad("", 15),// Postinumero (YHT_ULK_PTNUMERO)
+				StringUtils.leftPad("", 25),// Postitoimipaikka (YHT_ULK_PTPAIKKA)
+				StringUtils.leftPad("", 40),// YHT_ULK_ALUE
+				DEFAULT_DATE,// Viimeisin paivityspaiva
+				StringUtils.leftPad("", 30),// Viimeisin paivittaja
+				getPostinumero(orgR.getKayntiosoite()),// Postinumero POS_NRO
+				"\n");
+		return record;
+	}
+
+	private String getPostilokero(Map<String, String> postiosoite) throws OPTFormatException {
+		String katuos = postiosoite.get(OSOITE_FIELD);
+		if (!StringUtils.isEmpty(katuos) && katuos.startsWith("PL") && katuos.length() < 11) {
+			return strFormatter(katuos, 10, "postilokero");
+		}
+		return StringUtils.rightPad("", 10);
+	}
+
+	private String getSimpleYhteystietoPuhnro(OrganisaatioRDTO org) throws OPTFormatException {
+		String pnro = null;
+		try {
+			pnro = kelaDAO.getPuhelinnumero(org.getOid());
+		} catch (NonUniqueResultException e) {
+			warn(2, org.getNimi(), "puhelinnro", org.getOid());
+		}
+		String yhteystieto = getSimpleYhteystieto(pnro,60);
+		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
+			warn(1, org.getNimi(), "puhelinnro", org.getOid());
+		}
+		return yhteystieto;
+	}
+	
+	private String getSimpleYhteystietoSPosti(OrganisaatioRDTO org) throws OPTFormatException {
+		String sp=null;
+		try {
+			sp = kelaDAO.getEmail(org.getOid());
+		} catch (NonUniqueResultException e) {
+			warn(2, org.getNimi(), "email", org.getOid());
+		}
+		String yhteystieto = getSimpleYhteystieto(sp,80);
+		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
+			warn(1, org.getNimi(), "email", org.getOid());
+		}
+		return yhteystieto;
+	}
+
+	private String getSimpleYhteystieto(String yhteystieto, int pad) throws OPTFormatException {
+		if (yhteystieto != null && yhteystieto.length() > pad) {
+			yhteystieto = yhteystieto.substring(0, pad);
+		}
+		return (yhteystieto != null) ? strFormatter(yhteystieto, pad, "yhteystieto") : StringUtils.rightPad("", pad);
+	}
+
+	private String getKatuosoite(Map<String, String> osoite) throws OPTFormatException {
+		String osoiteStr = osoite.get(OSOITE_FIELD);
+		if (osoiteStr != null && osoiteStr.length() > 50) {
+			osoiteStr = osoiteStr.substring(0, 50);
+		}
+		return strFormatter(osoiteStr, 50, "katuosoite");
+	}
+
+	private String getPostinumero(Map<String, String> osoite) throws OPTFormatException {
+		String postinumeroUri = osoite.get(POSTINUMERO_FIELD);
+		List<KoodiType> koodit = (postinumeroUri != null) ? this.getKoodisByUriAndVersio(postinumeroUri) : new ArrayList<KoodiType>();
+		String postinro = "";
+		if (koodit != null && !koodit.isEmpty()) {
+			postinro = koodit.get(0).getKoodiArvo();
+		}
+		return strFormatter(postinro, 5, "postinumero");
+	}
+
+	private String getYhtId(OrganisaatioPerustieto organisaatio) throws OPTFormatException {
+		Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
+		Long yhtId = kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId());
+		if (yhtId==null) {
+			error(3, organisaatio.getOid()+" "+organisaatio.getNimi());
+		}
+		return numFormatter("" + kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()), 10, "Yhteystietojen yksilöivä tunniste (YHT_ID), käyntiosoite id");
+	}
+	
+	@Value("${OPTIYT.postinumeroField:postinumeroUri}")
+    public void setPostinumeroField(String postinumeroField) {
+        this.POSTINUMERO_FIELD = postinumeroField;
     }
-    
-    @Override
-    public void writeFile() throws IOException {
-        createFileName("", OPTIYT);
-        if (organisaatioResource == null) {
-            organisaatioResource = (OrganisaatioResource)appContext.getBean("organisaatioResource"); //@Autowired did not work
-        }
-        bos = new BufferedOutputStream(new FileOutputStream(new File(fileName)));
-        bos.write(toLatin1(ALKUTIETUE));
-        
-        for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
-                try {
-                    bos.write(toLatin1(createRecord(curOppilaitos)));   
-                    bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-        }
-        
-        for (OrganisaatioPerustieto curToimipiste : this.orgContainer.getToimipisteet()) {
-                try {
-                    bos.write(toLatin1(createRecord(curToimipiste)));
-                    bos.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-        }
-        
-        bos.write(toLatin1(LOPPUTIETUE));
-        bos.flush();
-        bos.close();
-
+	
+	@Value("${OPTIYT.osoiteField:osoite}")
+    public void setosoiteField(String osoiteField) {
+        this.OSOITE_FIELD = osoiteField;
     }
-
-    private String createRecord(OrganisaatioPerustieto organisaatio) {
-        OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//16 fields + EOL
-                getYhtId(organisaatio),//YHT_ID
-                getPostinumero(orgR.getYhteystiedot()),//orgR.getPostiosoite()),//POS_NUMERO
-                StringUtils.leftPad("", 3),//Postinumeroon liittyva maatunnus
-                DEFAULT_DATE,//01.01.0001-merkkijono
-                getKatuosoite(orgR.getYhteystiedot()),//orgR.getKayntiosoite()),//Katuosoite tai kayntiosoite
-                getPostilokero(orgR.getYhteystiedot()),//orgR.getPostiosoite()),//Postilokero
-                getPhoneNumber(orgR.getYhteystiedot(), DATA_TYPE_PHONE, 60),//orgR.getPuhelinnumero(), 60),//Puhelinnumero
-                getSimpleContact(orgR.getYhteystiedot(), 80, DATA_TYPE_EMAIL),//orgR.getEmailOsoite(), 80),//Sahkopostiosoite
-                getPhoneNumber(orgR.getYhteystiedot(), DATA_TYPE_FAX, 20),//orgR.getFaksinumero(), 20),//Fax-numero
-                getSimpleContact(orgR.getYhteystiedot(), 80, DATA_TYPE_WWW),//Kotisivujen osoite
-                StringUtils.leftPad("", 15),//Postinumero (YHT_ULK_PTNUMERO)
-                StringUtils.leftPad("", 25),//Postitoimipaikka (YHT_ULK_PTPAIKKA)
-                StringUtils.leftPad("", 40),//YHT_ULK_ALUE
-                DEFAULT_DATE,//Viimeisin paivityspaiva
-                StringUtils.leftPad("", 30),//Viimeisin paivittaja
-                getPostinumero(orgR.getYhteystiedot()),//Postinumero POS_NRO
-                "\n");
-        return record;
+	
+	@Value("${OPTIYT.alkutietue}")
+    public void setAlkutietue(String alkutietue) {
+        this.ALKUTIETUE = alkutietue;
     }
-
-    private String getSimpleContact(List<Map<String, String>> yhteystiedot, int pad, String fieldName) {
-        
-        String yhteystieto = null;
-        
-        Map<String,String> addrTransls = new HashMap<String,String>();
-        
-        for (Map<String,String> curYht : yhteystiedot) {
-            
-            if (curYht.containsKey(fieldName)) {
-                List<KoodiType> langCodes = this.getKoodisByUriAndVersio(curYht.get(LANG));
-                String langKey = null;
-                if (langCodes != null && !langCodes.isEmpty()) {
-                    langKey = langCodes.get(0).getKoodiArvo();
-                }
-                if (langKey != null) {
-                    addrTransls.put(langKey, curYht.get(fieldName));
-                }
-            }
-        }
-        
-        if (addrTransls.containsKey(LANG_FI)) {
-             yhteystieto = addrTransls.get(LANG_FI);
-        }
-        if (addrTransls.containsKey(LANG_SV)) {
-            yhteystieto = addrTransls.get(LANG_SV);
-        }
-        if (!addrTransls.isEmpty()) {
-            yhteystieto = addrTransls.values().iterator().next();
-        }
-        
-        if (yhteystieto != null && yhteystieto.length() > pad) {
-            yhteystieto = yhteystieto.substring(0, pad);
-        }
-        return (yhteystieto != null) ? StringUtils.rightPad(yhteystieto, pad) : StringUtils.rightPad("", pad);
-        
+	
+	@Value("${OPTIYT.lopputietue}")
+    public void setLopputietue(String lopputietue) {
+        this.LOPPUTIETUE = lopputietue;
     }
-
-    private String getPhoneNumber(List<Map<String, String>> yhteystiedot,
-            String phoneType, int pad) {
-        String yhteystieto = null;
-        
-        Map<String,String> addrTransls = new HashMap<String,String>();
-        
-        for (Map<String,String> curYht : yhteystiedot) {
-            
-            if (curYht.containsKey(DATA_TYPE_PHONE_NUMBER) && curYht.containsKey(DATA_TYPE) && curYht.get(DATA_TYPE).equals(phoneType)) {
-                List<KoodiType> langCodes = this.getKoodisByUriAndVersio(curYht.get(LANG));
-                String langKey = null;
-                if (langCodes != null && !langCodes.isEmpty()) {
-                    langKey = langCodes.get(0).getKoodiArvo();
-                }
-                if (langKey != null) {
-                    addrTransls.put(langKey, curYht.get(DATA_TYPE_PHONE_NUMBER));
-                }
-            }
-        }
-        
-        if (addrTransls.containsKey(LANG_FI)) {
-             yhteystieto = addrTransls.get(LANG_FI);
-        }
-        if (addrTransls.containsKey(LANG_SV)) {
-            yhteystieto = addrTransls.get(LANG_SV);
-        }
-        if (!addrTransls.isEmpty()) {
-            yhteystieto = addrTransls.values().iterator().next();
-        }
-        
-        if (yhteystieto != null && yhteystieto.length() > pad) {
-            yhteystieto = yhteystieto.substring(0, pad);
-        }
-        return (yhteystieto != null) ? StringUtils.rightPad(yhteystieto, pad) : StringUtils.rightPad("", pad);
-    }
-
-    private String getPostilokero(List<Map<String, String>> yhteystiedot) {
-        String katuos = this.getAddressStr(yhteystiedot, ADDRESS_DATA_TYPE_POSTAL, STREET_ADDRESS, false);
-        if (!StringUtils.isEmpty(katuos) 
-                && katuos.startsWith("PL")
-                && katuos.length() < 11) {
-            return StringUtils.rightPad(katuos, 10);
-        }
-        return StringUtils.rightPad("", 10);
+	
+	@Value("${OPTIYT.fileIdentifier:OPTIYT}")
+    public void setFileIdentifier(String fileIdentifier) {
+        this.FILEIDENTIFIER = fileIdentifier;
     }
 
-    private String getKatuosoite(List<Map<String, String>> yhteystiedot) {
-        
-        String osoiteStr = getAddressStr(yhteystiedot, ADDRESS_DATA_TYPE_VISIT, STREET_ADDRESS, false);
-        
-        return StringUtils.rightPad(osoiteStr, 50);
-    }
+	@Override
+	public String getAlkutietue() {
+		return ALKUTIETUE;
+	}
 
-    private String getAddressStr(List<Map<String, String>> yhteystiedot, String addressType, String fieldName, boolean isCode) {
-        
-        Map<String,String> addrTransls = new HashMap<String,String>();
-        
-        for (Map<String,String> curYht : yhteystiedot) {
-            if (curYht.containsKey(ADDRESS_DATA_TYPE) && curYht.get(ADDRESS_DATA_TYPE).equals(addressType)) {
-                List<KoodiType> langCodes = this.getKoodisByUriAndVersio(curYht.get(LANG));
-                String langKey = null;
-                if (langCodes != null && !langCodes.isEmpty()) {
-                    langKey = langCodes.get(0).getKoodiArvo();
-                }
-                if (langKey != null && curYht.get(fieldName) != null) {
-                    String val = null;
-                    if (isCode) {
-                        List<KoodiType> valCodes = this.getKoodisByUriAndVersio(curYht.get(fieldName));
-                        val = valCodes != null && !valCodes.isEmpty() ? valCodes.get(0).getKoodiArvo() : null;
-                    } else {
-                        val = curYht.get(fieldName);
-                    }
-                    if (val != null) {
-                        addrTransls.put(langKey.toLowerCase(), val);
-                    }
-                }
-                
-            }
-        }
-        
-        if (addrTransls.containsKey(LANG_FI)) {
-            return addrTransls.get(LANG_FI);
-        }
-        if (addrTransls.containsKey(LANG_SV)) {
-            return addrTransls.get(LANG_SV);
-        }
-        if (!addrTransls.isEmpty()) {
-            return addrTransls.values().iterator().next();
-        }
-        
-        return "";
-    }
+	@Override
+	public String getLopputietue() {
+		return LOPPUTIETUE;
+	}
 
-    private String getPostinumero(List<Map<String, String>> yhteystiedot) {
-        String postinro = this.getAddressStr(yhteystiedot, ADDRESS_DATA_TYPE_POSTAL, POSTINUMERO_FIELD, true); 
-        return StringUtils.leftPad(postinro, 5);
-    }
+	@Override
+	public String getFileIdentifier() {
+		return FILEIDENTIFIER;
+	}
 
-    private String getYhtId(OrganisaatioPerustieto organisaatio) {
-        Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
-        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10, '0');
-    }
-    
+	@Override
+	public String[] getErrors() {
+		return errors;
+	}
 
+	@Override
+	public String[] getWarnings() {
+		return warnings;
+	}
 
+	@Override
+	public String[] getInfos() {
+		return null;
+	}
 }

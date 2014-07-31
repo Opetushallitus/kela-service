@@ -3,14 +3,14 @@
   <parent>
     <groupId>fi.vm.sade.rajapinnat</groupId>
     <artifactId>rajapinnat</artifactId>
-    <version>7.0-SNAPSHOT</version>
+    <version>9.0-SNAPSHOT</version>
   </parent>
   <artifactId>kela</artifactId>
   <packaging>pom</packaging>
-  <name>Rajapinnat :: KELA :: parent - ${version}</name>
+  <name>Rajapinnat :: KELA :: parent - ${project.version}</name>
   
   <modules>
-  	<module>kela-tkuva</module>
 	<module>kela-opti</module>
+	<module>kela-service</module>
   </modules>
 </project>
