@@ -69,7 +69,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	
     private final static String[] warnings = {
     	"Toimipisteen opetuspisteenjnro is empty : org.oid=%s"
-    }
+    };
+    
     private final static String[] infos = {
     	"fetched %s hakukohde from index."
     };
