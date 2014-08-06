@@ -50,6 +50,8 @@ public class KelaDAOImpl implements KelaDAO {
     
     private static final String KAYNTIOSOITE = "kaynti";
     private static final String PUHELIN = "puhelin";
+    private static final String POSTI = "posti";
+    private static final String WWW = "Www";
     
     private String tarjontaDbUrl;
     private String tarjontaDbUsername;
@@ -232,9 +234,7 @@ public class KelaDAOImpl implements KelaDAO {
     	return resultList.get(0);
     }
     
-    
-    @Override
-    public Long getKayntiosoiteIdForOrganisaatio(Long id) {
+    private Long _getKayntiosoiteIdForOrganisaatio(Long id, String osoiteTyyppi) {
         @SuppressWarnings("unchecked")
 		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ? order by id desc")
 				  .setParameter(1, id)
@@ -245,7 +245,31 @@ public class KelaDAOImpl implements KelaDAO {
         	 return null;
         }
         return resultList.get(0);
-     }
+    }
+
+    private Long _getWwwIdForOrganisaatio(Long id) {
+        @SuppressWarnings("unchecked")
+		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND dType = ? order by id desc")
+				  .setParameter(1, id)
+                  .setParameter(2, WWW)
+                  .getResultList();
+         
+         if (resultList==null || resultList.size()==0) {
+        	 return null;
+        }
+        return resultList.get(0);
+    }
+
+    @Override
+    public Long getKayntiosoiteIdForOrganisaatio(Long id) {
+    	Long kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, KAYNTIOSOITE);
+    	if (null != kayntiOsoiteId) return kayntiOsoiteId;
+    	//fallback to postiosoite
+    	kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, POSTI);
+    	if (null != kayntiOsoiteId) return kayntiOsoiteId;
+    	//fallback to www
+    	return _getWwwIdForOrganisaatio(kayntiOsoiteId);
+    }
 
     @SuppressWarnings("unchecked")
     @Override
