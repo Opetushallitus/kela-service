@@ -67,6 +67,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     	"HAK_NIMI may not be missing (org.oid=%s)."
     };
 	
+    private final static String[] warnings = {
+    	"Toimipisteen opetuspisteenjnro is empty : org.oid=%s"
+    }
     private final static String[] infos = {
     	"fetched %s hakukohde from index."
     };
@@ -125,11 +128,14 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
 	private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-            return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
+            if  (StringUtils.isEmpty(organisaatio.getOpetuspisteenJarjNro())) {
+                warn(1,organisaatio.getOid());
+                return "  ";
+            }
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(curTulos.getTarjoajaOid());
-            return (organisaatioE != null && organisaatioE.getOpetuspisteenJarjNro() != null) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
+            return (organisaatioE != null && !StringUtils.isEmpty(organisaatioE.getOpetuspisteenJarjNro().trim())) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
         }
         return "01";
     }
@@ -417,7 +423,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
 	@Override
 	public String[] getWarnings() {
-		return null;
+		return warnings;
 	}
 
 	@Override
