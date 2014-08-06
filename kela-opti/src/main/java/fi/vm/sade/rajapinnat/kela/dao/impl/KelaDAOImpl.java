@@ -238,7 +238,7 @@ public class KelaDAOImpl implements KelaDAO {
         @SuppressWarnings("unchecked")
 		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ? order by id desc")
 				  .setParameter(1, id)
-                  .setParameter(2, KAYNTIOSOITE)
+                  .setParameter(2, osoiteTyyppi)
                   .getResultList();
          
          if (resultList==null || resultList.size()==0) {
@@ -254,7 +254,7 @@ public class KelaDAOImpl implements KelaDAO {
                   .setParameter(2, WWW)
                   .getResultList();
          
-         if (resultList==null || resultList.size()==0) {
+        if (resultList==null || resultList.size()==0) {
         	 return null;
         }
         return resultList.get(0);
@@ -268,7 +268,7 @@ public class KelaDAOImpl implements KelaDAO {
     	kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, POSTI);
     	if (null != kayntiOsoiteId) return kayntiOsoiteId;
     	//fallback to www
-    	return _getWwwIdForOrganisaatio(kayntiOsoiteId);
+    	return _getWwwIdForOrganisaatio(id);
     }
 
     @SuppressWarnings("unchecked")
