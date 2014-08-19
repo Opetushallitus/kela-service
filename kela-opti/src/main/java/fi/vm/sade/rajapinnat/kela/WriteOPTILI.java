@@ -185,16 +185,38 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         this.KOULUTUSLAJI = koulutuslaji;
     }
 	
-	private KoulutuksetVastaus haeKoulutukset(String hakukohdeOid) {
+	private KoulutuksetVastaus haeKoulutukset(String hakukohdeOid) throws UserStopRequestException {
         KoulutuksetKysely kysely = new KoulutuksetKysely();
         kysely.getHakukohdeOids().add(hakukohdeOid);
-        return tarjontaSearchService.haeKoulutukset(kysely);
-
+        while(true) {
+        	try {
+        		return tarjontaSearchService.haeKoulutukset(kysely);
+        	} catch(RuntimeException e) {
+        		if (e.getMessage().equals("haku.error")) {
+        			handleException(e);
+        		} else  {
+        			throw e;
+        		}
+        	}
+        }
 	}
+
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException{
         HakukohteetKysely kysely = new HakukohteetKysely();
-        HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
+        HakukohteetVastaus vastaus = null;
+        while(true) {
+        	try {
+        		vastaus = tarjontaSearchService.haeHakukohteet(kysely);
+        		break;
+        	} catch(RuntimeException e) {
+        		if (e.getMessage().equals("haku.error")) {
+        			handleException(e);
+        		} else  {
+        			throw e;
+        		}
+        	}
+        }
         info(1, vastaus.getHitCount());
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
         	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();

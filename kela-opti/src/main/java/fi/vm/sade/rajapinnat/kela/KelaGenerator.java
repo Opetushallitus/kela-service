@@ -119,7 +119,7 @@ public class KelaGenerator implements Runnable {
 	 * @throws UserStopRequestException 
      */
     public void generateKelaFiles() throws UserStopRequestException {
-        long startTime = System.currentTimeMillis();;
+        long startTime = System.currentTimeMillis();
         for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
         	writeKelaFile(optiWriter);
         }

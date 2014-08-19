@@ -517,27 +517,31 @@ public abstract class AbstractOPTIWriter {
 				line=composeRecord(args);
 				break;
 			} catch(ClientWebApplicationException e /*CXF may throw*/) {
-				errorCount++;
-				warn(String.format(WARN_MESS_3,e.getCause(), getErrorCoolDown()));
-				if (stopRequest) {
-					throw new UserStopRequestException();
-				}
-				if (errorCount>getErrorLimit()) {
-					String errStr=String.format(ERR_MESS_13, getErrorLimit());
-					LOG.error(errStr);
-					throw new RuntimeException(errStr);
-				}
-				try {
-					Thread.sleep(getErrorCoolDown()*1000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-					throw new RuntimeException("Interrupted thread."+e1);
-				}
+				handleException(e);
 			}
 		}
 		bostr.write(toLatin1(line));
 		bostr.flush();
 		++writes;
+	}
+	
+	protected void handleException(Exception e) throws UserStopRequestException {
+		errorCount++;
+		warn(String.format(WARN_MESS_3,e.getCause(), getErrorCoolDown()));
+		if (stopRequest) {
+			throw new UserStopRequestException();
+		}
+		if (errorCount>getErrorLimit()) {
+			String errStr=String.format(ERR_MESS_13, getErrorLimit());
+			LOG.error(errStr);
+			throw new RuntimeException(errStr);
+		}
+		try {
+			Thread.sleep(getErrorCoolDown()*1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+			throw new RuntimeException("Interrupted thread."+e1);
+		}
 	}
 	
     protected static class OPTFormatException extends Exception {
