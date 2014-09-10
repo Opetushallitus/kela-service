@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 
+import junit.framework.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -48,19 +50,25 @@ public class KelaIntegraatioFtpTesti {
     @Test
     public void testaaSijoitteluntulostenlahetystaKelanPalvelimelle() throws IOException {
         TKUVAYHVA a = new TKUVAYHVA.Builder().setHenkilotunnus("010478123X").setEtunimet("Ölfär Åke")
-                .setOppilaitos("AA:B").setLinjakoodi("A:B").setSukunimi("Åkerson").setPoimintapaivamaara(new Date())
+                .setOppilaitosnumero("AA:B").setOrganisaatio("A:B").setHakukohde("A:").setSukunimi("Åkerson").setPoimintapaivamaara(new Date())
                 .setValintapaivamaara(new Date()).setLukuvuosi(new Date()).setKevaallaAlkavaKoulutus().build();
         TKUVAYHVA b = new TKUVAYHVA.Builder().setHenkilotunnus("010578123X").setEtunimet("Jorma Pirjo")
-                .setOppilaitos("CC:D").setLinjakoodi("Q:P").setSukunimi("Lötjönen").setPoimintapaivamaara(new Date())
+                .setOppilaitosnumero("CC:D").setOrganisaatio("Q:P").setHakukohde("B:").setSukunimi("Lötjönen").setPoimintapaivamaara(new Date())
                 .setValintapaivamaara(new Date()).setLukuvuosi(new Date()).setSyksyllaAlkavaKoulutus().build();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(a.toByteArray());
-        outputStream.write(KelaUtil.RIVINVAIHTO);
-        outputStream.write(b.toByteArray());
+        try {
+			outputStream.write(a.toByteArray());
+			outputStream.write(KelaUtil.RIVINVAIHTO);
+			outputStream.write(b.toByteArray());
 
-        ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray());
-        ftpService.lahetaTiedosto(KelaUtil.createTiedostoNimiYhva14(new Date()), input);
+			ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray());
+			ftpService.lahetaTiedosto(KelaUtil.createTiedostoNimiYhva14(new Date()), input);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
     }
 }

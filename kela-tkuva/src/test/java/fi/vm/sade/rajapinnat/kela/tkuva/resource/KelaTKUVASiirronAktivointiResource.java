@@ -74,7 +74,7 @@ public class KelaTKUVASiirronAktivointiResource {
                  * 2000-luvulla syntyneet hakevat toiselle asteelle parin vuoden
                  * päästä?"" +
                  */
-                builder.setHenkilotunnus("010478123X");
+                builder.setHenkilotunnus("010478-123X");
                 builder.setAjankohtaSyksy(true); // syksyllä vai kevaalla alkava
                                                  // koulutus?
                 builder.setLukuvuosi(new Date());
@@ -82,24 +82,10 @@ public class KelaTKUVASiirronAktivointiResource {
                                                           // valituksi
                 builder.setPoimintapaivamaara(new Date()); // koska kela tekee
                                                            // poiminnan
-                /*
-                 * "Opetushallituksen yhteisvalintakoodi - oppilaitoskohtainen
-                 * (virhe. Ei ole koskaan ollutkaan. Vaan
-                 * toimipiste/opetuspistekohtainen) - yhteishaun hakukoodi -
-                 * pakollinen" ORGANISAATIO:YHTEISHAUNKOULUKOODI HUOM! Tämä ei
-                 * koskaan viittaa oppilaitokseen vaan sen alaiseen
-                 * toimipisteeseen. Koulutusta tarjoava opetuspiste.
-                 */
-                builder.setOppilaitos(""); // oppilaitos
-                /*
-                 * "Opetushallituksen linjakoodi - oppilaitoskohtainen (virhe.
-                 * Ei ole oppilaitoskohtainen, vaan yleinen hakukohdekoodi, joka
-                 * voi liittyä mihin tahansa toisen asteen toimipisteeseen.
-                 * Liittyy koulutukseen. - yhteishaun linjakoodi - pakollinen
-                 * "   HAKUKOHDE:HAKUKOHDE_NIMI->URI:LLA KOODISTOPALVELUSTA HAKUKOHDEKOODIN KOODIARVO  HAKUKOHTEET -KOODISTO"
-                 * +
-                 */
-                builder.setLinjakoodi("A:B"); // kolme tavua:
+                builder.setOppilaitosnumero("12345"); // oppilaitos nro
+
+                builder.setHakukohde("223.223.223.223"); // oid:
+                builder.setOrganisaatio("123.123.123.123"); // oid:
 
                 ByteArrayOutputStream kooste = new ByteArrayOutputStream();
                 // kirjoitellaan vastaanottajat binaaripotkoon
