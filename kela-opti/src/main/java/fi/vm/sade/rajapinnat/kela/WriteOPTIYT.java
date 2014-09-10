@@ -30,10 +30,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
 /**
  * 
@@ -55,12 +55,12 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
     private final static String [] errors = {
     	"could not write oppilaitos %s : invalid values.",
     	"could not write toimipiste %s : invalid values.",
-    	"YHT ID cannot be empty %s : invalid values."
     };
 	
     private final static String [] warnings = {
     	"Yhteystieto of %s - %s is empty (org.oid=%s).",
-    	"Yhteystieto of %s - %s is not unique (org.oid=%s)."
+    	"Yhteystieto of %s - %s is not unique (org.oid=%s).",
+    	"Käyntisoite is empty (org.oid=%s)",
     };
 
 
@@ -100,8 +100,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO
 				StringUtils.leftPad("", 3),// Postinumeroon liittyva maatunnus
 				DEFAULT_DATE,// 01.01.0001-merkkijono
-				getKatuosoite(orgR.getKayntiosoite()),// Katuosoite tai kayntiosoite
-				getPostilokero(orgR.getPostiosoite()),// Postilokero
+				getKatuosoite(orgR.getKayntiosoite(), organisaatio),// Katuosoite tai kayntiosoite
+				getPostilokero(orgR.getPostiosoite(), organisaatio),// Postilokero
 				getSimpleYhteystietoPuhnro(orgR),// Puhelinnumero
 				getSimpleYhteystietoSPosti(orgR),// Sahkopostiosoite
 				getSimpleYhteystieto(orgR.getFaksinumero(), 20),// Fax-numero
@@ -116,13 +116,6 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		return record;
 	}
 
-	private String getPostilokero(Map<String, String> postiosoite) throws OPTFormatException {
-		String katuos = postiosoite.get(OSOITE_FIELD);
-		if (!StringUtils.isEmpty(katuos) && katuos.startsWith("PL") && katuos.length() < 11) {
-			return strFormatter(katuos, 10, "postilokero");
-		}
-		return StringUtils.rightPad("", 10);
-	}
 
 	private String getSimpleYhteystietoPuhnro(OrganisaatioRDTO org) throws OPTFormatException {
 		String pnro = null;
@@ -159,12 +152,24 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		return (yhteystieto != null) ? strFormatter(yhteystieto, pad, "yhteystieto") : StringUtils.rightPad("", pad);
 	}
 
-	private String getKatuosoite(Map<String, String> osoite) throws OPTFormatException {
+	private String getKatuosoite(Map<String, String> osoite, OrganisaatioPerustieto organisaatio) throws OPTFormatException {
 		String osoiteStr = osoite.get(OSOITE_FIELD);
 		if (osoiteStr != null && osoiteStr.length() > 50) {
 			osoiteStr = osoiteStr.substring(0, 50);
 		}
+		if (null == osoiteStr) {
+			warn(3, organisaatio.getOid()+" "+organisaatio.getNimi());
+			return strFormatter("", 50, "katuosoite");
+		}
 		return strFormatter(osoiteStr, 50, "katuosoite");
+	}
+	
+	private String getPostilokero(Map<String, String> postiosoite, OrganisaatioPerustieto organisaatio) throws OPTFormatException {
+		String katuos = postiosoite.get(OSOITE_FIELD);
+		if (!StringUtils.isEmpty(katuos) && katuos.startsWith("PL") && katuos.length() < 11) {
+			return strFormatter(katuos, 10, "postilokero");
+		}
+		return StringUtils.rightPad("", 10);
 	}
 
 	private String getPostinumero(Map<String, String> osoite) throws OPTFormatException {
@@ -179,11 +184,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 
 	private String getYhtId(OrganisaatioPerustieto organisaatio) throws OPTFormatException {
 		Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
-		Long yhtId = kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId());
-		if (yhtId==null) {
-			error(3, organisaatio.getOid()+" "+organisaatio.getNimi());
-		}
-		return numFormatter("" + kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId()), 10, "Yhteystietojen yksilöivä tunniste (YHT_ID), käyntiosoite id");
+		return getYhteystietojenTunnus(organisaatio);
 	}
 	
 	@Value("${OPTIYT.postinumeroField:postinumeroUri}")

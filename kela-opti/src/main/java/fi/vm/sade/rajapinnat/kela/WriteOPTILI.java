@@ -132,6 +132,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             if  (StringUtils.isEmpty(organisaatio.getOpetuspisteenJarjNro())) {
                 warn(1,organisaatio.getOid());
                 return "  ";
+            } else {
+            	return organisaatio.getOpetuspisteenJarjNro();
             }
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
@@ -142,15 +144,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
 
     private String getOppilaitosnumero(OrganisaatioDTO organisaatio) throws OPTFormatException {
-    	String oppil_nro = "";
-    	if (null != organisaatio.getTyypit()) {
-    		if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-    			oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
-    		} else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-    			oppil_nro = String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
-    		}
-    	}
-    	if (StringUtils.isEmpty(oppil_nro.trim())){
+    	String oppil_nro = null;
+    	oppil_nro = getOppilaitosNro(organisaatio);
+    	if (oppil_nro==null || StringUtils.isEmpty(oppil_nro.trim())){
     		error(8,organisaatio.getOid()+" "+organisaatio.getNimi());
     	}
         return strFormatter(oppil_nro, 5, "OPPIL_NRO");
@@ -217,7 +213,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         		}
         	}
         }
-        info(1, vastaus.getHitCount());
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
         	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
             try {

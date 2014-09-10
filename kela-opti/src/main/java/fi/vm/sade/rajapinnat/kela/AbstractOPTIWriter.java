@@ -44,11 +44,12 @@ import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
-import fi.vm.sade.organisaatio.api.search.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 /**
@@ -95,10 +96,11 @@ public abstract class AbstractOPTIWriter {
 	protected final static String ERR_MESS_7="Lopputietue '%s' must match "+ALKULOPPUTIETUE_FORMAT;
 	protected final static String ERR_MESS_8="Number of rows (%s) will not fit into lopputietue '%s'";
 	protected final static String ERR_MESS_9="Kela koulutuskoodi not found for koodistokoodi %s";
-	protected final static String ERR_MESS_10="Opplaitosnro not found for organisaatio %s";
+	protected final static String ERR_MESS_10="<removed>";
 	protected final static String ERR_MESS_11="Koodisto koodi has no uri ('%s') - %s";
 	protected final static String ERR_MESS_12="Toimipiste should have parentoidpath (%s)";
 	protected final static String ERR_MESS_13="Max errors (%s) exceeded. Aborting.";
+	protected final static String ERR_MESS_14="Yhteystieto may not be null for %s";
 	
     protected final static String WARN_MESS_1="'%s' was truncated to %s characters (%s)";
     protected final static String WARN_MESS_2="Perhaps toimipiste %s should not have oppilaitoskoodi (%s)";
@@ -124,6 +126,7 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected OrganisaatioContainer orgContainer;
 
+  
     protected OrganisaatioResource organisaatioResource;
 
     private String fileName=null;
@@ -330,14 +333,19 @@ public abstract class AbstractOPTIWriter {
 				if (null==org.getParentOidPath() ||org.getParentOidPath().length()==0 ) {
 					error(String.format(ERR_MESS_12, org.getOid()+" "+org.getNimi()));
 				}
-				
-				String[] parentsOids = org.getParentOidPath().split("" + PARENTPATH_SEPARATOR);
-				for (String parentOID : parentsOids) {
-					if (parentOID.length() > 0 && this.orgContainer.getOppilaitosoidOppilaitosMap().containsKey(parentOID)) {
-						olKoodi = this.orgContainer.getOppilaitosoidOppilaitosMap().get(parentOID).getOppilaitosKoodi();
-						break;
-					}
-				}
+				olKoodi = getOppilaitosNro(org.getParentOidPath());
+			}
+		}
+		return olKoodi;
+	}
+
+	private String getOppilaitosNro(String parentOidPath) {
+		String olKoodi=null;
+		String[] parentsOids = parentOidPath.split("" + PARENTPATH_SEPARATOR);
+		for (String parentOID : parentsOids) {
+			if (parentOID.length() > 0 && this.orgContainer.getOppilaitosoidOppilaitosMap().containsKey(parentOID)) {
+				olKoodi = this.orgContainer.getOppilaitosoidOppilaitosMap().get(parentOID).getOppilaitosKoodi();
+				break;
 			}
 		}
 		return olKoodi;
@@ -349,15 +357,24 @@ public abstract class AbstractOPTIWriter {
                 && !curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
         		opnro = StringUtils.leftPad(
                     this.orgContainer.getOppilaitosoidOppilaitosMap().get(
-                            curOrganisaatio.getParentOid()).getOppilaitosKoodi(), 5);
+                    		curOrganisaatio.getParentOppilaitosOid()).getOppilaitosKoodi(), 5);
         } 
         if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
         	opnro = StringUtils.leftPad(curOrganisaatio.getOppilaitosKoodi(), 5);
         }
-        if (null == opnro || StringUtils.isEmpty(opnro)) {
-        	error(String.format(ERR_MESS_10, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()));
-        }
         return opnro;
+    }
+    
+    protected String getOppilaitosNro(OrganisaatioDTO organisaatio) throws OPTFormatException {
+    	String oppil_nro = "";
+    	if (null != organisaatio.getTyypit()) {
+    		if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+    			oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
+    		} else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
+    			oppil_nro = getOppilaitosNro(organisaatio.getParentOidPath());
+    		}
+    	}
+    	return oppil_nro;
     }
     
     protected String getToimipisteenJarjNro(Organisaatio orgE) {
@@ -368,8 +385,21 @@ public abstract class AbstractOPTIWriter {
         return StringUtils.leftPad(opPisteenJarjNro, 2);
     }
 
-    protected String getYhteystietojenTunnus(Organisaatio orgE) {
-        return StringUtils.leftPad(String.format("%s", kelaDAO.getKayntiosoiteIdForOrganisaatio(orgE.getId())), 10, '0');
+    private String _getYhteystietojenTunnus(Long id, String oid, String nimi) throws OPTFormatException {
+    	Long yht_id = kelaDAO.getKayntiosoiteIdForOrganisaatio(id);
+    	if ( null == yht_id) {
+    		error(String.format(ERR_MESS_14, oid+" "+nimi));
+    	}
+        return StringUtils.leftPad(String.format("%s", yht_id), 10, '0');
+    }
+
+    protected String getYhteystietojenTunnus(Organisaatio orgE) throws OPTFormatException {
+    	return _getYhteystietojenTunnus(orgE.getId(),orgE.getOid(),""+orgE.getNimi());
+    }
+    
+    protected String getYhteystietojenTunnus(OrganisaatioPerustieto organisaatio) throws OPTFormatException {
+    	Organisaatio orgE = kelaDAO.findOrganisaatioByOid(organisaatio.getOid());
+    	return _getYhteystietojenTunnus(orgE.getId(),orgE.getOid(),""+orgE.getNimi());
     }
     
     protected String getDateStrOrDefault(Date date) {

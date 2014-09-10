@@ -17,6 +17,7 @@ package fi.vm.sade.rajapinnat.kela.dao.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,11 +30,13 @@ import javax.persistence.Persistence;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
@@ -59,7 +62,10 @@ public class KelaDAOImpl implements KelaDAO {
     private String organisaatioDbUrl;
     private String organisaatioDbUsername;
     private String organisaatioDbPassword;
+    private static long generated_yht_id=9000000001L;
+    private static HashMap<Long, Long> yht_id_map=new HashMap<Long, Long>(); //id of organisation, yht_id 
     
+   
     @PostConstruct
     public void initEntityManagers () {
         Map<String, String> tarjontaDbProperties = new HashMap<String, String>(); 
@@ -198,6 +204,8 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         try {
+        	int a=0;
+        	a++;
             return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
@@ -247,6 +255,7 @@ public class KelaDAOImpl implements KelaDAO {
         return resultList.get(0);
     }
 
+    
     private Long _getWwwIdForOrganisaatio(Long id) {
         @SuppressWarnings("unchecked")
 		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND dType = ? order by id desc")
@@ -262,13 +271,21 @@ public class KelaDAOImpl implements KelaDAO {
 
     @Override
     public Long getKayntiosoiteIdForOrganisaatio(Long id) {
+    	if (yht_id_map.containsKey(id)) {
+    		return yht_id_map.get(id);
+    	}
     	Long kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, KAYNTIOSOITE);
-    	if (null != kayntiOsoiteId) return kayntiOsoiteId;
-    	//fallback to postiosoite
-    	kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, POSTI);
-    	if (null != kayntiOsoiteId) return kayntiOsoiteId;
-    	//fallback to www
-    	return _getWwwIdForOrganisaatio(id);
+    	if (null == kayntiOsoiteId) {
+    		kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, POSTI);
+    		if (null == kayntiOsoiteId) {
+    			kayntiOsoiteId = _getWwwIdForOrganisaatio(id);
+    		}
+    	}
+    	if (kayntiOsoiteId==null) {
+    		kayntiOsoiteId = (++generated_yht_id);
+    	}
+    	yht_id_map.put(id, kayntiOsoiteId);
+    	return kayntiOsoiteId;
     }
 
     @SuppressWarnings("unchecked")
@@ -332,4 +349,134 @@ public class KelaDAOImpl implements KelaDAO {
 	public String getOrganisaatioDbPassword() {
 		return organisaatioDbPassword;
 	}
+	
+    private OrganisaatioPerustieto applyOrganisaatio(Object [] organisaatio) {
+        OrganisaatioPerustieto result = new OrganisaatioPerustieto();
+        
+		/*+"o.oid, " 0 
+		+"o.oppilaitostyyppi, " 1
+		+"o.oppilaitoskoodi, " 2
+		+"o.organisaatiotyypitstr, " 3
+		+"o.ytunnus, " 4
+		+"mktv_fi.value as nimi_fi, " 5 
+		+"mktv_sv.value as nimi_sv, " 6
+		+"mktv_en.value as nimi_en "  7
+		 */
+           
+        setNimiIfNotNull("en", (String) organisaatio[7], result);
+        setNimiIfNotNull("fi", (String) organisaatio[5], result);
+        setNimiIfNotNull("sv", (String) organisaatio[6], result);
+        result.setOid((String) organisaatio[0]);
+        
+        result.setOppilaitosKoodi((String) organisaatio[2]);
+        String [] values = ((String) organisaatio[3]).split("\\|");
+        if (values != null) {
+	        for (String value : values) {
+		        	if (value.length()>0) {
+		        		result.getOrganisaatiotyypit().add(OrganisaatioTyyppi.fromValue((String) value));
+		        	}
+	        	}
+    	}
+        result.setYtunnus((String) organisaatio[4]);
+        result.setOppilaitostyyppi((String) organisaatio[1]);
+        return result;
+    }
+
+    private void setNimiIfNotNull(String targetLanguage, String sourceField, 
+        OrganisaatioPerustieto result) {
+        final String nimi = sourceField;
+        if(nimi!=null) {
+            result.setNimi(targetLanguage, nimi);
+        }
+    }
+    
+    @Override
+    public List<OrganisaatioPerustieto> findOppilaitokset(List<String> oppilaitostyypit) {
+    		String csvWithQuote = oppilaitostyypit.toString().replace("[", "'").replace("]", "'")
+	            .replace(", ", "','");
+    		
+    		String sQuery=
+    		" select " 
+    		+"o.oid, " 
+    		+"o.oppilaitostyyppi, "
+    		+"o.oppilaitoskoodi, "
+    		+"o.organisaatiotyypitstr, "
+    		+"o.ytunnus, "
+    		+"mktv_fi.value as nimi_fi, " 
+    		+"mktv_sv.value as nimi_sv, " 
+    		+"mktv_en.value as nimi_en "
+    		+" from organisaatio o "
+    		+" left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
+    		+" left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
+    		+" left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
+    		+" where position('Oppilaitos' in o.organisaatiotyypitstr)>0 "
+    		+" and not o.organisaatiopoistettu=true "
+    		+" and oppilaitostyyppi in ("+csvWithQuote+")"
+    		;
+    		
+    		@SuppressWarnings("unchecked")
+			List<Object[]> organisaatiot = organisaatioEm.createNativeQuery(sQuery).getResultList();
+
+    		List<OrganisaatioPerustieto> organisaatioPerustiedot =
+    				new LinkedList<OrganisaatioPerustieto>();
+    		
+    		for (Object [] organisaatio : organisaatiot) {
+    			organisaatioPerustiedot.add(applyOrganisaatio(organisaatio));
+    		}
+    		return organisaatioPerustiedot;
+    }
+
+    
+    private String findParentOppilaitosOid(String oid) {
+		String sQuery=
+		" select " 
+		+" o.oid " 
+		+" from organisaatio o "
+		+" where not o.organisaatiopoistettu=true "
+		+" and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='"+oid+"')"
+		+" and position('Oppilaitos' in o.organisaatiotyypitstr)>0"; 
+
+		@SuppressWarnings("unchecked")
+		List<String> parentOids = organisaatioEm.createNativeQuery(sQuery).getResultList();
+		if (parentOids.size()!=1) {
+			return null;
+		}
+		return parentOids.get(0);
+    }
+    
+    @Override
+    public List<OrganisaatioPerustieto> findToimipisteet(List<String> excludeOids) {
+		String sQuery=
+		" select " 
+		+"o.oid, " 
+		+"o.oppilaitostyyppi, "
+		+"o.oppilaitoskoodi, "
+		+"o.organisaatiotyypitstr, "
+		+"o.ytunnus, "
+		+"mktv_fi.value as nimi_fi, " 
+		+"mktv_sv.value as nimi_sv, " 
+		+"mktv_en.value as nimi_en "
+		+" from organisaatio o "
+		+" left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
+		+" left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
+		+" left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
+		+" where position('Toimipiste' in o.organisaatiotyypitstr)>0 "
+		+" and not o.organisaatiopoistettu=true "
+		;
+		
+		@SuppressWarnings("unchecked")
+		List<Object[]> organisaatiot = organisaatioEm.createNativeQuery(sQuery).getResultList();
+
+		List<OrganisaatioPerustieto> organisaatioPerustiedot =
+				new LinkedList<OrganisaatioPerustieto>();
+		
+		for (Object [] organisaatio : organisaatiot) {
+			if (!excludeOids.contains((String) organisaatio[0])) {
+				OrganisaatioPerustieto organisaatioPerustieto = applyOrganisaatio(organisaatio);
+				organisaatioPerustieto.setParentOppilaitosOid(findParentOppilaitosOid(organisaatioPerustieto.getOid()));
+				organisaatioPerustiedot.add(organisaatioPerustieto);
+			}
+		}
+		return organisaatioPerustiedot;
+    }
 }
