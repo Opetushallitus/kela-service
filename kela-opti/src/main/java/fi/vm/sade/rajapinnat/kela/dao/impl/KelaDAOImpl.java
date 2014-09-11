@@ -217,31 +217,6 @@ public class KelaDAOImpl implements KelaDAO {
         }
     }
 
-    @Override
-    public String getPuhelinnumero(String orgOid) {
-    	@SuppressWarnings("unchecked")
-        List<String> resultList =  organisaatioEm.createQuery("SELECT puhelinnumero FROM " + Yhteystieto.class.getName() + " WHERE organisaatio_id IN (SELECT id FROM "+ Organisaatio.class.getName() + " WHERE OID=?) AND tyyppi = ? AND dType='Puhelinnumero' order by id desc")
-                .setParameter(1, orgOid)
-                .setParameter(2, PUHELIN)
-                .getResultList();
-        if (resultList==null || resultList.size()==0) {
-        	return null;
-        }
-        return resultList.get(0);
-    }
-
-    @Override
-    public String getEmail(String orgOid) {
-    	@SuppressWarnings("unchecked")
-    	List<String> resultList =  organisaatioEm.createQuery("SELECT email FROM " + Yhteystieto.class.getName() + " WHERE organisaatio_id IN (SELECT id FROM "+ Organisaatio.class.getName() + " WHERE OID=?) AND dType='Email' order by id desc")
-                .setParameter(1, orgOid)
-                .getResultList();
-    	if (resultList==null || resultList.size()==0) {
-    		return null;
-    	}
-    	return resultList.get(0);
-    }
-    
     private Long _getKayntiosoiteIdForOrganisaatio(Long id, String osoiteTyyppi) {
         @SuppressWarnings("unchecked")
 		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ? order by id desc")

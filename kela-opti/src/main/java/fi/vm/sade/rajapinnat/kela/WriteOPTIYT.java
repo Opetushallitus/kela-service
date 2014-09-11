@@ -17,10 +17,9 @@ package fi.vm.sade.rajapinnat.kela;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.NonUniqueResultException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	
     private final static String [] warnings = {
     	"Yhteystieto of %s - %s is empty (org.oid=%s).",
-    	"Yhteystieto of %s - %s is not unique (org.oid=%s).",
+    	"<removed>",
     	"Käyntisoite is empty (org.oid=%s)",
     };
 
@@ -104,8 +103,10 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 				getPostilokero(orgR.getPostiosoite(), organisaatio),// Postilokero
 				getSimpleYhteystietoPuhnro(orgR),// Puhelinnumero
 				getSimpleYhteystietoSPosti(orgR),// Sahkopostiosoite
-				getSimpleYhteystieto(orgR.getFaksinumero(), 20),// Fax-numero
-				getSimpleYhteystieto(orgR.getWwwOsoite(), 80),// Kotisivujen osoite
+				getSimpleYhteystietoFaksi(orgR),// Fax-numero
+				getSimpleYhteystietoWWW(orgR),// Kotisivujen osoite
+				//getSimpleYhteystieto(orgR.getFaksinumero(), 20),// Fax-numero
+				//getSimpleYhteystieto(orgR.getWwwOsoite(), 80),// Kotisivujen osoite
 				StringUtils.leftPad("", 15),// Postinumero (YHT_ULK_PTNUMERO)
 				StringUtils.leftPad("", 25),// Postitoimipaikka (YHT_ULK_PTPAIKKA)
 				StringUtils.leftPad("", 40),// YHT_ULK_ALUE
@@ -116,14 +117,108 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		return record;
 	}
 
+	// TODO: JRE 1.8: when Predicates are supported use:
+	/* 
+	 * public static class YhteystietoPredicates 
+	{
+		public static Predicate<Map<String,String>> isLanguage(String lang) {
+			return p -> p.containsKey("kieli") && p.get("kieli").equalsIgnoreCase(lang);
+		}
+	
+		public static Predicate<Map<String,String>> isTyyppi(String tyyppi) {
+			return p -> p.containsKey("tyyppi") && p.get("tyyppi").equalsIgnoreCase(tyyppi);
+		}
+	
+		public static Predicate<Map<String,String>> isWWW() {
+			return p -> p.containsKey("www");
+		}
+	
+		public static Predicate<Map<String,String>> isEmail() {
+		    return p -> p.containsKey("email");	    
+		}
+	}
+	
+	private Map<String,String> getAttributes(Predicate<Map<String,String>> p, List<Map<String,String>> yhteystiedot) {
+		for (String lang : new String [] {"kieli_fi#1","kieli_sv#1","kieli_en#1"}) {
+			Map<String,String> result = yhteystiedot.stream().filter(isLanguage(lang)).filter(p).findFirst().get();
+			if (null != result) {
+				return result;
+			}
+		}
+		return new HashMap<String,String>();
+	}
+	*/
+	
 
+	//JRE 1.6:
+	public static interface Pred {
+		boolean is(Map<String,String> p);
+	}
+	
+	public static class YhteystietoPredicates {
+		
+		protected static class isLanguage implements Pred{
+			String lang;
+			public isLanguage(String lang) {
+				this.lang = lang;
+			}
+			@Override
+			public boolean is(Map<String, String> p) {
+				return p.containsKey("kieli") && p.get("kieli").equalsIgnoreCase(lang);			}
+		}
+		
+		protected static class isTyyppi implements Pred {
+			String tyyppi;
+			public isTyyppi(String tyyppi) {
+				this.tyyppi = tyyppi;
+			}
+			@Override
+			public boolean is(Map<String, String> p) {
+				return p.containsKey("tyyppi") && p.get("tyyppi").equalsIgnoreCase(tyyppi);
+			}
+		}
+		
+		protected static class isWWW implements Pred {
+			@Override
+			public boolean is(Map<String, String> p) {
+				return p.containsKey("www");
+			}
+		}
+
+		protected static class isEmail implements Pred {
+			@Override
+			public boolean is(Map<String, String> p) {
+				return p.containsKey("email");
+			}
+		}
+	}
+	
+	private Pred [] langPreds = new Pred [] 
+			{ 	new YhteystietoPredicates.isLanguage("kieli_fi#1"),
+				new YhteystietoPredicates.isLanguage("kieli_sv#1"),
+				new YhteystietoPredicates.isLanguage("kieli_en#1") } ;
+	
+	private Map<String,String> getAttributes(Pred pred, List<Map<String,String>> yhteystiedot) {
+		for (Pred langPred : langPreds ) { 
+				for (Map<String,String> map :yhteystiedot) {
+					if (langPred.is(map) && pred.is(map)) {
+						return map;
+				}
+			}
+		}
+		return new HashMap<String,String>();
+	}
+	
+	private Pred isTyyppiPuhelin = new YhteystietoPredicates.isTyyppi("puhelin");
+	private Pred isEmail =  new YhteystietoPredicates.isEmail();
+	private Pred isWWW =  new YhteystietoPredicates.isWWW();
+	private Pred isFaksi =  new YhteystietoPredicates.isTyyppi("faksi");
+	
 	private String getSimpleYhteystietoPuhnro(OrganisaatioRDTO org) throws OPTFormatException {
 		String pnro = null;
-		try {
-			pnro = kelaDAO.getPuhelinnumero(org.getOid());
-		} catch (NonUniqueResultException e) {
-			warn(2, org.getNimi(), "puhelinnro", org.getOid());
-		}
+		// JRE 1.8: pnro = getAttributes(YhteystietoPredicates.isTyyppi("puhelin"), org.getYhteystiedot()).get("numero");
+		// JRE 1.6:
+		pnro = getAttributes(isTyyppiPuhelin, org.getYhteystiedot()).get("numero");
 		String yhteystieto = getSimpleYhteystieto(pnro,60);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
 			warn(1, org.getNimi(), "puhelinnro", org.getOid());
@@ -133,11 +228,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	
 	private String getSimpleYhteystietoSPosti(OrganisaatioRDTO org) throws OPTFormatException {
 		String sp=null;
-		try {
-			sp = kelaDAO.getEmail(org.getOid());
-		} catch (NonUniqueResultException e) {
-			warn(2, org.getNimi(), "email", org.getOid());
-		}
+		sp = getAttributes(isEmail, org.getYhteystiedot()).get("email");
 		String yhteystieto = getSimpleYhteystieto(sp,80);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
 			warn(1, org.getNimi(), "email", org.getOid());
@@ -145,6 +236,27 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		return yhteystieto;
 	}
 
+	private String getSimpleYhteystietoFaksi(OrganisaatioRDTO org) throws OPTFormatException {
+		String fax=null;
+		fax = getAttributes(isFaksi, org.getYhteystiedot()).get("numero");
+		String yhteystieto = getSimpleYhteystieto(fax,20);
+		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
+			warn(1, org.getNimi(), "fax", org.getOid());
+		}
+		return yhteystieto;
+	}
+	
+	private String getSimpleYhteystietoWWW(OrganisaatioRDTO org) throws OPTFormatException {
+		String www=null;
+		www = getAttributes(isWWW, org.getYhteystiedot()).get("www");
+		String yhteystieto = getSimpleYhteystieto(www,80);
+		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
+			warn(1, org.getNimi(), "www", org.getOid());
+		}
+		return yhteystieto;
+	}
+
+	
 	private String getSimpleYhteystieto(String yhteystieto, int pad) throws OPTFormatException {
 		if (yhteystieto != null && yhteystieto.length() > pad) {
 			yhteystieto = yhteystieto.substring(0, pad);

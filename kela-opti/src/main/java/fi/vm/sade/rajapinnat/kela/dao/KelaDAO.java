@@ -48,10 +48,6 @@ public interface KelaDAO {
 
 	KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid);
 
-	String getPuhelinnumero(String orgOid);
-
-	String getEmail(String orgOid);
-
 	List<OrganisaatioPerustieto> findOppilaitokset(List<String> oppilaitostyypit);
 
 	List<OrganisaatioPerustieto> findToimipisteet(List<String> excludeOids);
