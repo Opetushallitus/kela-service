@@ -28,7 +28,7 @@ public class KelaFormaattiTesti {
     public void testaaTietueenPituus() throws Exception {
 
         TKUVAYHVA tietue = new TKUVAYHVA.Builder().setHenkilotunnus("010478123X").setEtunimet("Älfö Ölfär")
-                .setOppilaitos("").setLinjakoodi("").setSukunimi("Åke åkersön").setPoimintapaivamaara(new Date())
+                .setOppilaitosnumero("").setHakukohde("").setOrganisaatio("").setSukunimi("Åke åkersön").setPoimintapaivamaara(new Date())
                 .setValintapaivamaara(new Date()).setLukuvuosi(new Date()).setAjankohtaSyksy(true).build();
         Assert.assertTrue("Yksittäisen TKUVAYHVA tietueen koko tulee olla 150 merkkiä!",
                 tietue.toByteArray().length == 150);

@@ -67,6 +67,10 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     	"HAK_NIMI may not be missing (org.oid=%s)."
     };
 	
+    private final static String[] warnings = {
+    	"Toimipisteen opetuspisteenjnro is empty : org.oid=%s"
+    };
+    
     private final static String[] infos = {
     	"fetched %s hakukohde from index."
     };
@@ -125,25 +129,24 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
 	private String getOpetuspisteenJarjNro(HakukohdePerustieto curTulos, OrganisaatioDTO organisaatio) {
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-            return String.format("%s", organisaatio.getOpetuspisteenJarjNro());
+            if  (StringUtils.isEmpty(organisaatio.getOpetuspisteenJarjNro())) {
+                warn(1,organisaatio.getOid());
+                return "  ";
+            } else {
+            	return organisaatio.getOpetuspisteenJarjNro();
+            }
         } 
         if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
             Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(curTulos.getTarjoajaOid());
-            return (organisaatioE != null && organisaatioE.getOpetuspisteenJarjNro() != null) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
+            return (organisaatioE != null && !StringUtils.isEmpty(organisaatioE.getOpetuspisteenJarjNro().trim())) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
         }
         return "01";
     }
 
     private String getOppilaitosnumero(OrganisaatioDTO organisaatio) throws OPTFormatException {
-    	String oppil_nro = "";
-    	if (null != organisaatio.getTyypit()) {
-    		if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-    			oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
-    		} else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-    			oppil_nro = String.format("%s", organisaatioService.findByOid(organisaatio.getParentOid()).getOppilaitosKoodi());
-    		}
-    	}
-    	if (StringUtils.isEmpty(oppil_nro.trim())){
+    	String oppil_nro = null;
+    	oppil_nro = getOppilaitosNro(organisaatio);
+    	if (oppil_nro==null || StringUtils.isEmpty(oppil_nro.trim())){
     		error(8,organisaatio.getOid()+" "+organisaatio.getNimi());
     	}
         return strFormatter(oppil_nro, 5, "OPPIL_NRO");
@@ -178,17 +181,38 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         this.KOULUTUSLAJI = koulutuslaji;
     }
 	
-	private KoulutuksetVastaus haeKoulutukset(String hakukohdeOid) {
+	private KoulutuksetVastaus haeKoulutukset(String hakukohdeOid) throws UserStopRequestException {
         KoulutuksetKysely kysely = new KoulutuksetKysely();
         kysely.getHakukohdeOids().add(hakukohdeOid);
-        return tarjontaSearchService.haeKoulutukset(kysely);
-
+        while(true) {
+        	try {
+        		return tarjontaSearchService.haeKoulutukset(kysely);
+        	} catch(RuntimeException e) {
+        		if (e.getMessage().equals("haku.error")) {
+        			handleException(e);
+        		} else  {
+        			throw e;
+        		}
+        	}
+        }
 	}
+
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException{
         HakukohteetKysely kysely = new HakukohteetKysely();
-        HakukohteetVastaus vastaus = tarjontaSearchService.haeHakukohteet(kysely);
-        info(1, vastaus.getHitCount());
+        HakukohteetVastaus vastaus = null;
+        while(true) {
+        	try {
+        		vastaus = tarjontaSearchService.haeHakukohteet(kysely);
+        		break;
+        	} catch(RuntimeException e) {
+        		if (e.getMessage().equals("haku.error")) {
+        			handleException(e);
+        		} else  {
+        			throw e;
+        		}
+        	}
+        }
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
         	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
             try {
@@ -417,7 +441,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
 	@Override
 	public String[] getWarnings() {
-		return null;
+		return warnings;
 	}
 
 	@Override

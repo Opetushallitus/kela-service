@@ -21,6 +21,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 
 /**
@@ -47,8 +48,7 @@ public interface KelaDAO {
 
 	KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid);
 
-	String getPuhelinnumero(String orgOid);
+	List<OrganisaatioPerustieto> findOppilaitokset(List<String> oppilaitostyypit);
 
-	String getEmail(String orgOid);
-
+	List<OrganisaatioPerustieto> findToimipisteet(List<String> excludeOids);
 }

@@ -37,11 +37,16 @@ public class KelaMockFtpTesti {
     @Test
     public void testaaSijoitteluntulostenlahetystaMockkiPalvelimelle() {
         TKUVAYHVA tietue = new TKUVAYHVA.Builder().setHenkilotunnus("010478123X").setEtunimet("Älfö Ölfär")
-                .setOppilaitos("").setLinjakoodi("").setSukunimi("Åke åkersön").setPoimintapaivamaara(new Date())
+                .setOppilaitosnumero("").setHakukohde("").setOrganisaatio("").setSukunimi("Åke åkersön").setPoimintapaivamaara(new Date())
                 .setValintapaivamaara(new Date()).setLukuvuosi(new Date()).setAjankohtaSyksy(true).build();
 
-        ftpService.lahetaTiedosto(KelaUtil.createTiedostoNimiYhva14(new Date()),
-                new ByteArrayInputStream(tietue.toByteArray()));
+        try {
+			ftpService.lahetaTiedosto(KelaUtil.createTiedostoNimiYhva14(new Date()),
+			        new ByteArrayInputStream(tietue.toByteArray()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.state(false);
+		}
 
         Assert.notEmpty(fileSystem.listFiles(kelaFtpPath),
                 "Camel-ftptiedonsiirto epäonnistui faketiedostojärjestelmään!");

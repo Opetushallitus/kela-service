@@ -15,10 +15,7 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -108,7 +105,6 @@ public class KelaGenerator implements Runnable {
 	}
 
 	private void initReports() throws UserStopRequestException {
-        LOG.info("Fetching organisaatiot from index...");
         long startTime = System.currentTimeMillis();
         orgContainer.fetchOrganisaatiot();
         LOG.info("Fetch time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
@@ -119,7 +115,7 @@ public class KelaGenerator implements Runnable {
 	 * @throws UserStopRequestException 
      */
     public void generateKelaFiles() throws UserStopRequestException {
-        long startTime = System.currentTimeMillis();;
+        long startTime = System.currentTimeMillis();
         for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
         	writeKelaFile(optiWriter);
         }
@@ -287,7 +283,7 @@ public class KelaGenerator implements Runnable {
     }
     
     public enum StaticOptions {
-    	INIT,
+    	INITONLY,
     	SENDONLY,
     	GENERATEONLY
     }
@@ -365,7 +361,7 @@ public class KelaGenerator implements Runnable {
     		switch (option) {
 	    		case GENERATEONLY: setGenerateonly(); break;
 	    		case SENDONLY	 : setSendonly(); break;
-	    		case INIT	     : setInitonly(); break;
+	    		case INITONLY	 : setInitonly(); break;
 	    		default: throw new RuntimeException("Unknown option error: option="+option);
     		}
     	}
