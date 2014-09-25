@@ -16,9 +16,19 @@
 package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 
 /**
@@ -61,14 +71,24 @@ public class Organisaatio {
     @Column(name="oppilaitoskoodi")
     private String oppilaitoskoodi;
 
-
+    @Column(name="organisaatiotyypitstr")
+    private String organisaatiotyypitstr;
+    
     @Column(name="ytunnus")
     private String ytunnus;
 
     @Column(name="virastotunnus")
     private String virastotunnus;
     
+    @Column(name="yhteishaunkoulukoodi")
+    private String yhteishaunkoulukoodi;
     
+    @Column(name="alkupvm")
+    private Date alkupvm;
+    
+    @Column(name="lakkautuspvm")
+    private Date lakkautuspvm;
+
     
     public String getOppilaitosTyyppi() {
         return oppilaitosTyyppi;
@@ -157,4 +177,36 @@ public class Organisaatio {
     public void setOppilaitoskoodi(String oppilaitoskoodi) {
         this.oppilaitoskoodi = oppilaitoskoodi;
     }
+
+	public String getYhteishaunkoulukoodi() {
+		return yhteishaunkoulukoodi;
+	}
+
+	public void setYhteishaunkoulukoodi(String yhteishaunkoulukoodi) {
+		this.yhteishaunkoulukoodi = yhteishaunkoulukoodi;
+	}
+
+	public String getOrganisaatiotyypitstr() {
+		return organisaatiotyypitstr;
+	}
+
+	public void setOrganisaatiotyypitstr(String organisaatiotyypitstr) {
+		this.organisaatiotyypitstr = organisaatiotyypitstr;
+	}
+
+	public Date getAlkupvm() {
+		return alkupvm;
+	}
+
+	public void setAlkupvm(Date alkupvm) {
+		this.alkupvm = alkupvm;
+	}
+
+	public Date getLakkautuspvm() {
+		return lakkautuspvm;
+	}
+
+	public void setLakkautuspvm(Date lakkautuspvm) {
+		this.lakkautuspvm = lakkautuspvm;
+	}
 }

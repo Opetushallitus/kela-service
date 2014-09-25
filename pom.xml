@@ -12,5 +12,6 @@
   <modules>
 	<module>kela-opti</module>
 	<module>kela-service</module>
+	<module>kela-tkuva</module>
   </modules>
 </project>

@@ -36,10 +36,9 @@ public class TKUVAYHVA {
     private byte[] poimintapaivamaara;
     private byte[] siirtolaji;
     private byte[] lahettajaryhmanTunnus;
-    private byte[] oppilaitos;
-    private byte[] linjakoodi;
-
-    private byte[] varatila1;
+    private byte[] oppilaitosnumero;
+    private byte[] organisaatio;
+    private byte[] hakukohde;
 
     private byte[] henkilotunnus;
     private byte[] sukunimi;
@@ -57,41 +56,40 @@ public class TKUVAYHVA {
 
     private byte[] varatila3;
 
-    public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(150);
-        buffer.put(siirtotunnus);
-        buffer.put(tietuetyyppi);
-        buffer.put(poimintapaivamaara);
-        buffer.put(siirtolaji);
-        buffer.put(lahettajaryhmanTunnus);
-        buffer.put(oppilaitos);
-        buffer.put(linjakoodi);
-
-        buffer.put(varatila1);
-
-        buffer.put(henkilotunnus);
-        buffer.put(sukunimi);
-        buffer.put(etunimet);
-        buffer.put(valintapaivamaara);
-        buffer.put(valinnanTila);
-        buffer.put(lukuvuosi);
-
-        buffer.put(varatila2);
-
-        buffer.put(tutkinnonTaso1);
-        buffer.put(tutkinnonTaso2);
-        buffer.put(ajankohta);
-        buffer.put(lukukaudenAloituspaiva);
-
-        buffer.put(varatila3);
-        // buffer.compact(); no need for this as buffer is allocated 150 which
-        // should be always the size
-
-        return buffer.array();
-    }
-
-    public void setLinjakoodi(byte[] linjakoodi) {
-        this.linjakoodi = linjakoodi;
+    public byte[] toByteArray() throws Exception {
+    	try {
+	        ByteBuffer buffer = ByteBuffer.allocate(200);
+	        buffer.put(siirtotunnus);
+	        buffer.put(tietuetyyppi);
+	        buffer.put(poimintapaivamaara);
+	        buffer.put(siirtolaji);
+	        buffer.put(lahettajaryhmanTunnus);
+	        buffer.put(oppilaitosnumero);
+	        buffer.put(organisaatio);
+	        buffer.put(hakukohde);
+	        
+	        buffer.put(henkilotunnus);
+	        buffer.put(sukunimi);
+	        buffer.put(etunimet);
+	        buffer.put(valintapaivamaara);
+	        buffer.put(valinnanTila);
+	        buffer.put(lukuvuosi);
+	
+	        buffer.put(varatila2);
+	
+	        buffer.put(tutkinnonTaso1);
+	        buffer.put(tutkinnonTaso2);
+	        buffer.put(ajankohta);
+	        buffer.put(lukukaudenAloituspaiva);
+	
+	        buffer.put(varatila3);
+	        // buffer.compact(); no need for this as buffer is allocated 200 which
+	        // should be always the size
+	        return buffer.array();
+    	}catch(Exception e) {
+    		System.err.println("TKUVAYHVA : toByteArray error.");
+    		throw e;
+    	}
     }
 
     public void setAjankohta(byte[] ajankohta) {
@@ -116,10 +114,6 @@ public class TKUVAYHVA {
 
     public void setLukuvuosi(byte[] lukuvuosi) {
         this.lukuvuosi = lukuvuosi;
-    }
-
-    public void setOppilaitos(byte[] oppilaitos) {
-        this.oppilaitos = oppilaitos;
     }
 
     public void setPoimintapaivamaara(byte[] poimintapaivamaara) {
@@ -158,20 +152,12 @@ public class TKUVAYHVA {
         this.valintapaivamaara = valintapaivamaara;
     }
 
-    public void setVaratila1(byte[] varatila1) {
-        this.varatila1 = varatila1;
-    }
-
     public void setVaratila2(byte[] varatila2) {
         this.varatila2 = varatila2;
     }
 
     public void setVaratila3(byte[] varatila3) {
         this.varatila3 = varatila3;
-    }
-
-    public byte[] getLinjakoodi() {
-        return linjakoodi;
     }
 
     public byte[] getAjankohta() {
@@ -196,10 +182,6 @@ public class TKUVAYHVA {
 
     public byte[] getLukuvuosi() {
         return lukuvuosi;
-    }
-
-    public byte[] getOppilaitos() {
-        return oppilaitos;
     }
 
     public byte[] getPoimintapaivamaara() {
@@ -238,10 +220,6 @@ public class TKUVAYHVA {
         return valintapaivamaara;
     }
 
-    public byte[] getVaratila1() {
-        return varatila1;
-    }
-
     public byte[] getVaratila2() {
         return varatila2;
     }
@@ -250,7 +228,31 @@ public class TKUVAYHVA {
         return varatila3;
     }
 
-    public static class Builder {
+    public byte[] getOppilaitosnumero() {
+		return oppilaitosnumero;
+	}
+
+	public void setOppilaitosnumero(byte[] oppilaitosnumero) {
+		this.oppilaitosnumero = oppilaitosnumero;
+	}
+
+	public byte[] getOrganisaatio() {
+		return organisaatio;
+	}
+
+	public void setOrganisaatio(byte[] organisaatio) {
+		this.organisaatio = organisaatio;
+	}
+
+	public byte[] getHakukohde() {
+		return hakukohde;
+	}
+
+	public void setHakukohde(byte[] hakukohde) {
+		this.hakukohde = hakukohde;
+	}
+
+	public static class Builder {
         private static final Charset LATIN1 = Charset.forName("ISO8859-1");
 
         // private byte[] siirtotunnus = toLatin1("OUYHVA",15);
@@ -261,8 +263,11 @@ public class TKUVAYHVA {
         private byte[] poimintapaivamaara;
         // private byte[] siirtolaji = toLatin1("OPISK",1);
         // private byte[] lahettajaryhmanTunnus = toLatin1("OP",2);
-        private byte[] oppilaitos;
-        private byte[] linjakoodi;
+        private byte[] oppilaitosnumero;
+        private byte[] organisaatio;
+        private byte[] hakukohde;
+
+        //private byte[] linjakoodi;
 
         // private byte[] varatila1 = toLatin1("",3);
 
@@ -290,23 +295,32 @@ public class TKUVAYHVA {
             return this;
         }
 
-        public Builder setOppilaitos(String oppilaitos) {
-            this.oppilaitos = toLatin1(oppilaitos, 4);
+        public Builder setOppilaitosnumero(String oppilaitosnumero) {
+            this.oppilaitosnumero = toLatin1(oppilaitosnumero, 5);
             return this;
         }
 
-        public Builder setLinjakoodi(String linjakoodi) {
-            this.linjakoodi = toLatin1(linjakoodi, 3);
-            return this;
+        private String stripOid(String organisaatio) {
+        	return organisaatio.substring(organisaatio.lastIndexOf('.') + 1);
         }
+        
+        public Builder setOrganisaatio(String organisaatio) {
+			this.organisaatio = toLatin1(stripOid(organisaatio),22);
+            return this;
+		}
 
-        public Builder setLukuvuosi(Date lukuvuosi) {
+		public Builder setHakukohde(String hakukohde) {
+			this.hakukohde = toLatin1(stripOid(hakukohde),22);
+            return this;
+		}
+
+		public Builder setLukuvuosi(Date lukuvuosi) {
             this.lukuvuosi = lukuvuosi;
             return this;
         }
 
         public Builder setHenkilotunnus(String henkilotunnus) {
-            this.henkilotunnus = toLatin1(henkilotunnus, 10);
+            this.henkilotunnus = toLatin1(henkilotunnus, 11);
             return this;
         }
 
@@ -348,11 +362,9 @@ public class TKUVAYHVA {
             t.setPoimintapaivamaara(poimintapaivamaara);
             t.setSiirtolaji(toLatin1("OPISK", 5));
             t.setLahettajaryhmanTunnus(toLatin1("OP", 2));
-            t.setOppilaitos(oppilaitos);
-            t.setLinjakoodi(linjakoodi);
-
-            t.setVaratila1(toLatin1("", 3));
-
+            t.setOppilaitosnumero(oppilaitosnumero);
+            t.setOrganisaatio(organisaatio);
+            t.setHakukohde(hakukohde);
             t.setHenkilotunnus(henkilotunnus);
             t.setSukunimi(sukunimi);
             t.setEtunimet(etunimet);
@@ -379,7 +391,7 @@ public class TKUVAYHVA {
                 t.setLukukaudenAloituspaiva(toLatin1(a.append("0101").append(aloitusvuosiFormatter.format(lukuvuosi))
                         .toString(), 8));
             }
-            t.setVaratila3(toLatin1("", 10));
+            t.setVaratila3(toLatin1("", 20));
             return t;
         }
 
