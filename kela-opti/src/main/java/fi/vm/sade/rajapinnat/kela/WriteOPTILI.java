@@ -187,6 +187,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         while(true) {
         	try {
         		return tarjontaSearchService.haeKoulutukset(kysely);
+        	} catch (org.apache.solr.common.SolrException e) {
+    			handleException(e);
         	} catch(RuntimeException e) {
         		if (e.getMessage().equals("haku.error")) {
         			handleException(e);
@@ -205,6 +207,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         	try {
         		vastaus = tarjontaSearchService.haeHakukohteet(kysely);
         		break;
+        	} catch (org.apache.solr.common.SolrException e) {
+    			handleException(e);
         	} catch(RuntimeException e) {
         		if (e.getMessage().equals("haku.error")) {
         			handleException(e);

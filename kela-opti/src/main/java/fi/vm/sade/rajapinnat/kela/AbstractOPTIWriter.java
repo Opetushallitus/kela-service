@@ -151,6 +151,9 @@ public abstract class AbstractOPTIWriter {
     protected String koulutuskoodisto;
     protected String kelaOpintoalakoodisto;
     protected String kelaKoulutusastekoodisto;
+    protected String ophOpintoalakoodisto;
+    protected String ophKoulutusastekoodisto;
+
     
     private String fileLocalName=null;
     
@@ -254,11 +257,6 @@ public abstract class AbstractOPTIWriter {
     public void setKieliEn(String kieliEn) {
         this.kieliEn = kieliEn;
     }
-
-    @Value("${koodisto-uris.tutkintokela}")
-    public void setKelaTutkintokoodisto(String kelaTutkintokoodisto) {
-        this.kelaTutkintokoodisto = kelaTutkintokoodisto;
-    }
     
     @Value("${koodisto-uris.oppilaitostyyppikela}")
     public void setKelaOppilaitostyyppikoodisto(String kelaOppilaitostyyppikoodisto) {
@@ -283,6 +281,16 @@ public abstract class AbstractOPTIWriter {
     @Value("${koodisto-uris.koulutusastekela}")
     public void setKelaKoulutusastekoodisto(String kelaKoulutusastekoodisto) {
         this.kelaKoulutusastekoodisto = kelaKoulutusastekoodisto;
+    }
+    
+    @Value("${koodisto-uris.opintoalaoph}")
+    public void setOphOpintoalakoodisto(String ophOpintoalakoodisto) {
+        this.ophOpintoalakoodisto = ophOpintoalakoodisto;
+    }
+    
+    @Value("${koodisto-uris.koulutusasteoph}")
+    public void setOphKoulutusastekoodisto(String ophKoulutusastekoodisto) {
+        this.ophKoulutusastekoodisto = ophKoulutusastekoodisto;
     }
     
     protected List<KoodiType> getKoodisByUriAndVersio(String koodiUri) {

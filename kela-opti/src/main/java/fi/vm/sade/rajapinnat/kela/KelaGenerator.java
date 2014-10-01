@@ -247,10 +247,10 @@ public class KelaGenerator implements Runnable {
     private static void setProxyOn() {
         Properties props = System.getProperties();
         props.put("socksProxyHost", "127.0.0.1");
+        LOG.info("socksProxyHost: 127.0.0.1");
         props.put("socksProxyPort", "9090");
+        LOG.info("socksProxyPort: 9090");
         System.setProperties(props);
-		LOG.info("socksProxyHost: 127.0.0.1");
-		LOG.info("socksProxyPort: 9090");
     }
     
     public static void main (String[] args) {
