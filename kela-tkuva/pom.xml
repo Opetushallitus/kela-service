@@ -87,7 +87,7 @@
 		<dependency>
 			<artifactId>spring-asm</artifactId>
 			<groupId>org.springframework</groupId>
-			<version>${spring.version}</version>
+			<version>${spring.asm.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
