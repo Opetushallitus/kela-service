@@ -75,6 +75,13 @@ public class KelaGenerator implements Runnable {
     @Autowired
     ProducerTemplate producerTemplate;
     
+    @Value("${socksProxy:off}")
+    public void setSocksProxy(String socksProxyOn) {
+    	if (socksProxyOn.equalsIgnoreCase("ON")) {
+    		setSocksProxyOn();
+    	}
+    }
+	
     long startTime = 0;
     long endTime = 0;
     
@@ -244,7 +251,7 @@ public class KelaGenerator implements Runnable {
         return targetPath;
     }
     
-    private static void setProxyOn() {
+    private static void setSocksProxyOn() {
         Properties props = System.getProperties();
         props.put("socksProxyHost", "127.0.0.1");
         LOG.info("socksProxyHost: 127.0.0.1");
@@ -256,13 +263,10 @@ public class KelaGenerator implements Runnable {
     public static void main (String[] args) {
     	if (args.length>0) {
     		LOG.info("mode: " +Arrays.toString(args));
-    		if (args[args.length-1].equals("--socksproxy")) {
-    			setProxyOn();
-    		}
     	}
         final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
-        if(args.length>0 && args[0].startsWith("--options=")) {
+        if(args.length==1 && args[0].startsWith("--options=")) {
         	kelaGenerator.setOptions(args[0].split("=")[1]);
         };
         kelaGenerator.run();
@@ -392,7 +396,6 @@ public class KelaGenerator implements Runnable {
 	@Override
 	public void run() {
 		if (!runState.equals(RunState.IDLE)) return;
-		
 		Ticker ticker  = new Ticker(this, tickerInterval);
 		Thread tickerTrhead =  new Thread(ticker);
 		startTime = System.currentTimeMillis();
