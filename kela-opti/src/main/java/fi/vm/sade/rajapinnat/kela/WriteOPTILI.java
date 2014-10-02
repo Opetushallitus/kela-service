@@ -39,6 +39,8 @@ import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
 import fi.vm.sade.tarjonta.service.search.KoulutuksetKysely;
 import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus;
 import fi.vm.sade.tarjonta.service.search.KoulutusPerustieto;
+import fi.vm.sade.tarjonta.service.types.TarjontaTila;
+
 
 /**
  * 
@@ -218,9 +220,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         	}
         }
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
-        	String tarjoajaOid = curTulos.getTarjoajaOid();//getHakukohde().getTarjoaja().getTarjoajaOid();
+        	String tarjoajaOid = curTulos.getTarjoajaOid();
             try {
-            	if (isHakukohdeOppilaitos(tarjoajaOid)) {
+            	if (curTulos.getTila().equals(TarjontaTila.JULKAISTU) && isHakukohdeOppilaitos(tarjoajaOid)) {
             		KoulutuksetVastaus koulutuksetVastaus = haeKoulutukset(curTulos.getOid());
             		if (koulutuksetVastaus.getHitCount()==0) {
             			error(5, curTulos.getOid()+" "+curTulos.getNimi());
@@ -252,6 +254,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		/*
 		 * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
 		 */
+
 		String koulutus_uri;
 		String kandi_koulutus_uri;
 		KoulutusmoduuliToteutus komoto = kelaDAO.getKoulutusmoduuliToteutus(koulutusPerustieto.getKomotoOid());
