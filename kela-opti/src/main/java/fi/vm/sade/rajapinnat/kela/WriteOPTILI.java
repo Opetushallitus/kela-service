@@ -250,7 +250,12 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='6';
 	}
 
-	private String getTutkinnonTaso(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
+	boolean kk_tut_taso(String s) {
+		return ylempi(s) || alempi(s);
+	}
+	
+	private String getKKTutkinnonTaso(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
+
 		/*
 		 * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
 		 */
@@ -262,8 +267,12 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		if (komoto==null || koulutusmoduuli==null) {
 			return "   "; //ei JULKAISTU
 		}
-		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKandi_koulutus_uri();
+		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
 		kandi_koulutus_uri = emptyString(komoto.getKandi_koulutus_uri()) ? koulutusmoduuli.getKandi_koulutus_uri() : komoto.getKandi_koulutus_uri();
+		
+		if (!kk_tut_taso(koulutus_uri) ) {
+			return "   "; //ei korkeakoulun ylempi eikä alempi
+		}
 		
 		/*
 		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja kandi_koulutus_uri ei tyhjä => 060 = alempi+ylempi
@@ -343,7 +352,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("",5), //OPL_SUUNT
                 getHakukohteenNimi(curTulos),//Hakukohteen nimi
                 StringUtils.leftPad("",1),//filler
-                getTutkinnonTaso(koulutusPerustieto),//TUT_TASO
+                getKKTutkinnonTaso(koulutusPerustieto),//TUT_TASO
                 getTutkintotunniste(koulutusPerustieto),//TUT_ID = koulutuskoodi
                 getOrgOid(curTulos), //hakukohde OID
                 StringUtils.leftPad("",3), //filler
