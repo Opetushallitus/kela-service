@@ -221,7 +221,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		pnro = getAttributes(isTyyppiPuhelin, org.getYhteystiedot()).get("numero");
 		String yhteystieto = getSimpleYhteystieto(pnro,60);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "puhelinnro", org.getOid());
+			//warn(1, org.getNimi(), "puhelinnro", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -231,7 +231,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		sp = getAttributes(isEmail, org.getYhteystiedot()).get("email");
 		String yhteystieto = getSimpleYhteystieto(sp,80);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "email", org.getOid());
+			//warn(1, org.getNimi(), "email", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -241,7 +241,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		fax = getAttributes(isFaksi, org.getYhteystiedot()).get("numero");
 		String yhteystieto = getSimpleYhteystieto(fax,20);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "fax", org.getOid());
+			//warn(1, org.getNimi(), "fax", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -251,7 +251,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		www = getAttributes(isWWW, org.getYhteystiedot()).get("www");
 		String yhteystieto = getSimpleYhteystieto(www,80);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "www", org.getOid());
+			//warn(1, org.getNimi(), "www", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -270,7 +270,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			osoiteStr = osoiteStr.substring(0, 50);
 		}
 		if (null == osoiteStr) {
-			warn(3, organisaatio.getOid()+" "+organisaatio.getNimi());
+			//warn(3, organisaatio.getOid()+" "+organisaatio.getNimi());
 			return strFormatter("", 50, "katuosoite");
 		}
 		return strFormatter(osoiteStr, 50, "katuosoite");
