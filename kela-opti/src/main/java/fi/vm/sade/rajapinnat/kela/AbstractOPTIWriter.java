@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
+import org.apache.cxf.jaxrs.client.ServerWebApplicationException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -552,8 +553,10 @@ public abstract class AbstractOPTIWriter {
 		String line = null;
 		while(true) {
 			try {
-				line=composeRecord(args);
+				line=composeRecord(args); 
 				break;
+			}catch(ServerWebApplicationException e /*CXF may throw*/) {
+				handleException(e);					 
 			} catch(ClientWebApplicationException e /*CXF may throw*/) {
 				handleException(e);
 			}
@@ -572,13 +575,13 @@ public abstract class AbstractOPTIWriter {
 		if (errorCount>getErrorLimit()) {
 			String errStr=String.format(ERR_MESS_13, getErrorLimit());
 			LOG.error(errStr);
-			throw new RuntimeException(errStr);
+			throw new UserStopRequestException();
 		}
 		try {
 			Thread.sleep(getErrorCoolDown()*1000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
-			throw new RuntimeException("Interrupted thread."+e1);
+			throw new UserStopRequestException();
 		}
 	}
 	
