@@ -210,96 +210,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         }
     }
 
-	boolean emptyString(String s) {
-		return (s==null || s.length()==0);
-	}
-
-	boolean ylempi(String s) {
-		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='7';
-	}
-
-	boolean alempi(String s) {
-		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='6';
-	}
-
-	boolean kk_tut_taso(String s) {
-		return ylempi(s) || alempi(s);
-	}
-
-	private String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto) throws OPTFormatException {
-		/*
-		 * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
-		 */
-
-		String koulutus_uri;
-		String kandi_koulutus_uri;
-		Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
-
-		if (komoto==null || koulutusmoduuli==null) {
-			return "   "; //ei JULKAISTU
-		}
-		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
-		kandi_koulutus_uri = emptyString(komoto.getKandi_koulutus_uri()) ? koulutusmoduuli.getKandi_koulutus_uri() : komoto.getKandi_koulutus_uri();
-
-		if (!kk_tut_taso(koulutus_uri) ) {
-			return "   "; //ei korkeakoulun ylempi eikä alempi
-		}
-
-		/*
-		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja kandi_koulutus_uri ei tyhjä => 060 = alempi+ylempi
-		 */
-		if (ylempi(koulutus_uri) && !emptyString(kandi_koulutus_uri)) {
-			 return "060";
-		}
-		/*
-		 * 3) haetaan lapsi- ja emokoulutusmoduulit (ei sisaruksia l. toteutuksia) yo. lisäksi:
-		 */
-		//String rootOid=koulutusPerustieto.getKoulutusmoduuli();
-		String rootOid=koulutusmoduuli.getOid();
-		List<String> relativesList = kelaDAO.getChildrenOids(rootOid);
-		relativesList.addAll(kelaDAO.getParentOids(rootOid));
-		relativesList.add(rootOid);
-
-		boolean ylempia=false;
-		boolean alempia=false;
-		for (String oid : relativesList) {
-			koulutusmoduuli = kelaDAO.getKoulutusmoduuli(oid);
-			if (koulutusmoduuli!=null) {
-				if (!ylempia) {
-					ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
-				}
-				if (!alempia) {
-					alempia = alempi(koulutusmoduuli.getKoulutusUri());
-				}
-				if (ylempia && alempia) {
-					break;
-				}
-			}
-		}
-		/*
-		 * 4) jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
-		 */
-		if(ylempia && !alempia) {
-			return "061";
-		}
-		/*
-		 * 5) jos pelkkiä alempia => 050  (alempi kk.tutkinto)
-		 */
-		if(!ylempia && alempia) {
-			return "050";
-		}
-		/*
-		 * 6) jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
-		 */
-		if(ylempia && alempia) {
-			return "060";
-		}
-		/*
-		 * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä
-		 */
-		return "   ";
-	}
-
 	Pattern isInteger;
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
@@ -323,7 +233,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("",5), //OPL_SUUNT
                 getHakukohteenNimi(curTulos),//Hakukohteen nimi
                 StringUtils.leftPad("",1),//filler
-                getKKTutkinnonTaso(komoto),//TUT_TASO
+                kelaDAO.getKKTutkinnonTaso(komoto),//TUT_TASO
                 getTutkintotunniste(komoto.getKoulutusmoduuli()),//TUT_ID = koulutuskoodi
                 getOrgOid(curTulos), //hakukohde OID
                 StringUtils.leftPad("",3), //filler

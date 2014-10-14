@@ -51,4 +51,6 @@ public interface KelaDAO {
 	List<OrganisaatioPerustieto> findOppilaitokset(List<String> oppilaitostyypit);
 
 	List<OrganisaatioPerustieto> findToimipisteet(List<String> excludeOids);
+
+	String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto);
 }
