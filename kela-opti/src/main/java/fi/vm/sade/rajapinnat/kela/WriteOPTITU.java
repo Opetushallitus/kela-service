@@ -45,6 +45,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 		"no value for koulutuskoodisto (%s) koodi (%s) in oph ophKoulutusastekoodisto (%s)",
 		"no value for koulutuskoodisto (%s) koodi (%s) in oph ophOpintoalakoodisto (%s)",
 		"no value for ophopintoalakoodisto (%s) koodi (%s) in oph kelaopintoala (%s)",
+		"no value for ophKoulutusastekoodisto (%s) koodi (%s) in oph kelakoulutusalakoodisto (%s)",
 	};
 
 	private String FILEIDENTIFIER;
@@ -75,11 +76,17 @@ public class WriteOPTITU extends AbstractOPTIWriter {
         List<KoodiType> koulutuskoodit = this.koodiService.searchKoodisByKoodisto(criteria);
 
         for (KoodiType curKoulutuskoodi : koulutuskoodit) {
-			KoodiType koulutusastekela =getSisaltyvaKoodi(curKoulutuskoodi, ophKoulutusastekoodisto);
-			if (null == koulutusastekela) {
+			KoodiType koulutusasteoph =getSisaltyvaKoodi(curKoulutuskoodi, ophKoulutusastekoodisto);
+			if (null == koulutusasteoph) {
 				warn(1,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophKoulutusastekoodisto);
 				continue;
+			}			
+			KoodiType koulutusastekela = getRinnasteinenKoodi(koulutusasteoph, kelaKoulutusastekoodisto);
+			if (null == koulutusastekela) {
+				warn(4,ophKoulutusastekoodisto,koulutusasteoph.getKoodiArvo(), kelaKoulutusastekoodisto);
+				continue;
 			}
+			
 			KoodiType koulutusalaoph = getSisaltyvaKoodi(curKoulutuskoodi, ophOpintoalakoodisto);
         	if (null == koulutusalaoph) {
         		warn(2,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophOpintoalakoodisto);

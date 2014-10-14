@@ -152,7 +152,8 @@ public abstract class AbstractOPTIWriter {
     protected String koulutuskoodisto;
     protected String kelaOpintoalakoodisto;
     protected String kelaKoulutusastekoodisto;
-    protected String ophOpintoalakoodisto;
+
+	protected String ophOpintoalakoodisto;
     protected String ophKoulutusastekoodisto;
 
     
@@ -279,11 +280,6 @@ public abstract class AbstractOPTIWriter {
         this.kelaOpintoalakoodisto = kelaOpintoalakoodisto;
     }
     
-    @Value("${koodisto-uris.koulutusastekela}")
-    public void setKelaKoulutusastekoodisto(String kelaKoulutusastekoodisto) {
-        this.kelaKoulutusastekoodisto = kelaKoulutusastekoodisto;
-    }
-    
     @Value("${koodisto-uris.opintoalaoph}")
     public void setOphOpintoalakoodisto(String ophOpintoalakoodisto) {
         this.ophOpintoalakoodisto = ophOpintoalakoodisto;
@@ -293,6 +289,12 @@ public abstract class AbstractOPTIWriter {
     public void setOphKoulutusastekoodisto(String ophKoulutusastekoodisto) {
         this.ophKoulutusastekoodisto = ophKoulutusastekoodisto;
     }
+    
+    @Value("${koodisto-uris.koulutusastekela}")
+    public void setKelaKoulutusastekoodisto(String kelaKoulutusastekoodisto) {
+        this.kelaKoulutusastekoodisto = kelaKoulutusastekoodisto;
+    }
+
     
     protected List<KoodiType> getKoodisByUriAndVersio(String koodiUri) {
         return this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
@@ -690,13 +692,17 @@ public abstract class AbstractOPTIWriter {
 	    	warn(String.format(ERR_MESS_11, koodistoKoodi.getNimi(), humanname));
 	    	return "";
 	    }
+	    return getTutkintotunniste(koodiUri, humanname);
+    }
+    
+	protected String getTutkintotunniste(String koodiUri, String humanname) throws OPTFormatException {
 	    List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
 	    KoodiType koulutuskoodi = null;
 	    if (!koodis.isEmpty()) {
 	        koulutuskoodi = koodis.get(0);
 	        return StringUtils.rightPad(koulutuskoodi.getKoodiArvo(),6,"kela - tutkintotunniste");
 	    }
-	    error(String.format(ERR_MESS_9,koodistoKoodi.getUri()));
+	    error(String.format(ERR_MESS_9,koodiUri));
 	    return null; //not reached
     }
     
