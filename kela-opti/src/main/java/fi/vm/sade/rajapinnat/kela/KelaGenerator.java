@@ -251,7 +251,7 @@ public class KelaGenerator implements Runnable {
         return targetPath;
     }
     
-    private static void setSocksProxyOn() {
+    public static void setSocksProxyOn() {
         Properties props = System.getProperties();
         props.put("socksProxyHost", "127.0.0.1");
         LOG.info("socksProxyHost: 127.0.0.1");

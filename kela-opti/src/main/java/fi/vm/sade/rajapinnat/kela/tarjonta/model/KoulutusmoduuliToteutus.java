@@ -36,6 +36,12 @@ public class KoulutusmoduuliToteutus {
     private String koulutusUri;
     @Column(name = "kandi_koulutus_uri")
     private String kandi_koulutus_uri;
+    
+    @Column(name = "alkamiskausi_uri")
+    private String alkamiskausi_uri;
+    @Column(name = "alkamisvuosi")
+    private Integer alkamisvuosi;
+    
 
     public String getOid() {
         return oid;
@@ -68,4 +74,32 @@ public class KoulutusmoduuliToteutus {
 	public void setKandi_koulutus_uri(String kandi_koulutus_uri) {
 		this.kandi_koulutus_uri = kandi_koulutus_uri;
 	}
+	
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private Koulutusmoduuli koulutusmoduuli;
+
+	public Koulutusmoduuli getKoulutusmoduuli() {
+		return koulutusmoduuli;
+	}
+
+	public void setKoulutusmoduuli(Koulutusmoduuli koulutusmoduuli) {
+		this.koulutusmoduuli = koulutusmoduuli;
+	}
+
+	public String getAlkamiskausi_uri() {
+		return alkamiskausi_uri;
+	}
+
+	public void setAlkamiskausi_uri(String alkamiskausi_uri) {
+		this.alkamiskausi_uri = alkamiskausi_uri;
+	}
+
+	public Integer getAlkamisvuosi() {
+		return alkamisvuosi;
+	}
+
+	public void setAlkamisvuosi(Integer alkamisvuosi) {
+		this.alkamisvuosi = alkamisvuosi;
+	}
+	
 }

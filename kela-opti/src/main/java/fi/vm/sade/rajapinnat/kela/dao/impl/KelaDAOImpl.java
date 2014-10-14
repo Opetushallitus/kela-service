@@ -52,7 +52,6 @@ public class KelaDAOImpl implements KelaDAO {
     private EntityManager organisaatioEm;
     
     private static final String KAYNTIOSOITE = "kaynti";
-    private static final String PUHELIN = "puhelin";
     private static final String POSTI = "posti";
     private static final String WWW = "Www";
     
@@ -204,8 +203,6 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         try {
-        	int a=0;
-        	a++;
             return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
