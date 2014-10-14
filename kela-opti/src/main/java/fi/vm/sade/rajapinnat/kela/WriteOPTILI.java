@@ -36,9 +36,6 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.tarjonta.service.search.HakukohdePerustieto;
 import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
 import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
-import fi.vm.sade.tarjonta.service.search.KoulutuksetKysely;
-import fi.vm.sade.tarjonta.service.search.KoulutuksetVastaus;
-import fi.vm.sade.tarjonta.service.search.KoulutusPerustieto;
 import fi.vm.sade.tarjonta.service.types.TarjontaTila;
 
 
@@ -172,24 +169,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     public void setKoulutuslaji(String koulutuslaji) {
         this.KOULUTUSLAJI = koulutuslaji;
     }
-
-	private KoulutuksetVastaus haeKoulutukset(String hakukohdeOid) throws UserStopRequestException {
-        KoulutuksetKysely kysely = new KoulutuksetKysely();
-        kysely.getHakukohdeOids().add(hakukohdeOid);
-        while(true) {
-        	try {
-        		return tarjontaSearchService.haeKoulutukset(kysely);
-        	} catch (org.apache.solr.common.SolrException e) {
-    			handleException(e);
-        	} catch(RuntimeException e) {
-        		if (e.getMessage().equals("haku.error")) {
-        			handleException(e);
-        		} else  {
-        			throw e;
-        		}
-        	}
-        }
-	}
 	
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException{
@@ -322,7 +301,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 	}
 
 	Pattern isInteger;
-	String tut_taso;
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
 		if (isInteger==null) {
@@ -374,14 +352,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 getKomotoOid(komoto.getOid()),
                 "\n");
 	}
-
-	private String getKomotoOid(KoulutusPerustieto koulutusPerustieto) throws OPTFormatException {
-		if(null==koulutusPerustieto.getKomotoOid()) {
-			error(7);
-		}
-		return getKomotoOid(koulutusPerustieto.getKomotoOid());
-	}
-		
 		
 	private String getKomotoOid(String oid) throws OPTFormatException {
 		String _oid = oid.substring(oid.lastIndexOf('.') + 1);
