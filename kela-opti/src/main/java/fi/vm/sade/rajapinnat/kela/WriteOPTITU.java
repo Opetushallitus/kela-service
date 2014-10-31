@@ -78,23 +78,23 @@ public class WriteOPTITU extends AbstractOPTIWriter {
         for (KoodiType curKoulutuskoodi : koulutuskoodit) {
 			KoodiType koulutusasteoph =getSisaltyvaKoodi(curKoulutuskoodi, ophKoulutusastekoodisto);
 			if (null == koulutusasteoph) {
-				warn(1,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophKoulutusastekoodisto);
+				debug(1,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophKoulutusastekoodisto);
 				continue;
 			}			
 			KoodiType koulutusastekela = getRinnasteinenKoodi(koulutusasteoph, kelaKoulutusastekoodisto);
 			if (null == koulutusastekela) {
-				warn(4,ophKoulutusastekoodisto,koulutusasteoph.getKoodiArvo(), kelaKoulutusastekoodisto);
+				debug(4,ophKoulutusastekoodisto,koulutusasteoph.getKoodiArvo(), kelaKoulutusastekoodisto);
 				continue;
 			}
 			
 			KoodiType koulutusalaoph = getSisaltyvaKoodi(curKoulutuskoodi, ophOpintoalakoodisto);
         	if (null == koulutusalaoph) {
-        		warn(2,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophOpintoalakoodisto);
+        		debug(2,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophOpintoalakoodisto);
         		continue;
         	}
         	KoodiType koulutusalakela = getRinnasteinenKoodi(koulutusalaoph, kelaOpintoalakoodisto);
        		if (null == koulutusalakela) {
-       			warn(3,ophOpintoalakoodisto,koulutusalaoph.getKoodiArvo(), kelaOpintoalakoodisto);
+       			debug(3,ophOpintoalakoodisto,koulutusalaoph.getKoodiArvo(), kelaOpintoalakoodisto);
        			continue;
        		}
 			try {

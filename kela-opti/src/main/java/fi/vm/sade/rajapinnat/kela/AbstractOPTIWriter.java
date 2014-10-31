@@ -644,6 +644,10 @@ public abstract class AbstractOPTIWriter {
     	KelaGenerator.warn("("+getFileIdentifier()+i+") : " +getWarnings()[i-1],args);
 	}
 
+    protected void debug(int i, Object... args) {
+    	KelaGenerator.debug("("+getFileIdentifier()+i+") : " +getWarnings()[i-1],args);
+    }
+    
     protected void info(int i, Object... args) {
     	KelaGenerator.info("("+getFileIdentifier()+i+") : "+getInfos()[i-1],args);
 	}
