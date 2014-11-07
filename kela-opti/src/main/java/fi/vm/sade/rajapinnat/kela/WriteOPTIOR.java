@@ -73,11 +73,11 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	public String composeRecord(Object... args) throws OPTFormatException {
 		Organisaatio org = getOrganisaatio((OrganisaatioPerustieto) args[0]);
 		OrgType orgType = (OrgType) args[1];
-		String record = String.format("%s%s%s%s", // 4 fields + EOL
+		String record = String.format("%s%s%s", // 4 fields
 				getOPPIL_NRO(org, orgType), 
 				getOPJNO(org, orgType), 
-				getOID(org, orgType), 
-				"\n");
+				getOID(org, orgType)
+				);
 		return record;
 	}
 

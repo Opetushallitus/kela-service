@@ -237,7 +237,7 @@ public abstract class AbstractOPTIWriter {
     }
     
     protected byte[] toLatin1(String text) {
-        return text.getBytes(LATIN1);
+        return (text.replace('\n', ' ')+"\n").getBytes(LATIN1);
     }
     
     @Value("${exportdir}")
@@ -523,10 +523,10 @@ public abstract class AbstractOPTIWriter {
 	    writes = 0;
 		try {
 			bostr = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
-			bostr.write(toLatin1(getAlkutietueWithCheck() + "\n"));
+			bostr.write(toLatin1(getAlkutietueWithCheck()));
 			bostr.flush();
 			composeRecords();
-			bostr.write(toLatin1(convertedLopputietue(writes) + "\n"));
+			bostr.write(toLatin1(convertedLopputietue(writes)));
 			bostr.flush();
 			bostr.close();
 			LOG.info(String.format(INFO_MESS_1, writes, writesTries-writes));

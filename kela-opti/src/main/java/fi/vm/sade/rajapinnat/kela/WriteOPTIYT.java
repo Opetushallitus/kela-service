@@ -94,7 +94,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		
 		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
 		
-		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields + EOL
+		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields
 				getYhtId(organisaatio),// YHT_ID
 				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO
 				StringUtils.leftPad("", 3),// Postinumeroon liittyva maatunnus
@@ -112,8 +112,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 				StringUtils.leftPad("", 40),// YHT_ULK_ALUE
 				DEFAULT_DATE,// Viimeisin paivityspaiva
 				StringUtils.leftPad("", 30),// Viimeisin paivittaja
-				getPostinumero(orgR.getKayntiosoite()),// Postinumero POS_NRO
-				"\n");
+				getPostinumero(orgR.getKayntiosoite())// Postinumero POS_NRO
+				);
 		return record;
 	}
 

@@ -190,7 +190,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         }
 
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
-    	String tarjoajaOid = curTulos.getTarjoajaOid();
+        	String tarjoajaOid = curTulos.getTarjoajaOid();
             try {
             	if (curTulos.getTila().equals(TarjontaTila.JULKAISTU) && isHakukohdeOppilaitos(tarjoajaOid)) {
             		Hakukohde hakukohde = kelaDAO.findHakukohdeByOid(curTulos.getOid());
@@ -219,7 +219,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		HakukohdePerustieto curTulos=(HakukohdePerustieto) args[0];
 		OrganisaatioDTO tarjoajaOrganisaatioDTO=(OrganisaatioDTO) args[1];
 		KoulutusmoduuliToteutus komoto = (KoulutusmoduuliToteutus) args[2];
-		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //44 fields + line ending
+		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //44 fields
                 getHakukohdeId(curTulos),//Sisainen koodi
                 getOppilaitosnumero(tarjoajaOrganisaatioDTO),//OPPIL_NRO
                 getOrgOid(tarjoajaOrganisaatioDTO), //OrganisaatioOID
@@ -259,8 +259,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 DEFAULT_DATE, //Loppupaiva, voimassaolon loppu
                 StringUtils.leftPad("",1), //OPL_TULOSTUS
                 StringUtils.leftPad("",15), //OPL_OMISTAJA
-                getKomotoOid(komoto.getOid()),
-                "\n");
+                getKomotoOid(komoto.getOid()));
 	}
 		
 	private String getKomotoOid(String oid) throws OPTFormatException {

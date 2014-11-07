@@ -110,7 +110,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 		KoodiType koulutusKoodi = (KoodiType) args[0];
     	KoodiType koulutusastekela = (KoodiType) args[1];
         KoodiType koulutusalakela =(KoodiType) args[2];
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //26 fields + EOL
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //26 fields
         		StringUtils.leftPad("",10),
                 getOphTutkintotunniste(koulutusKoodi),//Tilastokeskuksen koulutuskoodi
                 DEFAULT_DATE,//Alkupaiva, voimassaolon alku
@@ -136,8 +136,8 @@ public class WriteOPTITU extends AbstractOPTIWriter {
                 DEFAULT_DATE,//Viimeisin paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
                 numFormatter(koulutusalakela.getKoodiArvo(),10,"koulutusa-ala-kela"),
-                numFormatter(koulutusastekela.getKoodiArvo(),10,"koulutusa-aste-kela"),
-                "\n");
+                numFormatter(koulutusastekela.getKoodiArvo(),10,"koulutusa-aste-kela")
+                );
 		return record;
 	}
 

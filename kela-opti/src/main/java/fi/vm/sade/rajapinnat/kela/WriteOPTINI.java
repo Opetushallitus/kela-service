@@ -124,7 +124,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 		OrganisaatioPerustieto curOrganisaatio = (OrganisaatioPerustieto) args[0];
 		OrgType orgType = (OrgType) args[1];
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields
                 getSisainenKoodi(orgE),//Sisainen koodi
                 StringUtils.leftPad("", 5),//OPE_OPPILNRO
                 StringUtils.leftPad("", 2),//OPE_OPJNO
@@ -138,8 +138,8 @@ public class WriteOPTINI extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 8),//Viimeisin paivittaja
                 "X",//Nimi on virallinen
                 StringUtils.leftPad(DEFAULT_DATE, 10),//Alkupaiva, voimassaolon alku
-                StringUtils.leftPad(DEFAULT_DATE, 10),//Loppupaiva, voimassaolon loppu
-                "\n");
+                StringUtils.leftPad(DEFAULT_DATE, 10)//Loppupaiva, voimassaolon loppu
+        		);
         return record;
 	}
 

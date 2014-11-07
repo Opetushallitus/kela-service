@@ -66,7 +66,7 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
 	@Override
     public String composeRecord(Object... argv) throws OPTFormatException {
 		Organisaatiosuhde liitos=(Organisaatiosuhde) argv[0];
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//14 fields + EOL
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//14 fields
                getLiitosId(liitos),//YHD_ID
                StringUtils.leftPad("", 10),//KAS_ID
                StringUtils.leftPad("", 10),//ALA_ID
@@ -80,8 +80,8 @@ public class WriteOPTIYH extends AbstractOPTIWriter {
                StringUtils.leftPad("", 2),//KOHDE_OPJNRO
                DEFAULT_DATE,//Viimeisin paivityspvm
                getOrgOid(liitos.getParent()), //uuden oppl. organisaatio-oid
-               StringUtils.leftPad("", 8),//Viimeisin paivittaja
-               "\n");
+               StringUtils.leftPad("", 8)//Viimeisin paivittaja
+               );
         return record;
     }
     
