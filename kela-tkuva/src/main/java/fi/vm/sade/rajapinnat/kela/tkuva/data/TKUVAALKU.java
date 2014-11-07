@@ -126,7 +126,7 @@ public class TKUVAALKU {
         private static final Charset LATIN1 = Charset.forName("ISO8859-1");
         private static final FastDateFormat ajopaivaFormatter = FastDateFormat.getInstance("ddMMyyyy");
 
-        // private byte[] siirtotunnus; // pituus 15: "OUYHVA" tasoitettu
+        private byte[] siirtotunnus; // pituus 15
         // alkuun,
         // loppu tyhja!
         // private byte[] tietuetyyppi; // pituus 1: "A"
@@ -142,11 +142,17 @@ public class TKUVAALKU {
                                       // nimi!
 
         // private byte[] varatila2; // pituus 61
+        
 
+        public Builder setSiirtotunnus(String siirtotunnus) {
+            this.siirtotunnus =  toLatin1(siirtotunnus, 15);
+            return this;
+        }
+        
         public Builder setAjopaivamaara(Date ajopaivamaara) {
             this.ajopaivamaara = toLatin1(ajopaivaFormatter.format(ajopaivamaara), 8);
             return this;
-        }
+        }      
 
         public Builder setOrganisaationimi(String organisaationimi) {
             this.organisaationimi = toLatin1(organisaationimi, 63);
@@ -169,7 +175,7 @@ public class TKUVAALKU {
 
         public TKUVAALKU build() {
             TKUVAALKU t = new TKUVAALKU();
-            t.setSiirtotunnus(toLatin1("OUYHVA", 15));
+            t.setSiirtotunnus(siirtotunnus);
             t.setTietuetyyppi(toLatin1("A", 1));
             t.setAjopaivamaara(ajopaivamaara);
             t.setSiirtolaji(toLatin1("OPISK", 5));

@@ -16,7 +16,7 @@ import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
  *         TKUVALOPPU_VAL.doc/htr
  */
 public class TKUVALOPPU {
-    private byte[] siirtotunnus; // pituus 15: "OUYHVA" tasoitettu alkuun,
+    private byte[] siirtotunnus; // pituus 15
     // loppu tyhja!
     private byte[] tietuetyyppi; // pituus 1: "X"
     private byte[] ajopaivamaara; // pituus 8: PPKKVVVV
@@ -37,7 +37,7 @@ public class TKUVALOPPU {
 
         return buffer.array();
     }
-
+    
     public void setAjopaivamaara(byte[] ajopaivamaara) {
         this.ajopaivamaara = ajopaivamaara;
     }
@@ -82,7 +82,7 @@ public class TKUVALOPPU {
         private static final Charset LATIN1 = Charset.forName("ISO8859-1");
         private static final FastDateFormat ajopaivaFormatter = FastDateFormat.getInstance("ddMMyyyy");
 
-        // private byte[] siirtotunnus; // pituus 15: "OUYHVA" tasoitettu
+        private byte[] siirtotunnus; // pituus 15
         // alkuun,
         // loppu tyhja!
         // private byte[] tietuetyyppi; // pituus 1: "X"
@@ -92,6 +92,11 @@ public class TKUVALOPPU {
                                         // reunaan taytto, etunollat
 
         // private byte[] varatila1; // pituus 162: tyhjaa
+        
+        public Builder setSiirtotunnus(String siirtotunnus) {
+            this.siirtotunnus =  toLatin1(siirtotunnus, 15);
+            return this;
+        }
 
         public Builder setAjopaivamaara(Date ajopaivamaara) {
             this.ajopaivamaara = toLatin1(ajopaivaFormatter.format(ajopaivamaara), 8);
@@ -123,7 +128,7 @@ public class TKUVALOPPU {
 
         public TKUVALOPPU build() {
             TKUVALOPPU t = new TKUVALOPPU();
-            t.setSiirtotunnus(toLatin1("OUYHVA", 15));
+            t.setSiirtotunnus(siirtotunnus);
             t.setTietuetyyppi(toLatin1("X", 1));
             t.setAjopaivamaara(ajopaivamaara);
             t.setTietuelukumaara(tietuelukumaara);

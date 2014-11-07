@@ -255,7 +255,7 @@ public class TKUVAYHVA {
 	public static class Builder {
         private static final Charset LATIN1 = Charset.forName("ISO8859-1");
 
-        // private byte[] siirtotunnus = toLatin1("OUYHVA",15);
+        private byte[] siirtotunnus;
         // private byte[] tietuetyyppi = toLatin1("T",1);
         private static final FastDateFormat poimintapaivamaaraJaValintapaivamaaraFormatter = FastDateFormat
                 .getInstance("ddMMyyyy");
@@ -281,13 +281,14 @@ public class TKUVAYHVA {
 
         // private byte[] varatila2;
 
-        // private byte[] tutkinnonTaso1;
+        private byte[] tutkinnonTaso1;
         // private byte[] tutkinnonTaso2;
         private boolean ajankohtaSyksy;
 
         // private byte[] lukukaudenAloituspaiva;
 
         // private byte[] varatila3;
+        
 
         public Builder setPoimintapaivamaara(Date poimintapaivamaara) {
             this.poimintapaivamaara = toLatin1(
@@ -295,7 +296,15 @@ public class TKUVAYHVA {
             return this;
         }
 
-        public Builder setOppilaitosnumero(String oppilaitosnumero) {
+        public byte[] getSiirtotunnus() {
+			return siirtotunnus;
+		}
+
+		public void setSiirtotunnus(String siirtotunnus) {
+			this.siirtotunnus = toLatin1(siirtotunnus, 15);
+		}
+
+		public Builder setOppilaitosnumero(String oppilaitosnumero) {
             this.oppilaitosnumero = toLatin1(oppilaitosnumero, 5);
             return this;
         }
@@ -319,6 +328,11 @@ public class TKUVAYHVA {
             return this;
         }
 
+        public Builder setTutkinnontaso1(String tutkinnontaso1) {
+            this.tutkinnonTaso1 = toLatin1(tutkinnontaso1, 3);
+            return this;
+        }
+        
         public Builder setHenkilotunnus(String henkilotunnus) {
             this.henkilotunnus = toLatin1(henkilotunnus, 11);
             return this;
@@ -357,7 +371,7 @@ public class TKUVAYHVA {
 
         public TKUVAYHVA build() {
             TKUVAYHVA t = new TKUVAYHVA();
-            t.setSiirtotunnus(toLatin1("OUYHVA", 15));
+            t.setSiirtotunnus(siirtotunnus);
             t.setTietuetyyppi(toLatin1("T", 1));
             t.setPoimintapaivamaara(poimintapaivamaara);
             t.setSiirtolaji(toLatin1("OPISK", 5));
@@ -373,7 +387,7 @@ public class TKUVAYHVA {
 
             t.setVaratila2(toLatin1("", 1));
 
-            t.setTutkinnonTaso1(toLatin1("", 3));
+            t.setTutkinnonTaso1(tutkinnonTaso1);
             t.setTutkinnonTaso2(toLatin1("", 3));
 
             if (ajankohtaSyksy) { // aloitusvuosi on syksylla sama kuin
