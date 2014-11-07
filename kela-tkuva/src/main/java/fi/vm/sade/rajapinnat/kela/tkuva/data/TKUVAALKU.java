@@ -28,10 +28,10 @@ public class TKUVAALKU {
     private byte[] organisaationimi;// pituus 63: tiedonvalittaja!
     private byte[] aineistonnimi; // pituus 40: aineiston selvakielinen
     // nimi!
-    private byte[] varatila2; // pituus 11
+    private byte[] varatila2; // pituus 61
 
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(150);
+        ByteBuffer buffer = ByteBuffer.allocate(200);
         buffer.put(siirtotunnus);
         buffer.put(tietuetyyppi);
         buffer.put(ajopaivamaara);
@@ -44,7 +44,7 @@ public class TKUVAALKU {
         buffer.put(aineistonnimi);
 
         buffer.put(varatila2);
-        // buffer.compact(); no need for this as buffer is allocated 150 which
+        // buffer.compact(); no need for this as buffer is allocated 200 which
         // should be always the size
 
         return buffer.array();
@@ -141,7 +141,7 @@ public class TKUVAALKU {
         private byte[] aineistonnimi; // pituus 40: aineiston selvakielinen
                                       // nimi!
 
-        // private byte[] varatila2; // pituus 11
+        // private byte[] varatila2; // pituus 61
 
         public Builder setAjopaivamaara(Date ajopaivamaara) {
             this.ajopaivamaara = toLatin1(ajopaivaFormatter.format(ajopaivamaara), 8);
@@ -179,7 +179,7 @@ public class TKUVAALKU {
             t.setOrganisaationimi(organisaationimi);
             t.setAineistonnimi(aineistonnimi);
 
-            t.setVaratila2(toLatin1("", 11));
+            t.setVaratila2(toLatin1("", 61));
             return t;
         }
     }

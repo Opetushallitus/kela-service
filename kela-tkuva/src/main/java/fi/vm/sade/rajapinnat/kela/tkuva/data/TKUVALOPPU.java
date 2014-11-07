@@ -23,10 +23,10 @@ public class TKUVALOPPU {
 
     private byte[] tietuelukumaara; // pituus 14: tietueiden maara, oikeaan
                                     // reunaan taytto, etunollat
-    private byte[] varatila1; // pituus 112: tyhjaa
+    private byte[] varatila1; // pituus 162: tyhjaa
 
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(150);
+        ByteBuffer buffer = ByteBuffer.allocate(200);
         buffer.put(siirtotunnus);
         buffer.put(tietuetyyppi);
         buffer.put(ajopaivamaara);
@@ -91,7 +91,7 @@ public class TKUVALOPPU {
         private byte[] tietuelukumaara; // pituus 14: tietueiden maara, oikeaan
                                         // reunaan taytto, etunollat
 
-        // private byte[] varatila1; // pituus 112: tyhjaa
+        // private byte[] varatila1; // pituus 162: tyhjaa
 
         public Builder setAjopaivamaara(Date ajopaivamaara) {
             this.ajopaivamaara = toLatin1(ajopaivaFormatter.format(ajopaivamaara), 8);
@@ -128,7 +128,7 @@ public class TKUVALOPPU {
             t.setAjopaivamaara(ajopaivamaara);
             t.setTietuelukumaara(tietuelukumaara);
 
-            t.setVaratila1(toLatin1("", 112));
+            t.setVaratila1(toLatin1("", 162));
             return t;
         }
     }
