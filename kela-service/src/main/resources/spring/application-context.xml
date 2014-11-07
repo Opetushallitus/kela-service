@@ -16,8 +16,10 @@
             location="classpath:vtj-service.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties, file:///${user.home:''}/oph-configuration/override.properties"
             ignore-resource-not-found="true" properties-ref="defaultProps" />
 
-    <bean id="defaultProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="properties">
+    
+    
+    <bean id="defaultProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">        
+    	<property name="properties">
             <util:properties local-override="true">
                 <prop key="cas_key">kela-service</prop>
                 <prop key="cas_service">${cas.service.kela-service}</prop>
@@ -32,6 +34,8 @@
   		<property name="queueCapacity" value="0" />
   		
 	</bean>
+
+    <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
 
     <import resource="file:///${user.home:''}/oph-configuration/security-context-backend.xml"/>
 

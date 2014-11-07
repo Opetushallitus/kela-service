@@ -15,6 +15,6 @@
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-extension-http.xml"/>
 
-    <bean id="kelaService" class="fi.vm.sade.organisaatio.resource.KelaResource"/>
+    <bean id="kelaService" class="fi.vm.sade.organisaatio.resource.KelaResourceImpl"/>
         
 </beans>
