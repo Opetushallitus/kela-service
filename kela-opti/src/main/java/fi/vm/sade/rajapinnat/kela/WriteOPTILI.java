@@ -16,7 +16,9 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -63,7 +65,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     	"invalid OID: '%s'",
     	"komotoOID cannot not be null",
     	"OPPIL_NRO may not be missing (org.oid=%s).",
-    	"HAK_NIMI may not be missing (org.oid=%s)."
+    	"HAK_NIMI may not be missing (org.oid=%s).",
+    	"duplicate oid suffix detected (%s oid %s)."
     };
 
     private final static String[] warnings = {
@@ -189,19 +192,34 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         	}
         }
 
+        Set<String> hakukohteet = new HashSet<String>();
+        Set<String> kmos = new HashSet<String>();
+                
         for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
         	String tarjoajaOid = curTulos.getTarjoajaOid();
             try {
+            	if (hakukohteet.contains(curTulos.getOid())) {
+            		fatalError(10,"hakukohde",curTulos.getOid());
+            	}
+            	hakukohteet.add(curTulos.getOid().substring(curTulos.getOid().lastIndexOf('.')));
+            	
             	if (curTulos.getTila().equals(TarjontaTila.JULKAISTU) && isHakukohdeOppilaitos(tarjoajaOid)) {
             		Hakukohde hakukohde = kelaDAO.findHakukohdeByOid(curTulos.getOid());
             		List<KoulutusmoduuliToteutus> komotos = hakukohde.getKoulutukset();
 
+            		
             		if (komotos.size()==0) {
             			error(5, curTulos.getOid()+" "+curTulos.getNimi());
             		}
             		OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
                 	for(KoulutusmoduuliToteutus komoto : komotos) {
-                			this.writeRecord(curTulos, organisaatioDTO, komoto);
+                		
+                    	if (kmos.contains(komoto.getOid())) {
+                    		fatalError(10,"komoto",komoto.getOid());
+                    	}
+                    	kmos.add(komoto.getOid().substring(komoto.getOid().lastIndexOf('.')));
+                		
+                		this.writeRecord(curTulos, organisaatioDTO, komoto);
                 	}
                 }
             } catch (OPTFormatException e) {

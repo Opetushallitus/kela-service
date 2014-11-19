@@ -635,6 +635,11 @@ public abstract class AbstractOPTIWriter {
     	KelaGenerator.info("("+getFileIdentifier()+") : "+infoMsg);
 	}
     
+    protected void fatalError(int i, Object... args) throws UserStopRequestException {
+    	KelaGenerator.error("("+getFileIdentifier()+i+") : "+getErrors()[i-1],args);
+		throw new UserStopRequestException();
+	}
+    
     protected void error(int i, Object... args) throws OPTFormatException {
     	KelaGenerator.error("("+getFileIdentifier()+i+") : "+getErrors()[i-1],args);
 		throw new OPTFormatException();
