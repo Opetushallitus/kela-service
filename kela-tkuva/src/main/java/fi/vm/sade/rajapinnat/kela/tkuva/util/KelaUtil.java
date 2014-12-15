@@ -4,11 +4,6 @@ import java.util.Date;
 
 import org.apache.commons.lang.time.FastDateFormat;
 
-/**
- * 
- * @author Jussi Jartamo
- * 
- */
 public class KelaUtil {
 
     public static final char TYHJA = (char) 0x20;

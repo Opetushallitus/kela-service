@@ -53,10 +53,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
-/**
- * 
- * @author Markus
- */
+
 @Configurable
 public abstract class AbstractOPTIWriter {
 	protected enum OrgType {

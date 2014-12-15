@@ -40,11 +40,6 @@ import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
 import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
 import fi.vm.sade.tarjonta.service.types.TarjontaTila;
 
-
-/**
- *
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTILI extends AbstractOPTIWriter {

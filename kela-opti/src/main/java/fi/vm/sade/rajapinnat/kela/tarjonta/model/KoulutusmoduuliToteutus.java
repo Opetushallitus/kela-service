@@ -17,10 +17,6 @@ package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 
 import javax.persistence.*;
 
-/**
- * 
- * @author Markus
- */
 @Entity
 @Table(name="koulutusmoduuli_toteutus")
 public class KoulutusmoduuliToteutus {

@@ -9,12 +9,6 @@ import org.apache.commons.lang.time.FastDateFormat;
 
 import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
 
-/**
- * 
- * @author Jussi Jartamo
- * 
- *         TKUVAALKU_VAL.doc/htr
- */
 public class TKUVAALKU {
     private byte[] siirtotunnus; // pituus 15: "OUYHVA" tasoitettu alkuun, loppu
                                  // tyhja!

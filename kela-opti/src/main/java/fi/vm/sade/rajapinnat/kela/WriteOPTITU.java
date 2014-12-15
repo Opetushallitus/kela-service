@@ -29,10 +29,6 @@ import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoCriteriaType;
 import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoVersioSelectionType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTITU extends AbstractOPTIWriter {

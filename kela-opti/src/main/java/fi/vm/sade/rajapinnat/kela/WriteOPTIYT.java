@@ -34,10 +34,6 @@ import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTIYT extends AbstractOPTIWriter {

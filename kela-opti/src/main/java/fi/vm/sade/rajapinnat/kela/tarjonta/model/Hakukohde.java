@@ -29,10 +29,6 @@ import javax.persistence.Table;
 
 import fi.vm.sade.generic.model.BaseEntity;
 
-/**
- * 
- * @author Markus
- */
 @Entity
 @Table(name="hakukohde")
 public class Hakukohde {
