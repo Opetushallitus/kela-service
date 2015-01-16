@@ -28,4 +28,9 @@ public class KelaUtil {
         nimi.append("RO.WOT.SR.D").append(FORMATTER.format(tiedostonLuontiPaivamaara)).append(".YHVA14");
         return nimi.toString();
     }
+    public static String createTiedostoNimiOuhare(Date tiedostonLuontiPaivamaara) {
+        StringBuilder nimi = new StringBuilder();
+        nimi.append("RO.WOT.SR.D").append(FORMATTER.format(tiedostonLuontiPaivamaara)).append(".OUHARY");
+        return nimi.toString();
+    }
 }

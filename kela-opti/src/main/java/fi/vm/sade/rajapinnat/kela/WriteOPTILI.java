@@ -70,7 +70,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     };
 
     private final static String[] warnings = {
-    	"Toimipisteen opetuspisteenjnro is empty : org.oid=%s"
+    	"Toimipisteen opetuspisteenjnro is empty : org.oid=%s",
+    	"komoto-oid converted from %s to %s (hakukohde: %s)"
     };
 
     private final static String[] infos = {
@@ -237,6 +238,21 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		HakukohdePerustieto curTulos=(HakukohdePerustieto) args[0];
 		OrganisaatioDTO tarjoajaOrganisaatioDTO=(OrganisaatioDTO) args[1];
 		KoulutusmoduuliToteutus komoto = (KoulutusmoduuliToteutus) args[2];
+		String komoto_oid="";
+		
+		switch (komoto.getOid()) {
+		case  "1.2.246.562.5.02998_11_900_1709_1509" : 
+		case "1.2.246.562.5.02998_11_900_1709_1511": 
+		case "1.2.246.562.5.02998_11_900_1709_1510": 
+		case "1.2.246.562.5.02998_11_900_1709_1598": 
+		case "1.2.246.562.5.02998_11_900_1709_1514": 
+			komoto_oid=komoto.getOid().replaceAll("_", "");
+			warn(2,komoto.getOid(),komoto_oid,curTulos.getOid());
+			break;
+		default :
+			komoto_oid=komoto.getOid();
+		}
+		
 		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //44 fields
                 getHakukohdeId(curTulos),//Sisainen koodi
                 getOppilaitosnumero(tarjoajaOrganisaatioDTO),//OPPIL_NRO
@@ -277,7 +293,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 DEFAULT_DATE, //Loppupaiva, voimassaolon loppu
                 StringUtils.leftPad("",1), //OPL_TULOSTUS
                 StringUtils.leftPad("",15), //OPL_OMISTAJA
-                getKomotoOid(komoto.getOid()));
+                getKomotoOid(komoto_oid));
+                //getKomotoOid(komoto.getOid()));
 	}
 		
 	private String getKomotoOid(String oid) throws OPTFormatException {
