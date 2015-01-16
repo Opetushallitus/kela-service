@@ -20,10 +20,6 @@ import java.util.Map;
 
 import javax.persistence.*;
 
-/**
- * 
- * @author Markus
- */
 @Entity
 public class MonikielinenTeksti {
     

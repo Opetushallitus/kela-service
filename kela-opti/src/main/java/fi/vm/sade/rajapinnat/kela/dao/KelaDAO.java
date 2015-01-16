@@ -24,10 +24,6 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 
-/**
- * 
- * @author Markus
- */
 public interface KelaDAO {
 
     Hakukohde findHakukohdeByOid(String oid);

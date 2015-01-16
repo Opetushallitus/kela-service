@@ -25,10 +25,6 @@ import org.springframework.stereotype.Component;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTIOL extends AbstractOPTIWriter {

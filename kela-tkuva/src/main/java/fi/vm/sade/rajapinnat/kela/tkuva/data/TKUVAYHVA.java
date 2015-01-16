@@ -11,9 +11,7 @@ import org.joda.time.DateTime;
 import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
 
 /**
- * 
- * @author Jussi Jartamo
- * 
+ *
  *         Pakollisia tietoja on, - poimintapaivamaara - oppilaitos - linjakoodi
  *         - henkilotunnus - sukunimi - etunimet - valintapaivamaara - lukuvuosi
  *         - ajankohta (Syksy/Kevat)
