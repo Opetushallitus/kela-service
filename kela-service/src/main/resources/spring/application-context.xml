@@ -36,8 +36,13 @@
 	</bean>
 
     <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
-
-    <import resource="file:///${user.home:''}/oph-configuration/security-context-backend.xml"/>
+	
+	<!-- kela-service vaatii spring-security 3.2:n -->
+    <import resource="file:///${user.home:''}/oph-configuration/security-context-backend_spring-security-3.2.xml"/>
+    
+    <!--
+      <import resource="file:///${user.home:''}/oph-configuration/security-context-backend.xml"/>
+    -->
 
     <import resource="service-context.xml" />
 
