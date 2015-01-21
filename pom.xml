@@ -8,11 +8,11 @@
   <artifactId>kela</artifactId>
   <packaging>pom</packaging>
   <name>Rajapinnat :: KELA :: parent - ${project.version}</name>
-     <!-- <properties>
-              <spring.version>3.2.4.RELEASE</spring.version>
-              <spring.security.version>3.2.4.RELEASE</spring.security.version>
+      <properties>
+              <spring.version>3.1.4.RELEASE</spring.version>
+              <spring.security.version>3.1.4.RELEASE</spring.security.version>
               <spring.asm.version>3.1.4.RELEASE</spring.asm.version>
-      </properties> -->
+      </properties>
   <modules>
 	<module>kela-opti</module>
 	<module>kela-api</module>
