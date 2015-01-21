@@ -235,7 +235,19 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		KoulutusmoduuliToteutus komoto = (KoulutusmoduuliToteutus) args[2];
 		String komoto_oid="";
 		
-		switch (komoto.getOid()) {
+		if (komoto.getOid().equalsIgnoreCase("1.2.246.562.5.02998_11_900_1709_1509")
+			||	komoto.getOid().equalsIgnoreCase("1.2.246.562.5.02998_11_900_1709_1511")
+			||	komoto.getOid().equalsIgnoreCase("1.2.246.562.5.02998_11_900_1709_1510")
+			||	komoto.getOid().equalsIgnoreCase("1.2.246.562.5.02998_11_900_1709_1598")
+			||	komoto.getOid().equalsIgnoreCase("1.2.246.562.5.02998_11_900_1709_1514")) {
+			komoto_oid=komoto.getOid().replaceAll("_", "");
+			warn(2,komoto.getOid(),komoto_oid,curTulos.getOid());
+			
+		} else {
+			komoto_oid=komoto.getOid();
+		}
+				
+		/*switch (komoto.getOid()) {
 		case  "1.2.246.562.5.02998_11_900_1709_1509" : 
 		case "1.2.246.562.5.02998_11_900_1709_1511": 
 		case "1.2.246.562.5.02998_11_900_1709_1510": 
@@ -246,7 +258,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 			break;
 		default :
 			komoto_oid=komoto.getOid();
-		}
+		}*/
 		
 		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //44 fields
                 getHakukohdeId(curTulos),//Sisainen koodi
