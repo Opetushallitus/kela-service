@@ -61,7 +61,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     	"komotoOID cannot not be null",
     	"OPPIL_NRO may not be missing (org.oid=%s).",
     	"HAK_NIMI may not be missing (org.oid=%s).",
-    	"duplicate oid suffix detected (%s oid %s)."
+    	"duplicate oid suffix detected (%s oid %s).",
+    	"no hakukohde for OID : %s (%s)"
     };
 
     private final static String[] warnings = {
@@ -201,6 +202,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             	
             	if (curTulos.getTila().equals(TarjontaTila.JULKAISTU) && isHakukohdeOppilaitos(tarjoajaOid)) {
             		Hakukohde hakukohde = kelaDAO.findHakukohdeByOid(curTulos.getOid());
+            		if (hakukohde == null) {
+            			error(11, curTulos.getOid()+" "+curTulos.getNimi());
+            		}
             		List<KoulutusmoduuliToteutus> komotos = hakukohde.getKoulutukset();
 
             		
