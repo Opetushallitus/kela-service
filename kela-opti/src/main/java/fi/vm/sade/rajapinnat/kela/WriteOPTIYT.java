@@ -88,7 +88,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	public String composeRecord(Object... args) throws OPTFormatException {
 		OrganisaatioPerustieto organisaatio = (OrganisaatioPerustieto) args[0];
 		
-		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
+		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid(), false);
 		
 		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields
 				getYhtId(organisaatio),// YHT_ID

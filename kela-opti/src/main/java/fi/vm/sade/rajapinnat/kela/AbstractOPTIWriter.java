@@ -540,6 +540,11 @@ public abstract class AbstractOPTIWriter {
 	
 	public void stop() {
 		info(this.getFileIdentifier()+" generation stopping.");
+		try {
+			bostr.close();
+		} catch (IOException e) {
+			//well, we tried...
+		}
 		stopRequest=true;
     }
 	
