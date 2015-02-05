@@ -34,10 +34,6 @@ import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTIYT extends AbstractOPTIWriter {
@@ -92,9 +88,9 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	public String composeRecord(Object... args) throws OPTFormatException {
 		OrganisaatioPerustieto organisaatio = (OrganisaatioPerustieto) args[0];
 		
-		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid());
+		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid(), false);
 		
-		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields + EOL
+		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields
 				getYhtId(organisaatio),// YHT_ID
 				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO
 				StringUtils.leftPad("", 3),// Postinumeroon liittyva maatunnus
@@ -112,8 +108,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 				StringUtils.leftPad("", 40),// YHT_ULK_ALUE
 				DEFAULT_DATE,// Viimeisin paivityspaiva
 				StringUtils.leftPad("", 30),// Viimeisin paivittaja
-				getPostinumero(orgR.getKayntiosoite()),// Postinumero POS_NRO
-				"\n");
+				getPostinumero(orgR.getKayntiosoite())// Postinumero POS_NRO
+				);
 		return record;
 	}
 
@@ -221,7 +217,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		pnro = getAttributes(isTyyppiPuhelin, org.getYhteystiedot()).get("numero");
 		String yhteystieto = getSimpleYhteystieto(pnro,60);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "puhelinnro", org.getOid());
+			debug(1, org.getNimi(), "puhelinnro", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -231,7 +227,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		sp = getAttributes(isEmail, org.getYhteystiedot()).get("email");
 		String yhteystieto = getSimpleYhteystieto(sp,80);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "email", org.getOid());
+			debug(1, org.getNimi(), "email", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -241,7 +237,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		fax = getAttributes(isFaksi, org.getYhteystiedot()).get("numero");
 		String yhteystieto = getSimpleYhteystieto(fax,20);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "fax", org.getOid());
+			debug(1, org.getNimi(), "fax", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -251,7 +247,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 		www = getAttributes(isWWW, org.getYhteystiedot()).get("www");
 		String yhteystieto = getSimpleYhteystieto(www,80);
 		if (yhteystieto==null || StringUtils.isEmpty(yhteystieto.trim())) {
-			warn(1, org.getNimi(), "www", org.getOid());
+			debug(1, org.getNimi(), "www", org.getOid());
 		}
 		return yhteystieto;
 	}
@@ -270,7 +266,7 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 			osoiteStr = osoiteStr.substring(0, 50);
 		}
 		if (null == osoiteStr) {
-			warn(3, organisaatio.getOid()+" "+organisaatio.getNimi());
+			debug(3, organisaatio.getOid()+" "+organisaatio.getNimi());
 			return strFormatter("", 50, "katuosoite");
 		}
 		return strFormatter(osoiteStr, 50, "katuosoite");

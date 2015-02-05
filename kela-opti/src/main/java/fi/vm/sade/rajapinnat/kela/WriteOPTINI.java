@@ -16,7 +16,6 @@
 package fi.vm.sade.rajapinnat.kela;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -24,17 +23,9 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.koodisto.service.types.common.KieliType;
-import fi.vm.sade.koodisto.service.types.common.KoodiMetadataType;
-import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTINI extends AbstractOPTIWriter {
@@ -56,50 +47,6 @@ public class WriteOPTINI extends AbstractOPTIWriter {
     public WriteOPTINI() {
         super();
     }
-    
-/*    private String getOrganisaatioLyhytNimi(
-            OrganisaatioPerustieto curOrganisaatio, Organisaatio orgE, List<String> kielet) throws OPTFormatException {
-        List<KoodiType> koodit = new ArrayList<KoodiType>();
-        String opKoodi="";
-        if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
-        	opKoodi=curOrganisaatio.getOppilaitosKoodi();
-            koodit = orgContainer.getKoodisByArvoAndKoodisto(opKoodi, orgContainer.oppilaitosnumerokoodisto);
-        } else if (curOrganisaatio.getOrganisaatiotyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
-            opKoodi = String.format("%s%s", getOppilaitosNro(curOrganisaatio), getToimipisteenJarjNro(orgE));
-            koodit = orgContainer.getKoodisByArvoAndKoodisto(opKoodi, orgContainer.toimipistekoodisto);
-        }
-        String lyhytNimi = "";
-        if (koodit != null && !koodit.isEmpty()) {
-            lyhytNimi = getLyhytNimiFromKoodi(koodit.get(0), kielet);
-        }
-        if (lyhytNimi.length() > 40) {
-            lyhytNimi = lyhytNimi.substring(0, 40);
-        }
-        if (StringUtils.isEmpty(lyhytNimi.trim())) {
-        	error(6, curOrganisaatio.getOid()+" "+curOrganisaatio.getNimi()+" tyyppi: "+curOrganisaatio.getOrganisaatiotyypit()+" koodi:"+opKoodi);
-        }
-        return StringUtils.rightPad(lyhytNimi, 40);
-    }
-
-    private String getLyhytNimiFromKoodi(KoodiType koodi,
-            List<String> kielet) {
-        KoodiMetadataType kmdt = null;
-        String nimi = "";
-        if (kielet.contains(kieliFi)) {
-            kmdt = getKoodiMetadataForLanguage(koodi, KieliType.FI);
-        } else if (kielet.contains(kieliSv)) {
-            kmdt = getKoodiMetadataForLanguage(koodi, KieliType.SV);
-        } else if (kielet.contains(kieliEn)) {
-            kmdt = getKoodiMetadataForLanguage(koodi, KieliType.EN);
-        }
-        if (kmdt == null) {
-            kmdt = getAvailableKoodiMetadata(koodi);
-        }
-        if (kmdt != null) {
-            nimi = kmdt.getLyhytNimi();
-        }
-        return nimi;
-    }*/
 
     private String getOrganisaatioNimi(
         OrganisaatioPerustieto curOrganisaatio, List<String> kielet) throws OPTFormatException {
@@ -173,7 +120,7 @@ public class WriteOPTINI extends AbstractOPTIWriter {
 		OrganisaatioPerustieto curOrganisaatio = (OrganisaatioPerustieto) args[0];
 		OrgType orgType = (OrgType) args[1];
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOrganisaatio.getOid());
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields + EOL
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s",//12 fields
                 getSisainenKoodi(orgE),//Sisainen koodi
                 StringUtils.leftPad("", 5),//OPE_OPPILNRO
                 StringUtils.leftPad("", 2),//OPE_OPJNO
@@ -187,8 +134,8 @@ public class WriteOPTINI extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 8),//Viimeisin paivittaja
                 "X",//Nimi on virallinen
                 StringUtils.leftPad(DEFAULT_DATE, 10),//Alkupaiva, voimassaolon alku
-                StringUtils.leftPad(DEFAULT_DATE, 10),//Loppupaiva, voimassaolon loppu
-                "\n");
+                StringUtils.leftPad(DEFAULT_DATE, 10)//Loppupaiva, voimassaolon loppu
+        		);
         return record;
 	}
 

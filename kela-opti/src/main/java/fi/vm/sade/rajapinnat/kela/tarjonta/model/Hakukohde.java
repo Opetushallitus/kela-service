@@ -15,12 +15,20 @@
  */
 package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 
-import javax.persistence.*;
+import java.util.List;
 
-/**
- * 
- * @author Markus
- */
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+
+import fi.vm.sade.generic.model.BaseEntity;
+
 @Entity
 @Table(name="hakukohde")
 public class Hakukohde {
@@ -48,5 +56,19 @@ public class Hakukohde {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    @JoinTable(name = "koulutus_hakukohde",
+    joinColumns = @JoinColumn(name = "hakukohde_id", referencedColumnName = BaseEntity.ID_COLUMN_NAME),
+    inverseJoinColumns = @JoinColumn(name = "koulutus_id", referencedColumnName = BaseEntity.ID_COLUMN_NAME ))
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<KoulutusmoduuliToteutus> koulutukset;
+
+	public List<KoulutusmoduuliToteutus> getKoulutukset() {
+		return koulutukset;
+	}
+
+	public void setKoulutukset(List<KoulutusmoduuliToteutus> koulutukset) {
+		this.koulutukset = koulutukset;
+	}
     
 }

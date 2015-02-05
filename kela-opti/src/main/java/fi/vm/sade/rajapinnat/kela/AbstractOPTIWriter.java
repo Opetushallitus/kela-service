@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
+import org.apache.cxf.jaxrs.client.ServerWebApplicationException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -52,10 +53,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
-/**
- * 
- * @author Markus
- */
+
 @Configurable
 public abstract class AbstractOPTIWriter {
 	protected enum OrgType {
@@ -151,6 +149,10 @@ public abstract class AbstractOPTIWriter {
     protected String koulutuskoodisto;
     protected String kelaOpintoalakoodisto;
     protected String kelaKoulutusastekoodisto;
+
+	protected String ophOpintoalakoodisto;
+    protected String ophKoulutusastekoodisto;
+
     
     private String fileLocalName=null;
     
@@ -232,7 +234,7 @@ public abstract class AbstractOPTIWriter {
     }
     
     protected byte[] toLatin1(String text) {
-        return text.getBytes(LATIN1);
+        return (text.replace('\n', ' ')+"\n").getBytes(LATIN1);
     }
     
     @Value("${exportdir}")
@@ -253,11 +255,6 @@ public abstract class AbstractOPTIWriter {
     @Value("${en-uri}")
     public void setKieliEn(String kieliEn) {
         this.kieliEn = kieliEn;
-    }
-
-    @Value("${koodisto-uris.tutkintokela}")
-    public void setKelaTutkintokoodisto(String kelaTutkintokoodisto) {
-        this.kelaTutkintokoodisto = kelaTutkintokoodisto;
     }
     
     @Value("${koodisto-uris.oppilaitostyyppikela}")
@@ -280,10 +277,21 @@ public abstract class AbstractOPTIWriter {
         this.kelaOpintoalakoodisto = kelaOpintoalakoodisto;
     }
     
+    @Value("${koodisto-uris.opintoalaoph}")
+    public void setOphOpintoalakoodisto(String ophOpintoalakoodisto) {
+        this.ophOpintoalakoodisto = ophOpintoalakoodisto;
+    }
+    
+    @Value("${koodisto-uris.koulutusasteoph}")
+    public void setOphKoulutusastekoodisto(String ophKoulutusastekoodisto) {
+        this.ophKoulutusastekoodisto = ophKoulutusastekoodisto;
+    }
+    
     @Value("${koodisto-uris.koulutusastekela}")
     public void setKelaKoulutusastekoodisto(String kelaKoulutusastekoodisto) {
         this.kelaKoulutusastekoodisto = kelaKoulutusastekoodisto;
     }
+
     
     protected List<KoodiType> getKoodisByUriAndVersio(String koodiUri) {
         return this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
@@ -513,10 +521,10 @@ public abstract class AbstractOPTIWriter {
 	    writes = 0;
 		try {
 			bostr = new BufferedOutputStream(new FileOutputStream(new File(getFileName())));
-			bostr.write(toLatin1(getAlkutietueWithCheck() + "\n"));
+			bostr.write(toLatin1(getAlkutietueWithCheck()));
 			bostr.flush();
 			composeRecords();
-			bostr.write(toLatin1(convertedLopputietue(writes) + "\n"));
+			bostr.write(toLatin1(convertedLopputietue(writes)));
 			bostr.flush();
 			bostr.close();
 			LOG.info(String.format(INFO_MESS_1, writes, writesTries-writes));
@@ -533,6 +541,11 @@ public abstract class AbstractOPTIWriter {
 	
 	public void stop() {
 		info(this.getFileIdentifier()+" generation stopping.");
+		try {
+			bostr.close();
+		} catch (IOException e) {
+			//well, we tried...
+		}
 		stopRequest=true;
     }
 	
@@ -545,8 +558,10 @@ public abstract class AbstractOPTIWriter {
 		String line = null;
 		while(true) {
 			try {
-				line=composeRecord(args);
+				line=composeRecord(args); 
 				break;
+			}catch(ServerWebApplicationException e /*CXF may throw*/) {
+				handleException(e);					 
 			} catch(ClientWebApplicationException e /*CXF may throw*/) {
 				handleException(e);
 			}
@@ -565,13 +580,13 @@ public abstract class AbstractOPTIWriter {
 		if (errorCount>getErrorLimit()) {
 			String errStr=String.format(ERR_MESS_13, getErrorLimit());
 			LOG.error(errStr);
-			throw new RuntimeException(errStr);
+			throw new UserStopRequestException();
 		}
 		try {
 			Thread.sleep(getErrorCoolDown()*1000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
-			throw new RuntimeException("Interrupted thread."+e1);
+			throw new UserStopRequestException();
 		}
 	}
 	
@@ -623,6 +638,11 @@ public abstract class AbstractOPTIWriter {
     	KelaGenerator.info("("+getFileIdentifier()+") : "+infoMsg);
 	}
     
+    protected void fatalError(int i, Object... args) throws UserStopRequestException {
+    	KelaGenerator.error("("+getFileIdentifier()+i+") : "+getErrors()[i-1],args);
+		throw new UserStopRequestException();
+	}
+    
     protected void error(int i, Object... args) throws OPTFormatException {
     	KelaGenerator.error("("+getFileIdentifier()+i+") : "+getErrors()[i-1],args);
 		throw new OPTFormatException();
@@ -632,6 +652,10 @@ public abstract class AbstractOPTIWriter {
     	KelaGenerator.warn("("+getFileIdentifier()+i+") : " +getWarnings()[i-1],args);
 	}
 
+    protected void debug(int i, Object... args) {
+    	KelaGenerator.debug("("+getFileIdentifier()+i+") : " +getWarnings()[i-1],args);
+    }
+    
     protected void info(int i, Object... args) {
     	KelaGenerator.info("("+getFileIdentifier()+i+") : "+getInfos()[i-1],args);
 	}
@@ -680,13 +704,17 @@ public abstract class AbstractOPTIWriter {
 	    	warn(String.format(ERR_MESS_11, koodistoKoodi.getNimi(), humanname));
 	    	return "";
 	    }
+	    return getTutkintotunniste(koodiUri, humanname);
+    }
+    
+	protected String getTutkintotunniste(String koodiUri, String humanname) throws OPTFormatException {
 	    List<KoodiType> koodis = this.getKoodisByUriAndVersio(koodiUri);        
 	    KoodiType koulutuskoodi = null;
 	    if (!koodis.isEmpty()) {
 	        koulutuskoodi = koodis.get(0);
 	        return StringUtils.rightPad(koulutuskoodi.getKoodiArvo(),6,"kela - tutkintotunniste");
 	    }
-	    error(String.format(ERR_MESS_9,koodistoKoodi.getUri()));
+	    error(String.format(ERR_MESS_9,koodiUri));
 	    return null; //not reached
     }
     

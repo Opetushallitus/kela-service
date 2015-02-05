@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
@@ -38,10 +39,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class KelaGenerator implements Runnable {
@@ -74,6 +71,13 @@ public class KelaGenerator implements Runnable {
     @Autowired
     ProducerTemplate producerTemplate;
     
+    @Value("${socksProxy:off}")
+    public void setSocksProxy(String socksProxyOn) {
+    	if (socksProxyOn.equalsIgnoreCase("ON")) {
+    		setSocksProxyOn();
+    	}
+    }
+	
     long startTime = 0;
     long endTime = 0;
     
@@ -243,6 +247,15 @@ public class KelaGenerator implements Runnable {
         return targetPath;
     }
     
+    public static void setSocksProxyOn() {
+        Properties props = System.getProperties();
+        props.put("socksProxyHost", "127.0.0.1");
+        LOG.info("socksProxyHost: 127.0.0.1");
+        props.put("socksProxyPort", "9090");
+        LOG.info("socksProxyPort: 9090");
+        System.setProperties(props);
+    }
+    
     public static void main (String[] args) {
     	if (args.length>0) {
     		LOG.info("mode: " +Arrays.toString(args));
@@ -379,7 +392,6 @@ public class KelaGenerator implements Runnable {
 	@Override
 	public void run() {
 		if (!runState.equals(RunState.IDLE)) return;
-		
 		Ticker ticker  = new Ticker(this, tickerInterval);
 		Thread tickerTrhead =  new Thread(ticker);
 		startTime = System.currentTimeMillis();

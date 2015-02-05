@@ -9,12 +9,6 @@ import org.apache.commons.lang.time.FastDateFormat;
 
 import fi.vm.sade.rajapinnat.kela.tkuva.util.KelaUtil;
 
-/**
- * 
- * @author Jussi Jartamo
- * 
- *         TKUVAALKU_VAL.doc/htr
- */
 public class TKUVAALKU {
     private byte[] siirtotunnus; // pituus 15: "OUYHVA" tasoitettu alkuun, loppu
                                  // tyhja!
@@ -28,10 +22,10 @@ public class TKUVAALKU {
     private byte[] organisaationimi;// pituus 63: tiedonvalittaja!
     private byte[] aineistonnimi; // pituus 40: aineiston selvakielinen
     // nimi!
-    private byte[] varatila2; // pituus 11
+    private byte[] varatila2; // pituus 61
 
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(150);
+        ByteBuffer buffer = ByteBuffer.allocate(200);
         buffer.put(siirtotunnus);
         buffer.put(tietuetyyppi);
         buffer.put(ajopaivamaara);
@@ -44,7 +38,7 @@ public class TKUVAALKU {
         buffer.put(aineistonnimi);
 
         buffer.put(varatila2);
-        // buffer.compact(); no need for this as buffer is allocated 150 which
+        // buffer.compact(); no need for this as buffer is allocated 200 which
         // should be always the size
 
         return buffer.array();
@@ -126,7 +120,7 @@ public class TKUVAALKU {
         private static final Charset LATIN1 = Charset.forName("ISO8859-1");
         private static final FastDateFormat ajopaivaFormatter = FastDateFormat.getInstance("ddMMyyyy");
 
-        // private byte[] siirtotunnus; // pituus 15: "OUYHVA" tasoitettu
+        private byte[] siirtotunnus; // pituus 15
         // alkuun,
         // loppu tyhja!
         // private byte[] tietuetyyppi; // pituus 1: "A"
@@ -141,12 +135,18 @@ public class TKUVAALKU {
         private byte[] aineistonnimi; // pituus 40: aineiston selvakielinen
                                       // nimi!
 
-        // private byte[] varatila2; // pituus 11
+        // private byte[] varatila2; // pituus 61
+        
 
+        public Builder setSiirtotunnus(String siirtotunnus) {
+            this.siirtotunnus =  toLatin1(siirtotunnus, 15);
+            return this;
+        }
+        
         public Builder setAjopaivamaara(Date ajopaivamaara) {
             this.ajopaivamaara = toLatin1(ajopaivaFormatter.format(ajopaivamaara), 8);
             return this;
-        }
+        }      
 
         public Builder setOrganisaationimi(String organisaationimi) {
             this.organisaationimi = toLatin1(organisaationimi, 63);
@@ -169,7 +169,7 @@ public class TKUVAALKU {
 
         public TKUVAALKU build() {
             TKUVAALKU t = new TKUVAALKU();
-            t.setSiirtotunnus(toLatin1("OUYHVA", 15));
+            t.setSiirtotunnus(siirtotunnus);
             t.setTietuetyyppi(toLatin1("A", 1));
             t.setAjopaivamaara(ajopaivamaara);
             t.setSiirtolaji(toLatin1("OPISK", 5));
@@ -179,7 +179,7 @@ public class TKUVAALKU {
             t.setOrganisaationimi(organisaationimi);
             t.setAineistonnimi(aineistonnimi);
 
-            t.setVaratila2(toLatin1("", 11));
+            t.setVaratila2(toLatin1("", 61));
             return t;
         }
     }
