@@ -29,35 +29,27 @@ import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoCriteriaType;
 import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoVersioSelectionType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTITU extends AbstractOPTIWriter {
 
 	private final static String [] errors = {
-		"could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values."
+		"could not write tutkintokoodisto (Kelatutkinto '%s', oph-tutkinto: '%s') : invalid values.",
 	};
     
-    private String FILEIDENTIFIER;
+	private final static String [] warnings = {
+		"no value for koulutuskoodisto (%s) koodi (%s) in oph ophKoulutusastekoodisto (%s)",
+		"no value for koulutuskoodisto (%s) koodi (%s) in oph ophOpintoalakoodisto (%s)",
+		"no value for ophopintoalakoodisto (%s) koodi (%s) in oph kelaopintoala (%s)",
+		"no value for ophKoulutusastekoodisto (%s) koodi (%s) in oph kelakoulutusalakoodisto (%s)",
+	};
+
+	private String FILEIDENTIFIER;
     private String ALKUTIETUE;
     private String LOPPUTIETUE;
 
     public WriteOPTITU() {
         super();
-    }
-    
-    private String getKoulutusasteenYksiloivaTunniste(KoodiType kelaTutkinto) throws OPTFormatException {
-        KoodiType koulutuastekoodi = getSisaltyvaKoodi(kelaTutkinto, kelaKoulutusastekoodisto);
-        return (koulutuastekoodi == null) ?	StringUtils.leftPad("", 10, '0') : numFormatter(koulutuastekoodi.getKoodiArvo(), 10, "koulutusastekoodi");
-    }
-
-    private String getOpintoalanYksiloivaTunniste(KoodiType kelaTutkinto) throws OPTFormatException {
-        
-        KoodiType opintoalakoodi = getSisaltyvaKoodi(kelaTutkinto, kelaOpintoalakoodisto);
-        return (opintoalakoodi == null) ? StringUtils.leftPad("", 10, '0') : numFormatter(opintoalakoodi.getKoodiArvo(), 10, "opintoalakoodi");
     }
 
     private String getKoodiPvm(XMLGregorianCalendar xgc) {
@@ -70,42 +62,58 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     private String getOphTutkintotunniste(KoodiType ophTutkinto) throws OPTFormatException {
     	return StringUtils.rightPad(ophTutkinto.getKoodiArvo(), 6, "ophtutkinto - koodiarvo");
     }
-
-    private String getKelaTutkintoTunniste(KoodiType kelaTutkinto) {
-    	return StringUtils.leftPad("",10);
-    }
-
+    
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException {
         SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();
-        criteria.setKoodistoUri(kelaTutkintokoodisto);
+        criteria.setKoodistoUri(koulutuskoodisto);
         criteria.setKoodistoVersioSelection(SearchKoodisByKoodistoVersioSelectionType.LATEST);
-        
-        List<KoodiType> koodit = this.koodiService.searchKoodisByKoodisto(criteria);
-        for (KoodiType curKelaTutkinto : koodit) {
-            KoodiType curOphTutkinto = getRinnasteinenKoodi(curKelaTutkinto, koulutuskoodisto); // "tutkintokela" "koulutus"
-            if (curOphTutkinto != null) {
-    			try {
-    				writeRecord(curKelaTutkinto, curOphTutkinto);
-    			} catch (OPTFormatException e) {
-    				LOG.error(String.format(errors[0], curKelaTutkinto.getKoodiArvo(),curOphTutkinto.getKoodiArvo()));
-    			} 
-            }
+
+        List<KoodiType> koulutuskoodit = this.koodiService.searchKoodisByKoodisto(criteria);
+
+        for (KoodiType curKoulutuskoodi : koulutuskoodit) {
+			KoodiType koulutusasteoph =getSisaltyvaKoodi(curKoulutuskoodi, ophKoulutusastekoodisto);
+			if (null == koulutusasteoph) {
+				debug(1,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophKoulutusastekoodisto);
+				continue;
+			}			
+			KoodiType koulutusastekela = getRinnasteinenKoodi(koulutusasteoph, kelaKoulutusastekoodisto);
+			if (null == koulutusastekela) {
+				debug(4,ophKoulutusastekoodisto,koulutusasteoph.getKoodiArvo(), kelaKoulutusastekoodisto);
+				continue;
+			}
+			
+			KoodiType koulutusalaoph = getSisaltyvaKoodi(curKoulutuskoodi, ophOpintoalakoodisto);
+        	if (null == koulutusalaoph) {
+        		debug(2,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophOpintoalakoodisto);
+        		continue;
+        	}
+        	KoodiType koulutusalakela = getRinnasteinenKoodi(koulutusalaoph, kelaOpintoalakoodisto);
+       		if (null == koulutusalakela) {
+       			debug(3,ophOpintoalakoodisto,koulutusalaoph.getKoodiArvo(), kelaOpintoalakoodisto);
+       			continue;
+       		}
+			try {
+				writeRecord(curKoulutuskoodi, koulutusastekela, koulutusalakela);
+			} catch (OPTFormatException e) {
+				LOG.error(String.format(errors[0], curKoulutuskoodi.getKoodiArvo(),curKoulutuskoodi.getKoodiArvo()));
+			} 
         }
 	}
 
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
-		KoodiType kelaTutkinto = (KoodiType) args[0];
-		KoodiType ophTutkinto = (KoodiType) args[1];
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //26 fields + EOL
-                getKelaTutkintoTunniste(kelaTutkinto),//TUT_ID
-                getOphTutkintotunniste(ophTutkinto),//Tilastokeskuksen koulutuskoodi
+		KoodiType koulutusKoodi = (KoodiType) args[0];
+    	KoodiType koulutusastekela = (KoodiType) args[1];
+        KoodiType koulutusalakela =(KoodiType) args[2];
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //26 fields
+        		StringUtils.leftPad("",10),
+                getOphTutkintotunniste(koulutusKoodi),//Tilastokeskuksen koulutuskoodi
                 DEFAULT_DATE,//Alkupaiva, voimassaolon alku
                 StringUtils.leftPad("", 10),//ALA_ID
                 StringUtils.leftPad("", 3),//Ammattitutkinto
                 StringUtils.leftPad("", 10),//KAS_ID
-                getKoodiPvm(kelaTutkinto.getVoimassaLoppuPvm()),//Loppupaiva, voimassaolon loppu
+                getKoodiPvm(koulutusKoodi.getVoimassaLoppuPvm()),//Loppupaiva, voimassaolon loppu
                 StringUtils.leftPad("", 1),//TUT_HYVAKSYTTY
                 StringUtils.leftPad("", 1),//Kehityssuunnitelman mukainen tutkinto
                 StringUtils.leftPad("", 1),//Mahdollista suorittaa oppisopimuksella
@@ -123,9 +131,9 @@ public class WriteOPTITU extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 5),//TUT_YKSIKKO4
                 DEFAULT_DATE,//Viimeisin paivityspaiva
                 StringUtils.leftPad("", 30),//Viimeisin paivittaja
-                getOpintoalanYksiloivaTunniste(kelaTutkinto),//UALA_ID
-                getKoulutusasteenYksiloivaTunniste(kelaTutkinto),//UKAS_ID
-                "\n");
+                numFormatter(koulutusalakela.getKoodiArvo(),10,"koulutusa-ala-kela"),
+                numFormatter(koulutusastekela.getKoodiArvo(),10,"koulutusa-aste-kela")
+                );
 		return record;
 	}
 
@@ -166,7 +174,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 
 	@Override
 	public String[] getWarnings() {
-		return null;
+		return warnings;
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import javax.ws.rs.QueryParam;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.task.TaskExecutor;
@@ -36,17 +37,26 @@ import org.springframework.stereotype.Component;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
+import fi.vm.sade.organisaatio.resource.api.KelaResource;
 import fi.vm.sade.rajapinnat.kela.KelaGenerator;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 
 @Path("/kela")
 @Component
 @Api(value = "/kela", description = "Kelan operaatiot")
-public class KelaResource {
+public class KelaResourceImpl  implements KelaResource {
 	 
     @Autowired
     @Qualifier("kelaTask")
 	private TaskExecutor taskExecutor;
 
+    @Autowired
+    @Qualifier("kelaDAO")
+    protected KelaDAO kelaDAO;
+    
 	public enum Command {
     	START,
     	STOP,
@@ -161,4 +171,125 @@ public class KelaResource {
 		}
         return stringBuilder.toString();
     }
+
+    @Value("${socksProxy:off}")
+    public void setSocksProxy(String socksProxyOn) {
+    	if (socksProxyOn.equalsIgnoreCase("ON")) {
+    		KelaGenerator.setSocksProxyOn();
+    	}
+    }
+    
+	private boolean ylempi(String s) {
+		return s!=null && (s.equalsIgnoreCase("060") || s.equalsIgnoreCase("061"));
+	}
+
+	private boolean alempi(String s) {
+		return s!=null && (s.equalsIgnoreCase("060") || s.equalsIgnoreCase("050"));
+	}
+	
+	@Override
+	public String tutkinnontaso(String hakukohdeOid) {
+		Hakukohde hakukohde = haeHakukohde(hakukohdeOid);
+		boolean ylempia=false;
+		boolean alempia=false;
+		for (KoulutusmoduuliToteutus komoto : hakukohde.getKoulutukset()) {
+			String komotoTutkinnonTaso = kelaDAO.getKKTutkinnonTaso(komoto);
+			if (komotoTutkinnonTaso!=null) {
+				if (!ylempia) {
+					ylempia = ylempi(komotoTutkinnonTaso);
+				}
+				if (!alempia) {
+					alempia = alempi(komotoTutkinnonTaso);
+				}
+				if (ylempia && alempia) {
+					break;
+				}
+			}
+		}
+		/*
+		 * jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
+		 */
+		if(ylempia && !alempia) {
+			return "061";
+		}
+		/*
+		 * jos pelkkiä alempia => 050  (alempi kk.tutkinto)
+		 */
+		if(!ylempia && alempia) {
+			return "050";
+		}
+		/*
+		 * jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
+		 */
+		if(ylempia && alempia) {
+			return "060";
+		}
+		/*
+		 *  jos ei kumpiakaan : koulutuksen tasoa ei merkitä
+		 */
+		return "   ";
+		
+	}
+	
+
+	/*
+	 * Jos uri = koulutusasteoph2002_62 tai koulutusasteoph2002_71 -> AMK
+	 */
+	private boolean amk(String s) {
+		return s!=null && (s.startsWith("koulutusasteoph2002_62#") || s.startsWith("koulutusasteoph2002_71#"));
+	}
+	
+	/*
+	 * Jos uri = koulutusasteoph2002_63 tai koulutusasteoph2002_72 tai koulutusasteoph2002_73 tai koulutusasteoph2002_80 tai koulutusasteoph2002_81 tai koulutusasteoph2002_82 ->yliopisto
+	 */
+
+	private boolean yliopisto(String s) {
+		return s!=null && (
+				s.startsWith("koulutusasteoph2002_63#") || s.startsWith("koulutusasteoph2002_72#") ||
+				s.startsWith("koulutusasteoph2002_73#") || s.startsWith("koulutusasteoph2002_80#") ||
+				s.startsWith("koulutusasteoph2002_81#") || s.startsWith("koulutusasteoph2002_82#"));
+	}
+
+	private Hakukohde haeHakukohde(String oid) {
+		if (oid==null) {
+			throw new RuntimeException("hakukohde oid on tyhjä");
+		}
+		Hakukohde hakukohde = kelaDAO.findHakukohdeByOid(oid);
+		if (hakukohde==null) {
+			throw new RuntimeException("hakukohde (oid:"+oid+") ei löydy hakukohteita");
+		}
+		return hakukohde;
+	}
+
+	@Override
+	public String koulutusaste(String hakukohdeOid) {
+		Hakukohde hakukohde = haeHakukohde(hakukohdeOid);
+		boolean amk=false;
+		boolean yliopisto=false;
+		for (KoulutusmoduuliToteutus komoto : hakukohde.getKoulutukset()) {
+			Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
+			if (koulutusmoduuli != null &&  koulutusmoduuli.getKoulutusaste_uri() != null) {
+				String koulutusaste_uri = koulutusmoduuli.getKoulutusaste_uri();
+				if (!amk) {
+					amk = amk(koulutusaste_uri);
+				}
+				if (!yliopisto) {
+					yliopisto = yliopisto(koulutusaste_uri);
+				}
+				if (amk && yliopisto) {
+					break; //should not be!
+				}
+			}
+		}
+		if (amk && yliopisto) {
+			return "ERROR ";
+		}
+		if (amk) {
+			return "OUHARA";
+		}
+		if (yliopisto) {
+			return "OUHARE";
+		}
+		return "OUYHVA"; //2.asteen koulutus (default)
+	}
 }

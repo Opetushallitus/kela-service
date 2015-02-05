@@ -26,9 +26,7 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
-/**
- * @author Janne
- */
+
 @Component
 @Configurable
 public class WriteOPTIOR extends AbstractOPTIWriter {
@@ -73,11 +71,11 @@ public class WriteOPTIOR extends AbstractOPTIWriter {
 	public String composeRecord(Object... args) throws OPTFormatException {
 		Organisaatio org = getOrganisaatio((OrganisaatioPerustieto) args[0]);
 		OrgType orgType = (OrgType) args[1];
-		String record = String.format("%s%s%s%s", // 4 fields + EOL
+		String record = String.format("%s%s%s", // 4 fields
 				getOPPIL_NRO(org, orgType), 
 				getOPJNO(org, orgType), 
-				getOID(org, orgType), 
-				"\n");
+				getOID(org, orgType)
+				);
 		return record;
 	}
 

@@ -25,10 +25,6 @@ import org.springframework.stereotype.Component;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
-/**
- * 
- * @author Markus
- */
 @Component
 @Configurable
 public class WriteOPTIOL extends AbstractOPTIWriter {
@@ -74,7 +70,7 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
 		OrganisaatioPerustieto curOppilaitos = (OrganisaatioPerustieto) args[0];
 		OrgType organisaatioTyyppi = (OrgType) args[1];
         Organisaatio orgE = kelaDAO.findOrganisaatioByOid(curOppilaitos.getOid());
-        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//19 fields + EOL
+        String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",//19 fields
                 _getOppilaitosNro(curOppilaitos),//OPPIL_NRO
                 getOrgOid(orgE),
                 organisaatioTyyppi.equals(OrgType.OPPILAITOS) ? "02" : "03",
@@ -96,8 +92,8 @@ public class WriteOPTIOL extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 15),//Tyhjaa
                 StringUtils.leftPad("", 6),//HANKI-koulutuksen kayttama menolaji
                 StringUtils.leftPad("", 20),//HANKI-koulutuksen kayttama tilikoodi
-                numFormatter("0", 10, null), //0-merkkeja
-                "\n");
+                numFormatter("0", 10, null) //0-merkkeja
+                );
         return record;
 	}
 

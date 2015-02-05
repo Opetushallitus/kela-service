@@ -52,7 +52,6 @@ public class KelaDAOImpl implements KelaDAO {
     private EntityManager organisaatioEm;
     
     private static final String KAYNTIOSOITE = "kaynti";
-    private static final String PUHELIN = "puhelin";
     private static final String POSTI = "posti";
     private static final String WWW = "Www";
     
@@ -85,7 +84,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Hakukohde findHakukohdeByOid(String oid) {
     	try {
-            return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
+            return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=? ")//and tila='JULKAISTU'")
                                 .setParameter(1, oid)
                                 .getSingleResult();
         } catch (NoResultException ex) {
@@ -99,7 +98,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Koulutusmoduuli getKoulutusmoduuli(String oid) {
         try {
-        	Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) tarjontaEm.createQuery("FROM "+Koulutusmoduuli.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
+        	Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) tarjontaEm.createQuery("FROM "+Koulutusmoduuli.class.getName()+" WHERE oid=? ")//and tila='JULKAISTU'")
             .setParameter(1, oid)
             .getSingleResult();
             return koulutusmoduuli;
@@ -113,7 +112,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid) {
         try {
-        	KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) tarjontaEm.createQuery("FROM "+KoulutusmoduuliToteutus.class.getName()+" WHERE oid=? and tila='JULKAISTU'")
+        	KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) tarjontaEm.createQuery("FROM "+KoulutusmoduuliToteutus.class.getName()+" WHERE oid=? ")// and tila='JULKAISTU'")
             .setParameter(1, oid)
             .getSingleResult();
             return koulutusmoduuliToteutus;
@@ -144,7 +143,7 @@ public class KelaDAOImpl implements KelaDAO {
 				"	koulutusmoduuli km2,"+
 				"	koulutus_sisaltyvyys_koulutus ksk "+
 				"   where "+
-				" km.tila='JULKAISTU' and "+
+				//" km.tila='JULKAISTU' and "+
 				" km.id=ks.parent_id and "+
 				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
 				" ksk.koulutusmoduuli_id=km2.id and "+
@@ -176,9 +175,9 @@ public class KelaDAOImpl implements KelaDAO {
 				" where "+
 				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
 				" ksk.koulutusmoduuli_id=km.id and  "+
-				" km.tila='JULKAISTU' and "+
+				//" km.tila='JULKAISTU' and "+
 				" ks.parent_id=km2.id and "+
-				" km2.tila='JULKAISTU' and "+
+				//" km2.tila='JULKAISTU' and "+
 				" km2.oid = ?";
 		for (String oid : (List<String>) tarjontaEm.createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
 			_getChildrenOids(oid, resultList);
@@ -204,8 +203,6 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         try {
-        	int a=0;
-        	a++;
             return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
@@ -454,4 +451,97 @@ public class KelaDAOImpl implements KelaDAO {
 		}
 		return organisaatioPerustiedot;
     }
+    
+	private boolean emptyString(String s) {
+		return (s==null || s.length()==0);
+	}
+	
+	private boolean ylempi(String s) {
+		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='7';
+	}
+
+	private boolean alempi(String s) {
+		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='6';
+	}
+
+	private boolean kk_tut_taso(String s) {
+		return ylempi(s) || alempi(s);
+	}
+	
+    @Override
+	public String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto)  {
+		/*
+		 * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
+		 */
+
+		String koulutus_uri;
+		String kandi_koulutus_uri;
+		Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
+
+		if (komoto==null || koulutusmoduuli==null) {
+			return "   "; //ei JULKAISTU
+		}
+		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
+		kandi_koulutus_uri = emptyString(komoto.getKandi_koulutus_uri()) ? koulutusmoduuli.getKandi_koulutus_uri() : komoto.getKandi_koulutus_uri();
+
+		if (!kk_tut_taso(koulutus_uri) ) {
+			return "   "; //ei korkeakoulun ylempi eikä alempi
+		}
+
+		/*
+		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja kandi_koulutus_uri ei tyhjä => 060 = alempi+ylempi
+		 */
+		if (ylempi(koulutus_uri) && !emptyString(kandi_koulutus_uri)) {
+			 return "060";
+		}
+		
+		/*
+		 * 3) haetaan lapsi- ja emokoulutusmoduulit (ei sisaruksia l. toteutuksia) yo. lisäksi:
+		 */
+		String rootOid=koulutusmoduuli.getOid();
+		List<String> relativesList = getChildrenOids(rootOid);
+		relativesList.addAll(getParentOids(rootOid));
+		relativesList.add(rootOid);
+
+		boolean ylempia=false;
+		boolean alempia=false;
+		for (String oid : relativesList) {
+			koulutusmoduuli = getKoulutusmoduuli(oid);
+			if (koulutusmoduuli!=null) {
+				if (!ylempia) {
+					ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
+				}
+				if (!alempia) {
+					alempia = alempi(koulutusmoduuli.getKoulutusUri());
+				}
+				if (ylempia && alempia) {
+					break;
+				}
+			}
+		}
+		
+		/*
+		 * 4) jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
+		 */
+		if(ylempia && !alempia) {
+			return "061";
+		}
+		/*
+		 * 5) jos pelkkiä alempia => 050  (alempi kk.tutkinto)
+		 */
+		if(!ylempia && alempia) {
+			return "050";
+		}
+		/*
+		 * 6) jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
+		 */
+		if(ylempia && alempia) {
+			return "060";
+		}
+		/*
+		 * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä
+		 */
+		return "   ";
+	}
+
 }

@@ -4,11 +4,6 @@ import java.util.Date;
 
 import org.apache.commons.lang.time.FastDateFormat;
 
-/**
- * 
- * @author Jussi Jartamo
- * 
- */
 public class KelaUtil {
 
     public static final char TYHJA = (char) 0x20;
@@ -26,6 +21,11 @@ public class KelaUtil {
     public static String createTiedostoNimiYhva14(Date tiedostonLuontiPaivamaara) {
         StringBuilder nimi = new StringBuilder();
         nimi.append("RO.WOT.SR.D").append(FORMATTER.format(tiedostonLuontiPaivamaara)).append(".YHVA14");
+        return nimi.toString();
+    }
+    public static String createTiedostoNimiOuhare(Date tiedostonLuontiPaivamaara) {
+        StringBuilder nimi = new StringBuilder();
+        nimi.append("RO.WOT.SR.D").append(FORMATTER.format(tiedostonLuontiPaivamaara)).append(".OUHARY");
         return nimi.toString();
     }
 }
