@@ -102,6 +102,7 @@ public class KelaResourceImpl  implements KelaResource {
     }
     
     private void pingKelaDao() {
+    	System.out.println("pingKelaDao");
     	kelaDAO.getKoulutusmoduuliToteutus("");
     }
     
