@@ -81,6 +81,7 @@ public class OrganisaatioContainer {
     
     private void checkStop() throws UserStopRequestException {
     	if (stopThread) {
+    		stopThread=false;
     		throw new UserStopRequestException();
     	}
     }
