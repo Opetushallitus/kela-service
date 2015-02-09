@@ -101,12 +101,18 @@ public class KelaResourceImpl  implements KelaResource {
     	return null; //should never be reached
     }
     
+    private void pingKelaDao() {
+    	kelaDAO.getKoulutusmoduuliToteutus("");
+    }
+    
+    String CONTEXT_FILE = "META-INF/spring/context/kela-opti-context.xml";
     private String start(String options) {
     	if (kelaGenerator!=null && !KelaGenerator.startableStates.contains(kelaGenerator.getThreadState().getRunState())) {
     		return Response.ALREADY_RUNNING.name();
     	}
     	try {
-    		final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
+    		pingKelaDao();
+    		final ApplicationContext context = new ClassPathXmlApplicationContext(CONTEXT_FILE);
     		kelaGenerator = context.getBean(KelaGenerator.class);
     		kelaGeneratorThread = new Thread((Runnable) kelaGenerator);
     		if (!StringUtils.isEmpty(options)) {

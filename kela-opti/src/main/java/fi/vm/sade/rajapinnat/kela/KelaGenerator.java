@@ -260,7 +260,7 @@ public class KelaGenerator implements Runnable {
     	if (args.length>0) {
     		LOG.info("mode: " +Arrays.toString(args));
     	}
-        final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/bundle-context.xml");
+        final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/kela-opti-context.xml");
         KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
         if(args.length==1 && args[0].startsWith("--options=")) {
         	kelaGenerator.setOptions(args[0].split("=")[1]);
