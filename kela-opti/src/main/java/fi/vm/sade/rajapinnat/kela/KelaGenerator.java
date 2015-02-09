@@ -391,7 +391,7 @@ public class KelaGenerator implements Runnable {
     private RunState runState = RunState.IDLE;
 	@Override
 	public void run() {
-		if (!runState.equals(RunState.IDLE)) return;
+		if (!KelaGenerator.startableStates.contains(runState)) return;
 		Ticker ticker  = new Ticker(this, tickerInterval);
 		Thread tickerTrhead =  new Thread(ticker);
 		startTime = System.currentTimeMillis();
