@@ -87,6 +87,7 @@ public class OrganisaatioContainer {
     }
     
     public void fetchOrganisaatiot() throws UserStopRequestException {
+    	stopThread=false;
     	long startTime = System.currentTimeMillis();
         oppilaitosoidOppilaitosMap = new HashMap<String, OrganisaatioPerustieto>();
         oppilaitokset = new ArrayList<OrganisaatioPerustieto>();

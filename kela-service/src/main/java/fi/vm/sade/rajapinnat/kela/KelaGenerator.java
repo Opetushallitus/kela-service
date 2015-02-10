@@ -118,7 +118,7 @@ public class KelaGenerator implements Runnable {
      * Generates all KELA-OPTI transfer files currently implemented
 	 * @throws UserStopRequestException 
      */
-    public void generateKelaFiles() throws UserStopRequestException {
+    public void generateKelaFiles() throws UserStopRequestException, Exception {
         long startTime = System.currentTimeMillis();
         for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
         	writeKelaFile(optiWriter);
@@ -169,7 +169,7 @@ public class KelaGenerator implements Runnable {
     }
     
     private AbstractOPTIWriter inTurn;
-    private void writeKelaFile(AbstractOPTIWriter kelaWriter) throws UserStopRequestException {
+    private void writeKelaFile(AbstractOPTIWriter kelaWriter) throws UserStopRequestException, Exception {
         try {
         	inTurn = kelaWriter;
             long time = System.currentTimeMillis();
@@ -181,6 +181,7 @@ public class KelaGenerator implements Runnable {
         } catch (Exception ex) {
         	LOG.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         } 
     }
     
@@ -254,18 +255,6 @@ public class KelaGenerator implements Runnable {
         props.put("socksProxyPort", "9090");
         LOG.info("socksProxyPort: 9090");
         System.setProperties(props);
-    }
-    
-    public static void main (String[] args) {
-    	if (args.length>0) {
-    		LOG.info("mode: " +Arrays.toString(args));
-    	}
-        final ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context/kela-opti-context.xml");
-        KelaGenerator kelaGenerator = context.getBean(KelaGenerator.class);
-        if(args.length==1 && args[0].startsWith("--options=")) {
-        	kelaGenerator.setOptions(args[0].split("=")[1]);
-        };
-        kelaGenerator.run();
     }
 
     public void stop() {
@@ -349,10 +338,10 @@ public class KelaGenerator implements Runnable {
         selectedOptiWriters.addAll(allOptiWriters.values()); //default
     }
 
-    public void setOptions(String opts) {
-    	if (!KelaGenerator.startableStates.contains(runState)) {
+    public void setOptions(String opts) throws Exception {
+    	if(!KelaGenerator.startableStates.contains(runState)) {
     		LOG.error("options may only be set when process is not running or run.");
-    		return;
+    		throw new Exception("option error");
     	}
 
     	selectedOptiWriters =  new LinkedList<AbstractOPTIWriter>();
@@ -385,13 +374,14 @@ public class KelaGenerator implements Runnable {
     }
 
     private void releaseLogger() {
-   		LOG.removeAppender(fa);
+   		//LOG.removeAppender(fa);
     }
     
     private RunState runState = RunState.IDLE;
 	@Override
 	public void run() {
 		if (!KelaGenerator.startableStates.contains(runState)) return;
+	    endTime = 0;
 		Ticker ticker  = new Ticker(this, tickerInterval);
 		Thread tickerTrhead =  new Thread(ticker);
 		startTime = System.currentTimeMillis();
