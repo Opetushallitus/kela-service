@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd 
+        http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd 
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
     <context:annotation-config/>
 
     <!-- Turn on @Autowired, @PostConstruct etc support -->
@@ -15,8 +22,6 @@
     <context:property-placeholder
             location="classpath:vtj-service.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties, file:///${user.home:''}/oph-configuration/override.properties"
             ignore-resource-not-found="true" properties-ref="defaultProps" />
-
-    
     
     <bean id="defaultProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">        
     	<property name="properties">
@@ -35,11 +40,43 @@
   		
 	</bean>
 
+    <context:component-scan base-package="fi.vm.sade.rajapinnat.kela" />
+    
     <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
+    <bean id="kelaGenerator" class="fi.vm.sade.rajapinnat.kela.KelaGenerator"/>
+
+    <bean scope="singleton" class="fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService"/>
+    <bean scope="singleton" class="fi.vm.sade.organisaatio.service.search.SolrServerFactory"/>
+    
+    <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.TarjontaSearchService"/>
+    <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.SolrServerFactory"/>
+
+    <jaxws:client id="koodiPublicService"
+                serviceClass="fi.vm.sade.koodisto.service.KoodiService"
+                address="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}"/>
+
+    <jaxws:client id="koodistoPublicService"
+                  serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
+                  address="${koodisto.public.webservice.url.backend:http://NO_KOODISTO_WEBSERVICE_URL_CONFIGURED}"/>
+
+    <jaxws:client id="organisaatioService"
+                  serviceClass="fi.vm.sade.organisaatio.api.model.OrganisaatioService"
+                  address="${organisaatio.webservice.url.backend:http://NO_ORGANISAATIO_WEBSERVICE_URL_CONFIGURED}"/>
+                  
+    <jaxrs:client id="organisaatioResource"
+                  address="${organisaatio.api.rest.url}"
+                  serviceClass="fi.vm.sade.organisaatio.resource.OrganisaatioResource"
+                  inheritHeaders="true">
+        <jaxrs:providers>
+            <bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+        </jaxrs:providers>
+    </jaxrs:client>
+    
+    <!-- Let Spring create the Camel context and the Camel template, including lifecycle management such as starting and stopping them -->
+    <camel:camelContext id="kelaCamelContext">
+        <camel:template id="kelaCamelTemplate" />
+    </camel:camelContext>
 	
     <import resource="file:///${user.home:''}/oph-configuration/security-context-backend.xml"/>
-
-    <import resource="service-context.xml" />
-
-    <context:component-scan base-package="fi.vm.sade.organisaatio.resource"/>
+   
 </beans>

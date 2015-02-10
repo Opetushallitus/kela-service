@@ -13,7 +13,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * European Union Public Licence for more details.
  */
-package fi.vm.sade.organisaatio.resource;
+package fi.vm.sade.rajapinnat.kela;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

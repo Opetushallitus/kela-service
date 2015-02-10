@@ -514,7 +514,8 @@ public abstract class AbstractOPTIWriter {
 	private int writesTries = 0;
     private int writes = 0;
     
-	public void writeStream() throws UserStopRequestException {
+	public void writeStream() throws UserStopRequestException, Exception {
+		stopRequest = false;
 		createFileName();
 		writesTries = 0;
 	    writes = 0;
@@ -530,9 +531,11 @@ public abstract class AbstractOPTIWriter {
 		} catch (FileNotFoundException e) {
 			LOG.error(String.format(ERR_MESS_3, getFileName()));
 			e.printStackTrace();
+			throw e;
 		} catch (IOException e) {
 			LOG.error(String.format(ERR_MESS_4, getFileName()));
 			e.printStackTrace();
+			throw e;
 		}
 	}
     
@@ -540,11 +543,6 @@ public abstract class AbstractOPTIWriter {
 	
 	public void stop() {
 		info(this.getFileIdentifier()+" generation stopping.");
-		try {
-			bostr.close();
-		} catch (IOException e) {
-			//well, we tried...
-		}
 		stopRequest=true;
     }
 	
@@ -552,6 +550,11 @@ public abstract class AbstractOPTIWriter {
 	public void writeRecord(Object... args) throws IOException, OPTFormatException, UserStopRequestException {
 		if (stopRequest) {
 			stopRequest=false;
+			try {
+				bostr.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			throw new UserStopRequestException();
 		}
 		++writesTries;
