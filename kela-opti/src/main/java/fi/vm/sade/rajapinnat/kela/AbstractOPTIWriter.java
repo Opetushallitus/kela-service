@@ -551,6 +551,7 @@ public abstract class AbstractOPTIWriter {
 	private int errorCount=0;
 	public void writeRecord(Object... args) throws IOException, OPTFormatException, UserStopRequestException {
 		if (stopRequest) {
+			stopRequest=false;
 			throw new UserStopRequestException();
 		}
 		++writesTries;
