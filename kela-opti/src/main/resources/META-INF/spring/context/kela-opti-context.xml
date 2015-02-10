@@ -28,7 +28,7 @@
     <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.SolrServerFactory"/>
 
     <context:property-placeholder
-        location="classpath:kela-opti.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties"
+        location="classpath:kela-opti.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties, file:///${user.home:''}/oph-configuration/override.properties"
         ignore-resource-not-found="true" />
 
     <jaxws:client id="koodiPublicService"
