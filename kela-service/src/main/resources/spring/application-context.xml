@@ -43,7 +43,6 @@
     <context:component-scan base-package="fi.vm.sade.rajapinnat.kela" />
     
     <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
-    <bean id="kelaGenerator" class="fi.vm.sade.rajapinnat.kela.KelaGenerator"/>
 
     <bean scope="singleton" class="fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService"/>
     <bean scope="singleton" class="fi.vm.sade.organisaatio.service.search.SolrServerFactory"/>

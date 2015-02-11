@@ -15,7 +15,6 @@
 	      <organisaatio.api.version>2015-05</organisaatio.api.version>
       </properties>
   <modules>
-	<!-- <module>kela-opti</module> -->
 	<module>kela-api</module>
 	<module>kela-service</module>
 	<module>kela-tkuva</module>

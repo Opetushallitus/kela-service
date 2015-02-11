@@ -35,8 +35,6 @@ import org.apache.log4j.PatternLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -316,8 +314,7 @@ public class KelaGenerator implements Runnable {
 	    return f.canWrite(); 
     }
 
-    @PostConstruct
-    private void init() {
+    private void initLogger() {
 	    if (!canWriteFile(optiLog.getFileName()) ) 
 	    {
 	    	runState = RunState.LOG_FILE_ERROR;
@@ -327,7 +324,10 @@ public class KelaGenerator implements Runnable {
     	fa.setFile(optiLog.getFileName());
     	LOG.addAppender(fa);
     	fa.activateOptions();
-    	
+    }
+    
+    @PostConstruct
+    private void initWriters() {
         allOptiWriters.put(optiliWriter.getFileIdentifier().toUpperCase(), optiliWriter);
         allOptiWriters.put(optiniWriter.getFileIdentifier().toUpperCase(), optiniWriter);
         allOptiWriters.put(optiolWriter.getFileIdentifier().toUpperCase(), optiolWriter);
@@ -337,7 +337,7 @@ public class KelaGenerator implements Runnable {
         allOptiWriters.put(optiorWriter.getFileIdentifier().toUpperCase(), optiorWriter);
         selectedOptiWriters.addAll(allOptiWriters.values()); //default
     }
-
+    
     public void setOptions(String opts) throws Exception {
     	if(!KelaGenerator.startableStates.contains(runState)) {
     		LOG.error("options may only be set when process is not running or run.");
@@ -374,7 +374,7 @@ public class KelaGenerator implements Runnable {
     }
 
     private void releaseLogger() {
-   		//LOG.removeAppender(fa);
+   		LOG.removeAppender(fa);
     }
     
     private RunState runState = RunState.IDLE;
@@ -382,12 +382,14 @@ public class KelaGenerator implements Runnable {
 	public void run() {
 		if (!KelaGenerator.startableStates.contains(runState)) return;
 	    endTime = 0;
-		Ticker ticker  = new Ticker(this, tickerInterval);
-		Thread tickerTrhead =  new Thread(ticker);
-		startTime = System.currentTimeMillis();
-		runState = RunState.RUNNING;
-		tickerTrhead.start();
+	    Ticker ticker  = new Ticker(this, tickerInterval);
 		try {
+			initLogger();
+			Thread tickerThread =  new Thread(ticker);
+			startTime = System.currentTimeMillis();
+			runState = RunState.RUNNING;
+			tickerThread.start();
+
 			if (init) {
 				initReports();
 			}
