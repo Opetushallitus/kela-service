@@ -71,13 +71,11 @@ public class KelaDAOImpl implements KelaDAO {
         tarjontaDbProperties.put("hibernate.connection.url", tarjontaDbUrl);
         tarjontaDbProperties.put("hibernate.connection.username", tarjontaDbUsername);
         tarjontaDbProperties.put("hibernate.connection.password", tarjontaDbPassword);
-        tarjontaDbProperties.put("hibernate.connection.driver_class", "org.postgresql.Driver");
         
         Map<String, String> organisaatioDbProperties = new HashMap<String, String>(); 
         organisaatioDbProperties.put("hibernate.connection.url", organisaatioDbUrl);
         organisaatioDbProperties.put("hibernate.connection.username", organisaatioDbUsername);
         organisaatioDbProperties.put("hibernate.connection.password", organisaatioDbPassword);
-        organisaatioDbProperties.put("hibernate.connection.driver_class", "org.postgresql.Driver");
         
         tarjontaEm = Persistence.createEntityManagerFactory("tarjontaKela", tarjontaDbProperties).createEntityManager();
         organisaatioEm = Persistence.createEntityManagerFactory("organisaatioKela", organisaatioDbProperties).createEntityManager();

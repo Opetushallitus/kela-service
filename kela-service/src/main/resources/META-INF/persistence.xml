@@ -11,7 +11,17 @@
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL82Dialect"/>
             <property name="hibernate.jdbc.batch_size" value="20" />
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-            <property name="hibernate.connection.url" value="NOT_DEFINED"/>
+            <property name="hibernate.connection.provider_class"
+                      value="org.hibernate.connection.C3P0ConnectionProvider" />
+
+            <property name="hibernate.c3p0.max_size" value="50" />
+            <property name="hibernate.c3p0.min_size" value="0" />
+            <property name="hibernate.c3p0.acquire_increment" value="1" />
+            <property name="hibernate.c3p0.idle_test_period" value="300" />
+            <property name="hibernate.c3p0.max_statements" value="0" />
+            <property name="hibernate.c3p0.timeout" value="100" />
+            <property name="hibernate.c3p0.validate">true</property>
+            <property name="hibernate.c3p0.preferredTestQuery">select 1</property>
         </properties>
     </persistence-unit>
     <persistence-unit name="organisaatioKela" transaction-type="RESOURCE_LOCAL">
@@ -20,7 +30,17 @@
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL82Dialect"/>
             <property name="hibernate.jdbc.batch_size" value="20" />
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-            <property name="hibernate.connection.url" value="NOT_DEFINED"/>
+            <property name="hibernate.connection.provider_class"
+                      value="org.hibernate.connection.C3P0ConnectionProvider" />
+
+            <property name="hibernate.c3p0.max_size" value="50" />
+            <property name="hibernate.c3p0.min_size" value="0" />
+            <property name="hibernate.c3p0.acquire_increment" value="1" />
+            <property name="hibernate.c3p0.idle_test_period" value="300" />
+            <property name="hibernate.c3p0.max_statements" value="0" />
+            <property name="hibernate.c3p0.timeout" value="100" />
+            <property name="hibernate.c3p0.validate">true</property>
+            <property name="hibernate.c3p0.preferredTestQuery">select 1</property>
         </properties>
     </persistence-unit>
 </persistence>
