@@ -20,8 +20,8 @@
             <property name="hibernate.c3p0.idle_test_period" value="300" />
             <property name="hibernate.c3p0.max_statements" value="0" />
             <property name="hibernate.c3p0.timeout" value="100" />
-            <property name="hibernate.c3p0.validate">true</property>
-            <property name="hibernate.c3p0.preferredTestQuery">select 1</property>
+            <property name="hibernate.c3p0.validate" value="true" />
+            <property name="hibernate.c3p0.preferredTestQuery" value="select 1" />
         </properties>
     </persistence-unit>
     <persistence-unit name="organisaatioKela" transaction-type="RESOURCE_LOCAL">
@@ -39,8 +39,8 @@
             <property name="hibernate.c3p0.idle_test_period" value="300" />
             <property name="hibernate.c3p0.max_statements" value="0" />
             <property name="hibernate.c3p0.timeout" value="100" />
-            <property name="hibernate.c3p0.validate">true</property>
-            <property name="hibernate.c3p0.preferredTestQuery">select 1</property>
+            <property name="hibernate.c3p0.validate" value="true" />
+            <property name="hibernate.c3p0.preferredTestQuery" value="select 1" />
         </properties>
     </persistence-unit>
 </persistence>
