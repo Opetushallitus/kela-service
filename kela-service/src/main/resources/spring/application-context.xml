@@ -12,7 +12,8 @@
         http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd 
-        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
     <context:annotation-config/>
 
     <!-- Turn on @Autowired, @PostConstruct etc support -->
@@ -70,6 +71,11 @@
             <bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
         </jaxrs:providers>
     </jaxrs:client>
+    
+    <!-- Scheduling -->
+    <task:annotation-driven executor="kelaExecutor" scheduler="kelaScheduler"/>
+    <task:executor id="kelaExecutor" pool-size="5"/>
+    <task:scheduler id="kelaScheduler" pool-size="10"/>
     
     <!-- Let Spring create the Camel context and the Camel template, including lifecycle management such as starting and stopping them -->
     <camel:camelContext id="kelaCamelContext">
