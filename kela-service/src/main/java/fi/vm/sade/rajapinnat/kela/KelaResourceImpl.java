@@ -110,7 +110,7 @@ public class KelaResourceImpl implements KelaResource {
         }
         try {
             kelaGeneratorThread = new Thread((Runnable) kelaGenerator);
-
+            kelaGenerator.clearOptions();
             if (!StringUtils.isEmpty(options)) {
                 kelaGenerator.setOptions(options);
             }

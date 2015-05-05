@@ -105,6 +105,12 @@ public class KelaGenerator implements Runnable {
         this.send = false;
         this.generate = false;
     }
+    
+    public void clearOptions() {
+        send = true;
+        generate = true;
+        init = true;
+    }
 
     private void initReports() throws UserStopRequestException {
         long startTime = System.currentTimeMillis();
@@ -273,7 +279,6 @@ public class KelaGenerator implements Runnable {
     }
 
     public enum RunState {
-
         IDLE,
         LOG_FILE_ERROR,
         RUNNING,
@@ -282,11 +287,9 @@ public class KelaGenerator implements Runnable {
         ERROR,
         TRANSFER,
         DONE
-
     }
 
     public enum StaticOptions {
-
         INITONLY,
         SENDONLY,
         GENERATEONLY
