@@ -36,6 +36,8 @@ public class ScheduledExport {
         if (schedulingEnabled) {
             LOG.info("Starting scheduled export of the following reports: " + reportList);
             kelaResource.exportKela("START", reportList);
+        } else {
+            LOG.info("Scheduled export is disabled, do nothing.");
         }
     }
 
