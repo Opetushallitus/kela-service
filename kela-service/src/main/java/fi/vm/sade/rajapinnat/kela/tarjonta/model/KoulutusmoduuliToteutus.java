@@ -15,29 +15,38 @@
  */
 package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.*;
 
 @Entity
-@Table(name="koulutusmoduuli_toteutus")
+@Table(name = "koulutusmoduuli_toteutus")
 public class KoulutusmoduuliToteutus {
-    
+
     @Id
     @Column(name = "id", unique = true, nullable = false)
     @GeneratedValue
     private Long id;
-    
-    @Column(name = "oid", unique=true)
+
+    @Column(name = "oid", unique = true)
     private String oid;
     @Column(name = "koulutus_uri")
     private String koulutusUri;
-    @Column(name = "kandi_koulutus_uri")
-    private String kandi_koulutus_uri;
-    
+
     @Column(name = "alkamiskausi_uri")
     private String alkamiskausi_uri;
     @Column(name = "alkamisvuosi")
     private Integer alkamisvuosi;
-    
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "koulutusmoduuli_toteutus_sisaltyvat_koulutuskoodit",
+            joinColumns = @JoinColumn(name = "koulutusmoduuli_toteutus_id")
+    )
+    private Set<KoodistoUri> sisaltyvatKoulutuskoodit = new HashSet<KoodistoUri>();
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    private Koulutusmoduuli koulutusmoduuli;
 
     public String getOid() {
         return oid;
@@ -55,47 +64,44 @@ public class KoulutusmoduuliToteutus {
         this.id = id;
     }
 
-	public String getKoulutusUri() {
-		return koulutusUri;
-	}
+    public String getKoulutusUri() {
+        return koulutusUri;
+    }
 
-	public void setKoulutusUri(String koulutusUri) {
-		this.koulutusUri = koulutusUri;
-	}
+    public void setKoulutusUri(String koulutusUri) {
+        this.koulutusUri = koulutusUri;
+    }
 
-	public String getKandi_koulutus_uri() {
-		return kandi_koulutus_uri;
-	}
+    public Koulutusmoduuli getKoulutusmoduuli() {
+        return koulutusmoduuli;
+    }
 
-	public void setKandi_koulutus_uri(String kandi_koulutus_uri) {
-		this.kandi_koulutus_uri = kandi_koulutus_uri;
-	}
-	
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    private Koulutusmoduuli koulutusmoduuli;
+    public void setKoulutusmoduuli(Koulutusmoduuli koulutusmoduuli) {
+        this.koulutusmoduuli = koulutusmoduuli;
+    }
 
-	public Koulutusmoduuli getKoulutusmoduuli() {
-		return koulutusmoduuli;
-	}
+    public String getAlkamiskausi_uri() {
+        return alkamiskausi_uri;
+    }
 
-	public void setKoulutusmoduuli(Koulutusmoduuli koulutusmoduuli) {
-		this.koulutusmoduuli = koulutusmoduuli;
-	}
+    public void setAlkamiskausi_uri(String alkamiskausi_uri) {
+        this.alkamiskausi_uri = alkamiskausi_uri;
+    }
 
-	public String getAlkamiskausi_uri() {
-		return alkamiskausi_uri;
-	}
+    public Integer getAlkamisvuosi() {
+        return alkamisvuosi;
+    }
 
-	public void setAlkamiskausi_uri(String alkamiskausi_uri) {
-		this.alkamiskausi_uri = alkamiskausi_uri;
-	}
+    public void setAlkamisvuosi(Integer alkamisvuosi) {
+        this.alkamisvuosi = alkamisvuosi;
+    }
 
-	public Integer getAlkamisvuosi() {
-		return alkamisvuosi;
-	}
+    public Set<KoodistoUri> getSisaltyvatKoulutuskoodit() {
+        return this.sisaltyvatKoulutuskoodit;
+    }
 
-	public void setAlkamisvuosi(Integer alkamisvuosi) {
-		this.alkamisvuosi = alkamisvuosi;
-	}
-	
+    public void setSisaltyvatKoulutuskoodit(Set<KoodistoUri> sisaltyvatKoulutuskoodit) {
+        this.sisaltyvatKoulutuskoodit = sisaltyvatKoulutuskoodit;
+    }
+
 }

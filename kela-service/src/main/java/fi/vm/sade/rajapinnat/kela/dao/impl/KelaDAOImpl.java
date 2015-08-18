@@ -33,6 +33,7 @@ import org.springframework.stereotype.Repository;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoodistoUri;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
@@ -475,23 +476,31 @@ public class KelaDAOImpl implements KelaDAO {
 		 */
 
 		String koulutus_uri;
-		String kandi_koulutus_uri;
 		Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
 
 		if (komoto==null || koulutusmoduuli==null) {
 			return "   "; //ei JULKAISTU
 		}
 		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
-		kandi_koulutus_uri = emptyString(komoto.getKandi_koulutus_uri()) ? koulutusmoduuli.getKandi_koulutus_uri() : komoto.getKandi_koulutus_uri();
+		
 
 		if (!kk_tut_taso(koulutus_uri) ) {
 			return "   "; //ei korkeakoulun ylempi eikä alempi
 		}
 
+                boolean alempia_sisaltyy = false;
+
+                for (KoodistoUri koulutusUri : komoto.getSisaltyvatKoulutuskoodit()) {
+                    if (alempi(koulutusUri.getKoodiUri())) {
+                        alempia_sisaltyy = true;
+                        break;
+                    }
+                }
+                
 		/*
-		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja kandi_koulutus_uri ei tyhjä => 060 = alempi+ylempi
+		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja siihen sisältyy jokin alempi koulutuskoodi => 060 = alempi+ylempi
 		 */
-		if (ylempi(koulutus_uri) && !emptyString(kandi_koulutus_uri)) {
+		if (ylempi(koulutus_uri) && alempia_sisaltyy) {
 			 return "060";
 		}
 		
