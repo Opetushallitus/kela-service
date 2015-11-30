@@ -19,15 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.Persistence;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
@@ -41,170 +35,167 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 
 /**
- * 
+ *
  * @author Markus
  */
 @Repository
-public class KelaDAOImpl implements KelaDAO { 
-	
+public class KelaDAOImpl implements KelaDAO {
+
     private EntityManager tarjontaEm;
     private EntityManager organisaatioEm;
-    
+
+    @Inject
+    @Named("tarjontaEntityManagerFactory")
+    @PersistenceUnit(unitName = "tarjontaKela")
+    private EntityManagerFactory tarjontaEmf;
+
+    @Inject
+    @Named("organisaatioEntityManagerFactory")
+    @PersistenceUnit(unitName = "organisaatioKela")
+    private EntityManagerFactory organisaatioEmf;
+
     private static final String KAYNTIOSOITE = "kaynti";
     private static final String POSTI = "posti";
     private static final String WWW = "Www";
-    
-    private String tarjontaDbUrl;
-    private String tarjontaDbUsername;
-    private String tarjontaDbPassword;
-    private String organisaatioDbUrl;
-    private String organisaatioDbUsername;
-    private String organisaatioDbPassword;
-    private static long generated_yht_id=9000000001L;
-    private static HashMap<Long, Long> yht_id_map=new HashMap<Long, Long>(); //id of organisation, yht_id 
-    
-   
+
+    private static long generated_yht_id = 9000000001L;
+    private static HashMap<Long, Long> yht_id_map = new HashMap<Long, Long>(); //id of organisation, yht_id 
+
     @PostConstruct
-    public void initEntityManagers () {
-        Map<String, String> tarjontaDbProperties = new HashMap<String, String>(); 
-        tarjontaDbProperties.put("hibernate.connection.url", tarjontaDbUrl);
-        tarjontaDbProperties.put("hibernate.connection.username", tarjontaDbUsername);
-        tarjontaDbProperties.put("hibernate.connection.password", tarjontaDbPassword);
-        
-        Map<String, String> organisaatioDbProperties = new HashMap<String, String>(); 
-        organisaatioDbProperties.put("hibernate.connection.url", organisaatioDbUrl);
-        organisaatioDbProperties.put("hibernate.connection.username", organisaatioDbUsername);
-        organisaatioDbProperties.put("hibernate.connection.password", organisaatioDbPassword);
-        
-        tarjontaEm = Persistence.createEntityManagerFactory("tarjontaKela", tarjontaDbProperties).createEntityManager();
-        organisaatioEm = Persistence.createEntityManagerFactory("organisaatioKela", organisaatioDbProperties).createEntityManager();
+    public void initEntityManagers() {
+        tarjontaEm = tarjontaEmf.createEntityManager();
+        organisaatioEm = organisaatioEmf.createEntityManager();
     }
 
     @Override
     public Hakukohde findHakukohdeByOid(String oid) {
-    	try {
-            return (Hakukohde) tarjontaEm.createQuery("FROM "+Hakukohde.class.getName()+" WHERE oid=? ")//and tila='JULKAISTU'")
-                                .setParameter(1, oid)
-                                .getSingleResult();
+        try {
+            return (Hakukohde) getTarjontaEntityManager().createQuery("FROM " + Hakukohde.class.getName() + " WHERE oid=? ")//and tila='JULKAISTU'")
+                    .setParameter(1, oid)
+                    .getSingleResult();
         } catch (NoResultException ex) {
             return null;
 
         } catch (NonUniqueResultException ex) {
             return null;
-        }    
+        }
     }
 
     @Override
     public Koulutusmoduuli getKoulutusmoduuli(String oid) {
         try {
-        	Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) tarjontaEm.createQuery("FROM "+Koulutusmoduuli.class.getName()+" WHERE oid=? ")//and tila='JULKAISTU'")
-            .setParameter(1, oid)
-            .getSingleResult();
+            Koulutusmoduuli koulutusmoduuli = (Koulutusmoduuli) getTarjontaEntityManager().createQuery("FROM " + Koulutusmoduuli.class.getName() + " WHERE oid=? ")//and tila='JULKAISTU'")
+                    .setParameter(1, oid)
+                    .getSingleResult();
             return koulutusmoduuli;
         } catch (NoResultException ex) {
-        	return null;
+            return null;
         } catch (NonUniqueResultException ex) {
-        	return null;
+            return null;
         }
     }
 
     @Override
     public KoulutusmoduuliToteutus getKoulutusmoduuliToteutus(String oid) {
         try {
-        	KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) tarjontaEm.createQuery("FROM "+KoulutusmoduuliToteutus.class.getName()+" WHERE oid=? ")// and tila='JULKAISTU'")
-            .setParameter(1, oid)
-            .getSingleResult();
+            KoulutusmoduuliToteutus koulutusmoduuliToteutus = (KoulutusmoduuliToteutus) getTarjontaEntityManager().createQuery("FROM " + KoulutusmoduuliToteutus.class.getName() + " WHERE oid=? ")// and tila='JULKAISTU'")
+                    .setParameter(1, oid)
+                    .getSingleResult();
             return koulutusmoduuliToteutus;
-	    } catch (NoResultException ex) {
-	        return null;
-	
-	    } catch (NonUniqueResultException ex) {
-	        return null;
-	    }
+        } catch (NoResultException ex) {
+            return null;
+
+        } catch (NonUniqueResultException ex) {
+            return null;
+        }
     }
 
     @Override
-    public  List<String> getParentOids(String oid) {
-    	ArrayList<String> resultList = new  ArrayList<String>();
-    	_getParentOids(oid,resultList);
-    	return resultList;
+    public List<String> getParentOids(String oid) {
+        ArrayList<String> resultList = new ArrayList<String>();
+        _getParentOids(oid, resultList);
+        return resultList;
     }
 
     @SuppressWarnings("unchecked")
-	private void _getParentOids(String rootOid,List<String> resultList) {
-    	if (resultList.contains(rootOid)) {
-    		return;
-    	}
-		String qString=
-				"select km.oid "+
-				"from koulutus_sisaltyvyys ks,"+
-				"	koulutusmoduuli km,"+
-				"	koulutusmoduuli km2,"+
-				"	koulutus_sisaltyvyys_koulutus ksk "+
-				"   where "+
-				//" km.tila='JULKAISTU' and "+
-				" km.id=ks.parent_id and "+
-				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
-				" ksk.koulutusmoduuli_id=km2.id and "+
-				" km2.oid = ?";
-		for (String oid : (List<String>) tarjontaEm.createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
-			_getParentOids(oid, resultList);
-			resultList.add(oid);
-		}
+    private void _getParentOids(String rootOid, List<String> resultList) {
+        if (resultList.contains(rootOid)) {
+            return;
+        }
+        String qString
+                = "select km.oid "
+                + "from koulutus_sisaltyvyys ks,"
+                + "	koulutusmoduuli km,"
+                + "	koulutusmoduuli km2,"
+                + "	koulutus_sisaltyvyys_koulutus ksk "
+                + "   where "
+                + //" km.tila='JULKAISTU' and "+
+                " km.id=ks.parent_id and "
+                + " ks.id=ksk.koulutus_sisaltyvyys_id and "
+                + " ksk.koulutusmoduuli_id=km2.id and "
+                + " km2.oid = ?";
+        for (String oid : (List<String>) getTarjontaEntityManager().createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
+            _getParentOids(oid, resultList);
+            resultList.add(oid);
+        }
     }
-    
+
     @Override
-    public  List<String> getChildrenOids(String oid) {
-    	ArrayList<String> resultList = new  ArrayList<String>();
-    	_getChildrenOids(oid,resultList);
-    	return resultList;
+    public List<String> getChildrenOids(String oid) {
+        ArrayList<String> resultList = new ArrayList<String>();
+        _getChildrenOids(oid, resultList);
+        return resultList;
     }
 
     @SuppressWarnings("unchecked")
-	private void _getChildrenOids(String rootOid,List<String> resultList) {
-    	if (resultList.contains(rootOid)) {
-    		return;
-    	}
-		String qString=
-				"select km.oid "+
-				"from koulutus_sisaltyvyys ks,"+
-				"	koulutusmoduuli km,"+
-				"	koulutusmoduuli km2,"+
-				"	koulutus_sisaltyvyys_koulutus ksk "+
-				" where "+
-				" ks.id=ksk.koulutus_sisaltyvyys_id and "+
-				" ksk.koulutusmoduuli_id=km.id and  "+
-				//" km.tila='JULKAISTU' and "+
-				" ks.parent_id=km2.id and "+
-				//" km2.tila='JULKAISTU' and "+
-				" km2.oid = ?";
-		for (String oid : (List<String>) tarjontaEm.createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
-			_getChildrenOids(oid, resultList);
-			resultList.add(oid);
-		}
+    private void _getChildrenOids(String rootOid, List<String> resultList) {
+        if (resultList.contains(rootOid)) {
+            return;
+        }
+        String qString
+                = "select km.oid "
+                + "from koulutus_sisaltyvyys ks,"
+                + "	koulutusmoduuli km,"
+                + "	koulutusmoduuli km2,"
+                + "	koulutus_sisaltyvyys_koulutus ksk "
+                + " where "
+                + " ks.id=ksk.koulutus_sisaltyvyys_id and "
+                + " ksk.koulutusmoduuli_id=km.id and  "
+                + //" km.tila='JULKAISTU' and "+
+                " ks.parent_id=km2.id and "
+                + //" km2.tila='JULKAISTU' and "+
+                " km2.oid = ?";
+        for (String oid : (List<String>) getTarjontaEntityManager().createNativeQuery(qString).setParameter(1, rootOid).getResultList()) {
+            _getChildrenOids(oid, resultList);
+            resultList.add(oid);
+        }
     }
-    
+
     @Override
     public Organisaatio findOrganisaatioByOid(String oid) {
         try {
-            return (Organisaatio) organisaatioEm.createQuery("FROM "+Organisaatio.class.getName()+" WHERE oid=?")
-                                .setParameter(1, oid)
-                                .getSingleResult();
-	    } catch (NoResultException ex) {
-	        return null;
-	
-	    } catch (NonUniqueResultException ex) {
-	        return null;
-	    }
+            return (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE oid=?")
+                    .setParameter(1, oid)
+                    .getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+
+        } catch (NonUniqueResultException ex) {
+            return null;
+        }
     }
 
-  
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         try {
-            return (Organisaatio) organisaatioEm.createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
+            return (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
         } catch (NoResultException ex) {
@@ -217,340 +208,288 @@ public class KelaDAOImpl implements KelaDAO {
 
     private Long _getKayntiosoiteIdForOrganisaatio(Long id, String osoiteTyyppi) {
         @SuppressWarnings("unchecked")
-		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ? order by id desc")
-				  .setParameter(1, id)
-                  .setParameter(2, osoiteTyyppi)
-                  .getResultList();
-         
-         if (resultList==null || resultList.size()==0) {
-        	 return null;
+        List<Long> resultList = getOrganisaatioEntityManager().createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND osoiteTyyppi = ? order by id desc")
+                .setParameter(1, id)
+                .setParameter(2, osoiteTyyppi)
+                .getResultList();
+
+        if (resultList == null || resultList.size() == 0) {
+            return null;
         }
         return resultList.get(0);
     }
 
-    
     private Long _getWwwIdForOrganisaatio(Long id) {
         @SuppressWarnings("unchecked")
-		List<Long> resultList = organisaatioEm.createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND dType = ? order by id desc")
-				  .setParameter(1, id)
-                  .setParameter(2, WWW)
-                  .getResultList();
-         
-        if (resultList==null || resultList.size()==0) {
-        	 return null;
+        List<Long> resultList = getOrganisaatioEntityManager().createQuery("SELECT id FROM " + Yhteystieto.class.getName() + " WHERE organisaatioId = ? AND dType = ? order by id desc")
+                .setParameter(1, id)
+                .setParameter(2, WWW)
+                .getResultList();
+
+        if (resultList == null || resultList.size() == 0) {
+            return null;
         }
         return resultList.get(0);
     }
 
     @Override
     public Long getKayntiosoiteIdForOrganisaatio(Long id) {
-    	if (yht_id_map.containsKey(id)) {
-    		return yht_id_map.get(id);
-    	}
-    	Long kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, KAYNTIOSOITE);
-    	if (null == kayntiOsoiteId) {
-    		kayntiOsoiteId  = _getKayntiosoiteIdForOrganisaatio(id, POSTI);
-    		if (null == kayntiOsoiteId) {
-    			kayntiOsoiteId = _getWwwIdForOrganisaatio(id);
-    		}
-    	}
-    	if (kayntiOsoiteId==null) {
-    		kayntiOsoiteId = (++generated_yht_id);
-    	}
-    	yht_id_map.put(id, kayntiOsoiteId);
-    	return kayntiOsoiteId;
+        if (yht_id_map.containsKey(id)) {
+            return yht_id_map.get(id);
+        }
+        Long kayntiOsoiteId = _getKayntiosoiteIdForOrganisaatio(id, KAYNTIOSOITE);
+        if (null == kayntiOsoiteId) {
+            kayntiOsoiteId = _getKayntiosoiteIdForOrganisaatio(id, POSTI);
+            if (null == kayntiOsoiteId) {
+                kayntiOsoiteId = _getWwwIdForOrganisaatio(id);
+            }
+        }
+        if (kayntiOsoiteId == null) {
+            kayntiOsoiteId = (++generated_yht_id);
+        }
+        yht_id_map.put(id, kayntiOsoiteId);
+        return kayntiOsoiteId;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<Organisaatiosuhde> findAllLiitokset() {
-        return (List<Organisaatiosuhde>) organisaatioEm.createQuery("FROM " + Organisaatiosuhde.class.getName() + " WHERE suhdetyyppi = ?") 
-                 .setParameter(1, OrganisaatioSuhdeTyyppi.LIITOS.name())
-                 .getResultList();
-    }
-    
-    @Value("${kela-tarjontadb.url}")
-    public void setTarjontaDbUrl(String tarjontaDbUrl) {
-        this.tarjontaDbUrl = tarjontaDbUrl;
+        return (List<Organisaatiosuhde>) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatiosuhde.class.getName() + " WHERE suhdetyyppi = ?")
+                .setParameter(1, OrganisaatioSuhdeTyyppi.LIITOS.name())
+                .getResultList();
     }
 
-    public String getTarjontaDbUrl() {
-        return tarjontaDbUrl;
-    }
-
-    @Value("${kela-tarjontadb.username}")
-	public void setTarjontaDbUsername(String tarjontaDbUsername) {
-		this.tarjontaDbUsername = tarjontaDbUsername;
-	}
-
-    public String getTarjontaDbUsername() {
-		return tarjontaDbUsername;
-	}
-    
-    @Value("${kela-tarjontadb.password}")
-	public void setTarjontaDbPassword(String tarjontaDbPassword) {
-		this.tarjontaDbPassword = tarjontaDbPassword;
-	}
-
-	public String getTarjontaDbPassword() {
-		return tarjontaDbPassword;
-	}
-
-	@Value("${kela-organisaatiodb.url}")
-    public void setOrganisaatioDbUrl(String organisaatioDbUrl) {
-        this.organisaatioDbUrl = organisaatioDbUrl;
-    }
-
-	public String getOrganisaatioDbUrl() {
-        return organisaatioDbUrl;
-    }
-
-	@Value("${kela-organisaatiodb.username}")
-	public void setOrganisaatioDbUsername(String organisaatioDbUsername) {
-		this.organisaatioDbUsername = organisaatioDbUsername;
-	}
-
-	public String getOrganisaatioDbUsername() {
-		return organisaatioDbUsername;
-	}
-
-	@Value("${kela-organisaatiodb.password}")
-	public void setOrganisaatioDbPassword(String organisaatioDbPassword) {
-		this.organisaatioDbPassword = organisaatioDbPassword;
-	}
-
-	public String getOrganisaatioDbPassword() {
-		return organisaatioDbPassword;
-	}
-	
-    private OrganisaatioPerustieto applyOrganisaatio(Object [] organisaatio) {
+    private OrganisaatioPerustieto applyOrganisaatio(Object[] organisaatio) {
         OrganisaatioPerustieto result = new OrganisaatioPerustieto();
-        
-		/*+"o.oid, " 0 
-		+"o.oppilaitostyyppi, " 1
-		+"o.oppilaitoskoodi, " 2
-		+"o.organisaatiotyypitstr, " 3
-		+"o.ytunnus, " 4
-		+"mktv_fi.value as nimi_fi, " 5 
-		+"mktv_sv.value as nimi_sv, " 6
-		+"mktv_en.value as nimi_en "  7
-		 */
-           
+
+        /*+"o.oid, " 0 
+         +"o.oppilaitostyyppi, " 1
+         +"o.oppilaitoskoodi, " 2
+         +"o.organisaatiotyypitstr, " 3
+         +"o.ytunnus, " 4
+         +"mktv_fi.value as nimi_fi, " 5 
+         +"mktv_sv.value as nimi_sv, " 6
+         +"mktv_en.value as nimi_en "  7
+         */
         setNimiIfNotNull("en", (String) organisaatio[7], result);
         setNimiIfNotNull("fi", (String) organisaatio[5], result);
         setNimiIfNotNull("sv", (String) organisaatio[6], result);
         result.setOid((String) organisaatio[0]);
-        
+
         result.setOppilaitosKoodi((String) organisaatio[2]);
-        String [] values = ((String) organisaatio[3]).split("\\|");
+        String[] values = ((String) organisaatio[3]).split("\\|");
         if (values != null) {
-	        for (String value : values) {
-		        	if (value.length()>0) {
-		        		result.getOrganisaatiotyypit().add(OrganisaatioTyyppi.fromValue((String) value));
-		        	}
-	        	}
-    	}
+            for (String value : values) {
+                if (value.length() > 0) {
+                    result.getOrganisaatiotyypit().add(OrganisaatioTyyppi.fromValue((String) value));
+                }
+            }
+        }
         result.setYtunnus((String) organisaatio[4]);
         result.setOppilaitostyyppi((String) organisaatio[1]);
         return result;
     }
 
-    private void setNimiIfNotNull(String targetLanguage, String sourceField, 
-        OrganisaatioPerustieto result) {
+    private void setNimiIfNotNull(String targetLanguage, String sourceField,
+            OrganisaatioPerustieto result) {
         final String nimi = sourceField;
-        if(nimi!=null) {
+        if (nimi != null) {
             result.setNimi(targetLanguage, nimi);
         }
     }
-    
+
     @Override
     public List<OrganisaatioPerustieto> findOppilaitokset(List<String> oppilaitostyypit) {
-    		String csvWithQuote = oppilaitostyypit.toString().replace("[", "'").replace("]", "'")
-	            .replace(", ", "','");
-    		
-    		String sQuery=
-    		" select " 
-    		+"o.oid, " 
-    		+"o.oppilaitostyyppi, "
-    		+"o.oppilaitoskoodi, "
-    		+"o.organisaatiotyypitstr, "
-    		+"o.ytunnus, "
-    		+"mktv_fi.value as nimi_fi, " 
-    		+"mktv_sv.value as nimi_sv, " 
-    		+"mktv_en.value as nimi_en "
-    		+" from organisaatio o "
-    		+" left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
-    		+" left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
-    		+" left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
-    		+" where position('Oppilaitos' in o.organisaatiotyypitstr)>0 "
-    		+" and not o.organisaatiopoistettu=true "
-    		+" and oppilaitostyyppi in ("+csvWithQuote+")"
-    		;
-    		
-    		@SuppressWarnings("unchecked")
-			List<Object[]> organisaatiot = organisaatioEm.createNativeQuery(sQuery).getResultList();
+        String csvWithQuote = oppilaitostyypit.toString().replace("[", "'").replace("]", "'")
+                .replace(", ", "','");
 
-    		List<OrganisaatioPerustieto> organisaatioPerustiedot =
-    				new LinkedList<OrganisaatioPerustieto>();
-    		
-    		for (Object [] organisaatio : organisaatiot) {
-    			organisaatioPerustiedot.add(applyOrganisaatio(organisaatio));
-    		}
-    		return organisaatioPerustiedot;
+        String sQuery
+                = " select "
+                + "o.oid, "
+                + "o.oppilaitostyyppi, "
+                + "o.oppilaitoskoodi, "
+                + "o.organisaatiotyypitstr, "
+                + "o.ytunnus, "
+                + "mktv_fi.value as nimi_fi, "
+                + "mktv_sv.value as nimi_sv, "
+                + "mktv_en.value as nimi_en "
+                + " from organisaatio o "
+                + " left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
+                + " left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
+                + " left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
+                + " where position('Oppilaitos' in o.organisaatiotyypitstr)>0 "
+                + " and not o.organisaatiopoistettu=true "
+                + " and oppilaitostyyppi in (" + csvWithQuote + ")";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> organisaatiot = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
+
+        List<OrganisaatioPerustieto> organisaatioPerustiedot
+                = new LinkedList<OrganisaatioPerustieto>();
+
+        for (Object[] organisaatio : organisaatiot) {
+            organisaatioPerustiedot.add(applyOrganisaatio(organisaatio));
+        }
+        return organisaatioPerustiedot;
     }
 
-    
     private String findParentOppilaitosOid(String oid) {
-		String sQuery=
-		" select " 
-		+" o.oid " 
-		+" from organisaatio o "
-		+" where not o.organisaatiopoistettu=true "
-		+" and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='"+oid+"')"
-		+" and position('Oppilaitos' in o.organisaatiotyypitstr)>0"; 
+        String sQuery
+                = " select "
+                + " o.oid "
+                + " from organisaatio o "
+                + " where not o.organisaatiopoistettu=true "
+                + " and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='" + oid + "')"
+                + " and position('Oppilaitos' in o.organisaatiotyypitstr)>0";
 
-		@SuppressWarnings("unchecked")
-		List<String> parentOids = organisaatioEm.createNativeQuery(sQuery).getResultList();
-		if (parentOids.size()!=1) {
-			return null;
-		}
-		return parentOids.get(0);
+        @SuppressWarnings("unchecked")
+        List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
+
+        if (parentOids.size() != 1) {
+            return null;
+        }
+        return parentOids.get(0);
     }
-    
+
     @Override
     public List<OrganisaatioPerustieto> findToimipisteet(List<String> excludeOids) {
-		String sQuery=
-		" select " 
-		+"o.oid, " 
-		+"o.oppilaitostyyppi, "
-		+"o.oppilaitoskoodi, "
-		+"o.organisaatiotyypitstr, "
-		+"o.ytunnus, "
-		+"mktv_fi.value as nimi_fi, " 
-		+"mktv_sv.value as nimi_sv, " 
-		+"mktv_en.value as nimi_en "
-		+" from organisaatio o "
-		+" left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
-		+" left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
-		+" left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
-		+" where position('Toimipiste' in o.organisaatiotyypitstr)>0 "
-		+" and not o.organisaatiopoistettu=true "
-		;
-		
-		@SuppressWarnings("unchecked")
-		List<Object[]> organisaatiot = organisaatioEm.createNativeQuery(sQuery).getResultList();
+        String sQuery
+                = " select "
+                + "o.oid, "
+                + "o.oppilaitostyyppi, "
+                + "o.oppilaitoskoodi, "
+                + "o.organisaatiotyypitstr, "
+                + "o.ytunnus, "
+                + "mktv_fi.value as nimi_fi, "
+                + "mktv_sv.value as nimi_sv, "
+                + "mktv_en.value as nimi_en "
+                + " from organisaatio o "
+                + " left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
+                + " left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
+                + " left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
+                + " where position('Toimipiste' in o.organisaatiotyypitstr)>0 "
+                + " and not o.organisaatiopoistettu=true ";
 
-		List<OrganisaatioPerustieto> organisaatioPerustiedot =
-				new LinkedList<OrganisaatioPerustieto>();
-		
-		for (Object [] organisaatio : organisaatiot) {
-			if (!excludeOids.contains((String) organisaatio[0])) {
-				OrganisaatioPerustieto organisaatioPerustieto = applyOrganisaatio(organisaatio);
-				organisaatioPerustieto.setParentOppilaitosOid(findParentOppilaitosOid(organisaatioPerustieto.getOid()));
-				organisaatioPerustiedot.add(organisaatioPerustieto);
-			}
-		}
-		return organisaatioPerustiedot;
+        @SuppressWarnings("unchecked")
+        List<Object[]> organisaatiot = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
+
+        List<OrganisaatioPerustieto> organisaatioPerustiedot
+                = new LinkedList<OrganisaatioPerustieto>();
+
+        for (Object[] organisaatio : organisaatiot) {
+            if (!excludeOids.contains((String) organisaatio[0])) {
+                OrganisaatioPerustieto organisaatioPerustieto = applyOrganisaatio(organisaatio);
+                organisaatioPerustieto.setParentOppilaitosOid(findParentOppilaitosOid(organisaatioPerustieto.getOid()));
+                organisaatioPerustiedot.add(organisaatioPerustieto);
+            }
+        }
+        return organisaatioPerustiedot;
     }
-    
-	private boolean emptyString(String s) {
-		return (s==null || s.length()==0);
-	}
-	
-	private boolean ylempi(String s) {
-		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='7';
-	}
 
-	private boolean alempi(String s) {
-		return s!=null && s.startsWith("koulutus_") && s.charAt(9)=='6';
-	}
+    private boolean emptyString(String s) {
+        return (s == null || s.length() == 0);
+    }
 
-	private boolean kk_tut_taso(String s) {
-		return ylempi(s) || alempi(s);
-	}
-	
+    private boolean ylempi(String s) {
+        return s != null && s.startsWith("koulutus_") && s.charAt(9) == '7';
+    }
+
+    private boolean alempi(String s) {
+        return s != null && s.startsWith("koulutus_") && s.charAt(9) == '6';
+    }
+
+    private boolean kk_tut_taso(String s) {
+        return ylempi(s) || alempi(s);
+    }
+
     @Override
-	public String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto)  {
-		/*
-		 * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
-		 */
+    public String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto) {
+        /*
+         * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
+         */
 
-		String koulutus_uri;
-		Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
+        String koulutus_uri;
+        Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
 
-		if (komoto==null || koulutusmoduuli==null) {
-			return "   "; //ei JULKAISTU
-		}
-		koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
-		
+        if (komoto == null || koulutusmoduuli == null) {
+            return "   "; //ei JULKAISTU
+        }
+        koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
 
-		if (!kk_tut_taso(koulutus_uri) ) {
-			return "   "; //ei korkeakoulun ylempi eikä alempi
-		}
+        if (!kk_tut_taso(koulutus_uri)) {
+            return "   "; //ei korkeakoulun ylempi eikä alempi
+        }
 
-                boolean alempia_sisaltyy = false;
+        boolean alempia_sisaltyy = false;
 
-                for (KoodistoUri koulutusUri : komoto.getSisaltyvatKoulutuskoodit()) {
-                    if (alempi(koulutusUri.getKoodiUri())) {
-                        alempia_sisaltyy = true;
-                        break;
-                    }
+        for (KoodistoUri koulutusUri : komoto.getSisaltyvatKoulutuskoodit()) {
+            if (alempi(koulutusUri.getKoodiUri())) {
+                alempia_sisaltyy = true;
+                break;
+            }
+        }
+        
+        /*
+         * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja siihen sisältyy jokin alempi koulutuskoodi => 060 = alempi+ylempi
+         */
+        if (ylempi(koulutus_uri) && alempia_sisaltyy) {
+            return "060";
+        }
+
+        /*
+         * 3) haetaan lapsi- ja emokoulutusmoduulit (ei sisaruksia l. toteutuksia) yo. lisäksi:
+         */
+        String rootOid = koulutusmoduuli.getOid();
+        List<String> relativesList = getChildrenOids(rootOid);
+        relativesList.addAll(getParentOids(rootOid));
+        relativesList.add(rootOid);
+
+        boolean ylempia = false;
+        boolean alempia = false;
+        for (String oid : relativesList) {
+            koulutusmoduuli = getKoulutusmoduuli(oid);
+            if (koulutusmoduuli != null) {
+                if (!ylempia) {
+                    ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
                 }
-                
-		/*
-		 * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja siihen sisältyy jokin alempi koulutuskoodi => 060 = alempi+ylempi
-		 */
-		if (ylempi(koulutus_uri) && alempia_sisaltyy) {
-			 return "060";
-		}
-		
-		/*
-		 * 3) haetaan lapsi- ja emokoulutusmoduulit (ei sisaruksia l. toteutuksia) yo. lisäksi:
-		 */
-		String rootOid=koulutusmoduuli.getOid();
-		List<String> relativesList = getChildrenOids(rootOid);
-		relativesList.addAll(getParentOids(rootOid));
-		relativesList.add(rootOid);
+                if (!alempia) {
+                    alempia = alempi(koulutusmoduuli.getKoulutusUri());
+                }
+                if (ylempia && alempia) {
+                    break;
+                }
+            }
+        }
 
-		boolean ylempia=false;
-		boolean alempia=false;
-		for (String oid : relativesList) {
-			koulutusmoduuli = getKoulutusmoduuli(oid);
-			if (koulutusmoduuli!=null) {
-				if (!ylempia) {
-					ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
-				}
-				if (!alempia) {
-					alempia = alempi(koulutusmoduuli.getKoulutusUri());
-				}
-				if (ylempia && alempia) {
-					break;
-				}
-			}
-		}
-		
-		/*
-		 * 4) jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
-		 */
-		if(ylempia && !alempia) {
-			return "061";
-		}
-		/*
-		 * 5) jos pelkkiä alempia => 050  (alempi kk.tutkinto)
-		 */
-		if(!ylempia && alempia) {
-			return "050";
-		}
-		/*
-		 * 6) jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
-		 */
-		if(ylempia && alempia) {
-			return "060";
-		}
-		/*
-		 * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä
-		 */
-		return "   ";
-	}
+        /*
+         * 4) jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
+         */
+        if (ylempia && !alempia) {
+            return "061";
+        }
+        /*
+         * 5) jos pelkkiä alempia => 050  (alempi kk.tutkinto)
+         */
+        if (!ylempia && alempia) {
+            return "050";
+        }
+        /*
+         * 6) jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
+         */
+        if (ylempia && alempia) {
+            return "060";
+        }
+        /*
+         * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä
+         */
+        return "   ";
+    }
 
+    private EntityManager getTarjontaEntityManager() {
+        return tarjontaEm;
+    }
+
+    private EntityManager getOrganisaatioEntityManager() {
+        return organisaatioEm;
+    }
 }

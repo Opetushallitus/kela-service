@@ -18,25 +18,25 @@ package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 import javax.persistence.*;
 
 /**
- *
+ * 
  * @author Markus
  */
 @Entity
-@Table(name = "koulutusmoduuli")
+@Table(name="koulutusmoduuli")
 public class Koulutusmoduuli {
-
+    
     @Id
     @Column(name = "id", unique = true, nullable = false)
     @GeneratedValue
     private Long id;
-
-    @Column(name = "oid", unique = true)
+    
+    @Column(name = "oid", unique=true)
     private String oid;
     @Column(name = "koulutus_uri")
     private String koulutusUri;
     @Column(name = "koulutusaste_uri")
     private String koulutusaste_uri;
-
+    
     public String getOid() {
         return oid;
     }
@@ -53,19 +53,19 @@ public class Koulutusmoduuli {
         this.id = id;
     }
 
-    public String getKoulutusUri() {
-        return koulutusUri;
-    }
+	public String getKoulutusUri() {
+		return koulutusUri;
+	}
 
-    public void setKoulutusUri(String koulutusUri) {
-        this.koulutusUri = koulutusUri;
-    }
+	public void setKoulutusUri(String koulutusUri) {
+		this.koulutusUri = koulutusUri;
+	}
 
-    public String getKoulutusaste_uri() {
-        return koulutusaste_uri;
-    }
+	public String getKoulutusaste_uri() {
+		return koulutusaste_uri;
+	}
 
-    public void setKoulutusaste_uri(String koulutusaste_uri) {
-        this.koulutusaste_uri = koulutusaste_uri;
-    }
+	public void setKoulutusaste_uri(String koulutusaste_uri) {
+		this.koulutusaste_uri = koulutusaste_uri;
+	}
 }

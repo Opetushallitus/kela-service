@@ -84,5 +84,6 @@
     </camel:camelContext>
 	
     <import resource="file:///${user.home:''}/oph-configuration/security-context-backend.xml"/>
+    <import resource="dao-context.xml" />
    
 </beans>

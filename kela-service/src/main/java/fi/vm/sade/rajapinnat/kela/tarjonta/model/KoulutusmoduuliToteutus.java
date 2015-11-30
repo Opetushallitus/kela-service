@@ -47,7 +47,7 @@ public class KoulutusmoduuliToteutus {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Koulutusmoduuli koulutusmoduuli;
-
+    
     public String getOid() {
         return oid;
     }
@@ -103,5 +103,4 @@ public class KoulutusmoduuliToteutus {
     public void setSisaltyvatKoulutuskoodit(Set<KoodistoUri> sisaltyvatKoulutuskoodit) {
         this.sisaltyvatKoulutuskoodit = sisaltyvatKoulutuskoodit;
     }
-
 }

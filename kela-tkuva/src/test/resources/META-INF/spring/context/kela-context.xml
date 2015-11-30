@@ -24,6 +24,7 @@
 		<beans:prop key="port">${kela.ftp.port}</beans:prop>
 		<beans:prop key="protocol">${kela.ftp.protocol}</beans:prop>
 		<beans:prop key="path">${kela.ftp.path}</beans:prop>
+                <beans:prop key="parameters">${kela.ftp.parameters}</beans:prop>
 	</util:properties>
 
 	<routeContext id="kelaRoutes" xmlns="http://camel.apache.org/schema/spring">
@@ -32,7 +33,7 @@
 			<setHeader headerName="CamelFileName"><simple>${body.args[0]}</simple></setHeader>
 			<setBody><simple>${body.args[1]}</simple></setBody>
 			<to
-				uri="{{protocol}}://{{username}}@{{host}}:{{port}}{{path}}?password={{password}}&amp;ftpClient.dataTimeout=30000&amp;passiveMode=true" />
+				uri="{{protocol}}://{{username}}@{{host}}:{{port}}{{path}}?password={{password}}{{parameters}}" />
 		</route>
 	</routeContext>
 

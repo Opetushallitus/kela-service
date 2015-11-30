@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+    <bean id="tarjontaDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass"                            value="org.h2.Driver"/>
+        <property name="jdbcUrl"                                value="${kela-tarjontadb.url}"/>
+        <property name="user"                                   value="${kela-tarjontadb.username}"/>
+        <property name="password"                               value="${kela-tarjontadb.password}"/>
+
+        <property name="acquireIncrement"                       value="3"/>
+        <property name="idleConnectionTestPeriod"               value="300"/>
+        <property name="initialPoolSize"                        value="5"/>
+        <property name="maxPoolSize"                            value="50"/>
+        <property name="minPoolSize"                            value="5"/>
+        <property name="preferredTestQuery"                     value="select 1"/>
+        <property name="testConnectionOnCheckin"                value="true"/>
+    </bean>
+    
+    <bean id="organisaatioDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass"                            value="org.h2.Driver"/>
+        <property name="jdbcUrl"                                value="${kela-organisaatiodb.url}"/>
+        <property name="user"                                   value="${kela-organisaatiodb.username}"/>
+        <property name="password"                               value="${kela-organisaatiodb.password}"/>
+
+        <property name="acquireIncrement"                       value="3"/>
+        <property name="idleConnectionTestPeriod"               value="300"/>
+        <property name="initialPoolSize"                        value="5"/>
+        <property name="maxPoolSize"                            value="50"/>
+        <property name="minPoolSize"                            value="5"/>
+        <property name="preferredTestQuery"                     value="select 1"/>
+        <property name="testConnectionOnCheckin"                value="true"/>
+    </bean>
+
+    <!-- Add JPA support -->
+    <bean id="tarjontaEntityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="loadTimeWeaver">
+            <bean
+                class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver" />
+        </property>
+        <property name="persistenceXmlLocation" value="classpath:META-INF/test-persistence.xml" />
+        
+        <property name="persistenceUnitName" value="tarjontaKela"/>
+        <property name="dataSource" ref="tarjontaDataSource"/>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.hbm2ddl.auto">create-drop</prop>
+                <prop key="hibernate.dialect">fi.vm.sade.rajapinnat.kela.testutil.ImprovedH2Dialect</prop>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.hbm2ddl.import_files">import-tarjonta.sql</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="organisaatioEntityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="loadTimeWeaver">
+            <bean
+                class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver" />
+        </property>
+        <property name="persistenceXmlLocation" value="classpath:META-INF/test-persistence.xml" />
+        <property name="persistenceUnitName" value="organisaatioKela"/>
+        <property name="dataSource" ref="organisaatioDataSource"/>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.hbm2ddl.auto">create-drop</prop>
+                <prop key="hibernate.dialect">fi.vm.sade.rajapinnat.kela.testutil.ImprovedH2Dialect</prop>
+                <prop key="hibernate.show_sql">false</prop>
+            </props>
+        </property>
+    </bean>
+
+    
+    <!-- Add Transaction support 
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="emf" />
+    </bean>
+    -->
+    
+    <!-- Use @Transaction annotations for managing transactions 
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    -->
+    
+    <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
+</beans>

@@ -84,9 +84,9 @@ public class KelaGenerator implements Runnable {
     private String host;
     private String username;
     private String password = "<not set>";
+    private String transferParameters;
     private String sourcePath;
     private String targetPath;
-    private String dataTimeout;
 
     private boolean send = true;
     private boolean generate = true;
@@ -133,9 +133,8 @@ public class KelaGenerator implements Runnable {
     }
 
     private String mkTargetUrl(String protocol, String username,
-            String host, String targetPath, String password,
-            String dataTimeout) {
-        return String.format("%s%s%s%s%s%s%s%s%s%s",
+            String host, String targetPath, String password) {
+        return String.format("%s%s%s%s%s%s%s%s",
                 protocol,
                 "://",
                 username,
@@ -143,9 +142,7 @@ public class KelaGenerator implements Runnable {
                 host,
                 targetPath,
                 "?password=",
-                password,
-                "&ftpClient.dataTimeout=",
-                dataTimeout + "&passiveMode=true");
+                password + transferParameters);
     }
 
     private String targetUrl;
@@ -156,8 +153,8 @@ public class KelaGenerator implements Runnable {
      * @throws Exception
      */
     public void transferFiles() throws Exception {
-        LOG.info("transferFiles: target url: " + mkTargetUrl(protocol, username, host, targetPath, "???", dataTimeout));
-        targetUrl = mkTargetUrl(protocol, username, host, targetPath, password, dataTimeout);
+        LOG.info("transferFiles: target url: " + mkTargetUrl(protocol, username, host, targetPath, "???"));
+        targetUrl = mkTargetUrl(protocol, username, host, targetPath, password);
         for (AbstractOPTIWriter optiWriter : selectedOptiWriters) {
             sendFile(optiWriter);
         }
@@ -210,6 +207,11 @@ public class KelaGenerator implements Runnable {
     public void setPassword(String password) {
         this.password = password;
     }
+    
+    @Value("${transferparameters}")
+    public void setTransferParameters(String parameters) {
+        this.transferParameters = parameters;
+    }
 
     @Value("${exportdir}")
     public void setSourcePath(String sourcePath) {
@@ -219,15 +221,6 @@ public class KelaGenerator implements Runnable {
     @Value("${targetPath}")
     public void setTargetPath(String targetPath) {
         this.targetPath = targetPath;
-    }
-
-    @Value("${dataTimeout}")
-    public void setDataTimeout(String dataTimeout) {
-        this.dataTimeout = dataTimeout;
-    }
-
-    public String getDataTimeout() {
-        return dataTimeout;
     }
 
     public String getProtocol() {
@@ -246,12 +239,16 @@ public class KelaGenerator implements Runnable {
         return password;
     }
 
+    public String getTargetPath() {
+        return targetPath;
+    }
+    
     public String getSourcePath() {
         return sourcePath;
     }
 
-    public String getTargetPath() {
-        return targetPath;
+    public String getTransferParameters() {
+        return transferParameters;
     }
 
     public static void setSocksProxyOn() {

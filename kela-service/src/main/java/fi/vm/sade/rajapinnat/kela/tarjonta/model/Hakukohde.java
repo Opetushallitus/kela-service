@@ -41,6 +41,11 @@ public class Hakukohde {
     @Column(name = "oid", unique=true)
     private String oid;
 
+    @Column(name = "kela_linja_koodi")
+    private String kelaLinjaKoodi;
+    @Column(name = "kela_linja_tarkenne")
+    private String kelaLinjaTarkenne;
+    
     public String getOid() {
         return oid;
     }
@@ -55,6 +60,22 @@ public class Hakukohde {
 
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public String getKelaLinjaKoodi() {
+        return kelaLinjaKoodi;
+    }
+
+    public void setKelaLinjaKoodi(String kelaLinjaKoodi) {
+        this.kelaLinjaKoodi = kelaLinjaKoodi;
+    }
+
+    public String getKelaLinjaTarkenne() {
+        return kelaLinjaTarkenne;
+    }
+
+    public void setKelaLinjaTarkenne(String kelaLinjaTarkenne) {
+        this.kelaLinjaTarkenne = kelaLinjaTarkenne;
     }
     
     @JoinTable(name = "koulutus_hakukohde",

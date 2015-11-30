@@ -62,7 +62,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     	"OPPIL_NRO may not be missing (org.oid=%s).",
     	"HAK_NIMI may not be missing (org.oid=%s).",
     	"duplicate oid suffix detected (%s oid %s).",
-    	"no hakukohde for OID : %s (%s)"
+    	"no hakukohde for OID : %s (%s)",
+        "komo %s has no koulutus_uri"
     };
 
     private final static String[] warnings = {
@@ -109,6 +110,11 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     	if (koulutusmoduuli==null) {
     		error(8);
     	}
+        
+        if (koulutusmoduuli.getKoulutusUri() == null) {
+            error(12, koulutusmoduuli.getOid());
+        }
+        
     	return getTutkintotunniste(koulutusmoduuli.getKoulutusUri()," koulutusmoduuli-oid: "+koulutusmoduuli.getOid());
     }
 
@@ -141,12 +147,18 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return strFormatter(oppil_nro, 5, "OPPIL_NRO");
     }
 
-    private String getHakukohdeId(HakukohdePerustieto curTulos) throws OPTFormatException {
-        Hakukohde hakukE = kelaDAO.findHakukohdeByOid(curTulos.getOid());
-        if (hakukE==null) {
-        	error(2,curTulos.getOid()+" "+curTulos.getNimi());
+    private Hakukohde getHakukohde(HakukohdePerustieto curTulos) throws OPTFormatException {
+        Hakukohde hk = kelaDAO.findHakukohdeByOid(curTulos.getOid());
+        
+        if (hk == null) {
+            error(2, curTulos.getOid() + " " + curTulos.getNimi());
         }
-        String hakukohdeId = String.format("%s", hakukE.getId());
+        
+        return hk;
+    }
+    
+    private String getHakukohdeId(Hakukohde hk) throws OPTFormatException {
+        String hakukohdeId = String.format("%s", hk.getId());
         return numFormatter(hakukohdeId, 10, "hakukohdeid");
     }
 
@@ -238,7 +250,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		OrganisaatioDTO tarjoajaOrganisaatioDTO=(OrganisaatioDTO) args[1];
 		KoulutusmoduuliToteutus komoto = (KoulutusmoduuliToteutus) args[2];
 		String komoto_oid="";
-				
+                
 		switch (komoto.getOid()) {
 		case  "1.2.246.562.5.02998_11_900_1709_1509" : 
 		case "1.2.246.562.5.02998_11_900_1709_1511": 
@@ -252,20 +264,19 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 			komoto_oid=komoto.getOid();
 		}
 		
-		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //44 fields
-                getHakukohdeId(curTulos),//Sisainen koodi
+                Hakukohde hk = getHakukohde(curTulos);
+                
+                String linjaNro = StringUtils.isEmpty(hk.getKelaLinjaKoodi()) ? StringUtils.leftPad("", 3) : hk.getKelaLinjaKoodi();
+                String linjaTarkenne = StringUtils.isEmpty(hk.getKelaLinjaTarkenne()) ? StringUtils.leftPad("", 2) : hk.getKelaLinjaTarkenne();
+                
+		return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //34 fields
+                getHakukohdeId(hk),//Sisainen koodi
                 getOppilaitosnumero(tarjoajaOrganisaatioDTO),//OPPIL_NRO
                 getOrgOid(tarjoajaOrganisaatioDTO), //OrganisaatioOID
                 getOpetuspisteenJarjNro(tarjoajaOrganisaatioDTO),
                 StringUtils.leftPad("",12),//Op. linjan tai koulutuksen jarjestysnro
                 getKoulutuslaji(),//Koulutuslaji
-                StringUtils.leftPad("",2),//Opintolinjan kieli
-                StringUtils.leftPad("",2),//OPL_LASPER
-                StringUtils.leftPad("",2),//Valintakoeryhma
-                StringUtils.leftPad("",10),//Kokeilun yksiloiva tunniste
-                StringUtils.leftPad("",5), //OPL_SUUNT
                 getHakukohteenNimi(curTulos),//Hakukohteen nimi
-                StringUtils.leftPad("",1),//filler
                 kelaDAO.getKKTutkinnonTaso(komoto),//TUT_TASO
                 getTutkintotunniste(komoto.getKoulutusmoduuli()),//TUT_ID = koulutuskoodi
                 getOrgOid(curTulos), //hakukohde OID
@@ -273,8 +284,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("",3), //OPL_OTTOALUE
                 StringUtils.leftPad("",3), //Opetusmuoto
                 StringUtils.leftPad("",2), //Koulutustyyppi
-                StringUtils.leftPad("",3), //OPL-EKASITTELY
-                StringUtils.leftPad("",2), //OPL_PKR_TUNNUS
+                linjaNro, //LINJANRO
+                linjaTarkenne, //LINJTARK
                 StringUtils.leftPad("",2), //OPL_VKOEJAR
                 StringUtils.leftPad("",2), //OPL_VKOEKUT
                 StringUtils.leftPad("",7), //Alinkeskiarvo
@@ -344,7 +355,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 		if (StringUtils.isEmpty(hakNimi)) {
 			error(9, curTulos.getOid()+" "+curTulos.getNimi());
 		}
-		return strCutter(hakNimi, 40, "hakukohteen nimi", false);
+		return strCutter(hakNimi, 62, "hakukohteen nimi", false);
 	}
 
 	@Override
