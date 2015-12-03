@@ -68,7 +68,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     private final static String[] warnings = {
         "Toimipisteen opetuspisteenjnro is empty : org.oid=%s",
-        "komoto-oid converted from %s to %s (hakukohde: %s)"
+        "komoto-oid converted from %s to %s (hakukohde: %s)",
+        "Hakukohde %s has invalid %s"
     };
 
     private final static String[] infos = {
@@ -266,9 +267,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
         Hakukohde hk = getHakukohde(curTulos);
 
-        String linjaNro = StringUtils.isEmpty(hk.getKelaLinjaKoodi()) ? StringUtils.leftPad("", 3) : hk.getKelaLinjaKoodi();
-        String linjaTarkenne = StringUtils.isEmpty(hk.getKelaLinjaTarkenne()) ? StringUtils.leftPad("", 2) : hk.getKelaLinjaTarkenne();
-
         return String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", //34 fields
                 getHakukohdeId(hk),//Sisainen koodi
                 getOppilaitosnumero(tarjoajaOrganisaatioDTO),//OPPIL_NRO
@@ -284,8 +282,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 3), //OPL_OTTOALUE
                 StringUtils.leftPad("", 3), //Opetusmuoto
                 StringUtils.leftPad("", 2), //Koulutustyyppi
-                linjaNro, //LINJANRO
-                linjaTarkenne, //LINJTARK
+                getLinjaNro(hk), //LINJANRO
+                getLinjaTarkenne(hk), //LINJTARK
                 StringUtils.leftPad("", 2), //OPL_VKOEJAR
                 StringUtils.leftPad("", 2), //OPL_VKOEKUT
                 StringUtils.leftPad("", 7), //Alinkeskiarvo
@@ -304,6 +302,32 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 1), //OPL_TULOSTUS
                 StringUtils.leftPad("", 15), //OPL_OMISTAJA
                 getKomotoOid(komoto_oid));
+    }
+
+    private String getLinjaNro(Hakukohde hk) {
+        String ln = hk.getKelaLinjaKoodi();
+        if (StringUtils.isEmpty(ln)) {
+            return StringUtils.leftPad("", 3);
+        }
+
+        if (ln.length() != 3) {
+            warn(3, hk.getOid(), "linjakoodi");
+        }
+
+        return (ln.length() > 3) ? ln.substring(0, 3) : StringUtils.rightPad(ln, 3);
+    }
+
+    private String getLinjaTarkenne(Hakukohde hk) {
+        String lt = hk.getKelaLinjaTarkenne();
+        if (StringUtils.isEmpty(lt)) {
+            return StringUtils.leftPad("", 2);
+        }
+
+        if (lt.length() != 2) {
+            warn(3, hk.getOid(), "linjan tarkenne");
+        }
+
+        return (lt.length() > 2) ? lt.substring(0, 2) : StringUtils.rightPad(lt, 2);
     }
 
     private String getKomotoOid(String oid) throws OPTFormatException {
