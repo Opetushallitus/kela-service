@@ -246,7 +246,8 @@ public class KelaResourceImpl implements KelaResource {
     private boolean yliopisto(String s) {
         return s != null && (s.startsWith("koulutusasteoph2002_63#") || s.startsWith("koulutusasteoph2002_72#")
                 || s.startsWith("koulutusasteoph2002_73#") || s.startsWith("koulutusasteoph2002_80#")
-                || s.startsWith("koulutusasteoph2002_81#") || s.startsWith("koulutusasteoph2002_82#"));
+                || s.startsWith("koulutusasteoph2002_81#") || s.startsWith("koulutusasteoph2002_82#")
+                || s.startsWith("koulutusasteoph2002_70#"));
     }
 
     private Hakukohde haeHakukohde(String oid) {
