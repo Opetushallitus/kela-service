@@ -49,7 +49,7 @@
     <bean scope="singleton" class="fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService"/>
     <bean scope="singleton" class="fi.vm.sade.organisaatio.service.search.SolrServerFactory"/>
     
-    <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.TarjontaSearchService"/>
+    <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.HakukohdeSearchService"/>
     <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.SolrServerFactory"/>
 
     <jaxws:client id="koodiPublicService"

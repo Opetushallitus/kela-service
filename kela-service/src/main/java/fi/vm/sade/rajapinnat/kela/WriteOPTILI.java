@@ -189,7 +189,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         HakukohteetVastaus vastaus = null;
         while (true) {
             try {
-                vastaus = tarjontaSearchService.haeHakukohteet(kysely);
+                vastaus = hakukohdeSearchService.haeHakukohteet(kysely);
                 break;
             } catch (org.apache.solr.common.SolrException e) {
                 handleException(e);
@@ -213,7 +213,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 }
                 hakukohteet.add(curTulos.getOid().substring(curTulos.getOid().lastIndexOf('.')));
 
-                if (curTulos.getTila().equals(TarjontaTila.JULKAISTU) && isHakukohdeOppilaitos(tarjoajaOid)) {
+                if (TarjontaTila.JULKAISTU.equals(curTulos.getTila()) && isHakukohdeOppilaitos(tarjoajaOid)) {
                     Hakukohde hakukohde = kelaDAO.findHakukohdeByOid(curTulos.getOid());
                     if (hakukohde == null) {
                         error(11, curTulos.getOid() + " " + curTulos.getNimi());
@@ -236,6 +236,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 }
             } catch (OPTFormatException e) {
                 LOG.error(String.format(errors[0], (curTulos.getOid() + " " + curTulos.getNimi()), tarjoajaOid));
+            } catch (Exception e) {
+                LOG.error(String.format(errors[0], (curTulos.getOid() + " " + curTulos.getNimi()), tarjoajaOid));
+                throw e;
             }
         }
     }

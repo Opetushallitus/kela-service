@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
 import org.apache.cxf.jaxrs.client.ServerWebApplicationException;
@@ -52,7 +53,6 @@ import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
-import fi.vm.sade.tarjonta.service.search.TarjontaSearchService;
 
 @Configurable
 public abstract class AbstractOPTIWriter {
@@ -114,7 +114,7 @@ public abstract class AbstractOPTIWriter {
     protected final static String INFO_MESS_1 = "%s records written, %s skipped.";
 
     @Autowired
-    protected TarjontaSearchService tarjontaSearchService;
+    protected HakukohdeSearchService hakukohdeSearchService;
 
     @Autowired
     protected OrganisaatioService organisaatioService;
@@ -459,8 +459,8 @@ public abstract class AbstractOPTIWriter {
         return kmdt;
     }
 
-    public void setTarjontaSearchService(TarjontaSearchService tarjontaSearchService) {
-        this.tarjontaSearchService = tarjontaSearchService;
+    public void setHakukohdeSearchService(HakukohdeSearchService hakukohdeSearchService) {
+        this.hakukohdeSearchService = hakukohdeSearchService;
     }
 
     public void setOrganisaatioService(OrganisaatioService organisaatioService) {
