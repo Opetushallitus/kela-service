@@ -15,9 +15,9 @@
 
         <property name="acquireIncrement"                       value="3"/>
         <property name="idleConnectionTestPeriod"               value="300"/>
-        <property name="initialPoolSize"                        value="5"/>
-        <property name="maxPoolSize"                            value="50"/>
-        <property name="minPoolSize"                            value="5"/>
+        <property name="minPoolSize"                            value="${kela-tarjontadb.max-size}"/>
+        <property name="initialPoolSize"                        value="${kela-tarjontadb.max-size}"/>
+        <property name="maxPoolSize"                            value="${kela-tarjontadb.max-size}"/>
         <property name="preferredTestQuery"                     value="select 1"/>
         <property name="testConnectionOnCheckin"                value="true"/>
     </bean>
@@ -30,9 +30,9 @@
 
         <property name="acquireIncrement"                       value="3"/>
         <property name="idleConnectionTestPeriod"               value="300"/>
-        <property name="initialPoolSize"                        value="5"/>
-        <property name="maxPoolSize"                            value="50"/>
-        <property name="minPoolSize"                            value="5"/>
+        <property name="minPoolSize"                            value="${kela-organisaatiodb.max-size}"/>
+        <property name="initialPoolSize"                        value="${kela-organisaatiodb.max-size}"/>
+        <property name="maxPoolSize"                            value="${kela-organisaatiodb.max-size}"/>
         <property name="preferredTestQuery"                     value="select 1"/>
         <property name="testConnectionOnCheckin"                value="true"/>
     </bean>
