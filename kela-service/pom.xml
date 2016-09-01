@@ -89,6 +89,12 @@
             <artifactId>organisaatio-solr-client</artifactId>
             <version>${organisaatio.api.version}</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fi.vm.sade.generic</groupId>
