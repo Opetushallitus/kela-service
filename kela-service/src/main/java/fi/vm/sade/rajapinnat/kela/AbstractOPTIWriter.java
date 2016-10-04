@@ -46,7 +46,6 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
-import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
@@ -117,9 +116,6 @@ public abstract class AbstractOPTIWriter {
     protected HakukohdeSearchService hakukohdeSearchService;
 
     @Autowired
-    protected OrganisaatioService organisaatioService;
-
-    @Autowired
     protected KoodiService koodiService;
 
     @Autowired
@@ -131,6 +127,7 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected OrganisaatioContainer orgContainer;
 
+    @Autowired
     protected OrganisaatioResource organisaatioResource;
 
     private String fileName = null;
@@ -461,10 +458,6 @@ public abstract class AbstractOPTIWriter {
 
     public void setHakukohdeSearchService(HakukohdeSearchService hakukohdeSearchService) {
         this.hakukohdeSearchService = hakukohdeSearchService;
-    }
-
-    public void setOrganisaatioService(OrganisaatioService organisaatioService) {
-        this.organisaatioService = organisaatioService;
     }
 
     public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {

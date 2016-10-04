@@ -21,12 +21,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
@@ -79,7 +82,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     public WriteOPTILI() {
         super();
     }
-
+    
     private boolean isHakukohdeOppilaitos(String tarjoajaOid) {
         return this.orgContainer.getOrgOidList().contains(tarjoajaOid);
     }
