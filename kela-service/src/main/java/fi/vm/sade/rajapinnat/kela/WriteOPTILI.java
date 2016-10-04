@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
@@ -123,8 +123,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return KOULUTUSLAJI;
     }
 
-    private String getOpetuspisteenJarjNro(OrganisaatioDTO organisaatio) {
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
+    private String getOpetuspisteenJarjNro(OrganisaatioRDTO organisaatio) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.toString())) {
             if (StringUtils.isEmpty(organisaatio.getOpetuspisteenJarjNro())) {
                 warn(1, organisaatio.getOid());
                 return "  ";
@@ -132,14 +132,14 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 return organisaatio.getOpetuspisteenJarjNro();
             }
         }
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.toString())) {
             Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(organisaatio.getOid());
             return (organisaatioE != null && !StringUtils.isEmpty(organisaatioE.getOpetuspisteenJarjNro().trim())) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
         }
         return "01";
     }
 
-    private String getOppilaitosnumero(OrganisaatioDTO organisaatio) throws OPTFormatException {
+    private String getOppilaitosnumero(OrganisaatioRDTO organisaatio) throws OPTFormatException {
         String oppil_nro = null;
         oppil_nro = getOppilaitosNro(organisaatio);
         if (oppil_nro == null || StringUtils.isEmpty(oppil_nro.trim())) {
@@ -223,7 +223,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                     if (komotos.size() == 0) {
                         error(5, curTulos.getOid() + " " + curTulos.getNimi());
                     }
-                    OrganisaatioDTO organisaatioDTO = this.organisaatioService.findByOid(tarjoajaOid);
+                    OrganisaatioRDTO organisaatioDTO = this.organisaatioResource.getOrganisaatioByOID(tarjoajaOid, false);
                     for (KoulutusmoduuliToteutus komoto : komotos) {
 
                         if (kmos.contains(komoto.getOid())) {
@@ -251,7 +251,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
             isInteger = Pattern.compile("\\d+");
         }
         HakukohdePerustieto curTulos = (HakukohdePerustieto) args[0];
-        OrganisaatioDTO tarjoajaOrganisaatioDTO = (OrganisaatioDTO) args[1];
+        OrganisaatioRDTO tarjoajaOrganisaatioDTO = (OrganisaatioRDTO) args[1];
         KoulutusmoduuliToteutus komoto = (KoulutusmoduuliToteutus) args[2];
         String komoto_oid = "";
 
@@ -344,7 +344,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return strFormatter(_oid, 22, "KOMOTOOID");
     }
 
-    private String getOrgOid(OrganisaatioDTO org) throws OPTFormatException {
+    private String getOrgOid(OrganisaatioRDTO org) throws OPTFormatException {
         if (null == org.getOid()) {
             error(4);
         }

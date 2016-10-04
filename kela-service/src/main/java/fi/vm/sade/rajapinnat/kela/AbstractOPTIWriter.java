@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
@@ -46,7 +47,6 @@ import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
 import fi.vm.sade.organisaatio.api.model.OrganisaatioService;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioDTO;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
@@ -377,12 +377,12 @@ public abstract class AbstractOPTIWriter {
         return opnro;
     }
 
-    protected String getOppilaitosNro(OrganisaatioDTO organisaatio) throws OPTFormatException {
+    protected String getOppilaitosNro(OrganisaatioRDTO organisaatio) throws OPTFormatException {
         String oppil_nro = "";
         if (null != organisaatio.getTyypit()) {
-            if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS)) {
+            if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.toString())) {
                 oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
-            } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE)) {
+            } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.toString())) {
                 oppil_nro = getOppilaitosNro(organisaatio.getParentOidPath());
             }
         }
