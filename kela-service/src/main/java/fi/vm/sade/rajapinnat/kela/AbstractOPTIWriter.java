@@ -127,7 +127,6 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected OrganisaatioContainer orgContainer;
 
-    @Autowired
     protected OrganisaatioResource organisaatioResource;
 
     private String fileName = null;

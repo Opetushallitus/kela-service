@@ -60,10 +60,6 @@
                   serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
                   address="${koodisto.public.webservice.url.backend:http://NO_KOODISTO_WEBSERVICE_URL_CONFIGURED}"/>
 
-    <jaxws:client id="organisaatioService"
-                  serviceClass="fi.vm.sade.organisaatio.api.model.OrganisaatioService"
-                  address="${organisaatio.webservice.url.backend:http://NO_ORGANISAATIO_WEBSERVICE_URL_CONFIGURED}"/>
-                  
     <jaxrs:client id="organisaatioResource"
                   address="${organisaatio.api.rest.url}"
                   serviceClass="fi.vm.sade.organisaatio.resource.OrganisaatioResource"

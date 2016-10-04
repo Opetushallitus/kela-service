@@ -47,6 +47,9 @@ import fi.vm.sade.tarjonta.service.types.TarjontaTila;
 @Configurable
 public class WriteOPTILI extends AbstractOPTIWriter {
 
+    @Autowired
+    private ApplicationContext appContext;
+
     private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
 
     private String FILEIDENTIFIER;
@@ -82,7 +85,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     public WriteOPTILI() {
         super();
     }
-    
+
     private boolean isHakukohdeOppilaitos(String tarjoajaOid) {
         return this.orgContainer.getOrgOidList().contains(tarjoajaOid);
     }
@@ -188,6 +191,10 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     @Override
     public void composeRecords() throws IOException, UserStopRequestException {
+        if (organisaatioResource == null) {
+            organisaatioResource = (OrganisaatioResource) appContext.getBean("organisaatioResource"); // Some problem with @Autowired copied from writeoptiyt
+        }
+
         HakukohteetKysely kysely = new HakukohteetKysely();
         HakukohteetVastaus vastaus = null;
         while (true) {
