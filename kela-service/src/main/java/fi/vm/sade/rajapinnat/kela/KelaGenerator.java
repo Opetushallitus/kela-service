@@ -183,7 +183,7 @@ public class KelaGenerator implements Runnable {
         } catch (UserStopRequestException e) {
             throw e;
         } catch (Exception ex) {
-            LOG.error(ex.getMessage());
+            LOG.error("Error writing kela OPTI file.", ex);
             throw ex;
         }
     }
@@ -423,13 +423,13 @@ public class KelaGenerator implements Runnable {
             LOG.error("Interrupted.");
         } catch (Exception ex) {
             runState = RunState.ERROR;
-            LOG.error(ex.getMessage());
+            LOG.error("Kela export run failed", ex);
             ex.printStackTrace();
         } finally {
             releaseLogger();
             ticker.stop();
             endTime = System.currentTimeMillis();
-            LOG.info("duration: " + (long) ((endTime - startTime) / 1000.0) + "s.");
+            LOG.info("run duration: " + (long) ((endTime - startTime) / 1000.0) + "s.");
         }
     }
 
