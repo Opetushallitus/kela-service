@@ -26,10 +26,8 @@ import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
@@ -43,12 +41,11 @@ import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
 import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
 import fi.vm.sade.tarjonta.service.types.TarjontaTila;
 
+import javax.annotation.Resource;
+
 @Component
 @Configurable
 public class WriteOPTILI extends AbstractOPTIWriter {
-
-    @Autowired
-    private ApplicationContext appContext;
 
     private static final Logger LOG = LoggerFactory.getLogger(KelaGenerator.class);
 
@@ -130,7 +127,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
     }
 
     private String getOpetuspisteenJarjNro(OrganisaatioRDTO organisaatio) {
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.toString())) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.value())) {
             if (StringUtils.isEmpty(organisaatio.getOpetuspisteenJarjNro())) {
                 warn(1, organisaatio.getOid());
                 return "  ";
@@ -138,7 +135,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 return organisaatio.getOpetuspisteenJarjNro();
             }
         }
-        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.toString())) {
+        if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.value())) {
             Organisaatio organisaatioE = kelaDAO.findFirstChildOrganisaatio(organisaatio.getOid());
             return (organisaatioE != null && !StringUtils.isEmpty(organisaatioE.getOpetuspisteenJarjNro().trim())) ? organisaatioE.getOpetuspisteenJarjNro() : "01";
         }
@@ -191,10 +188,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     @Override
     public void composeRecords() throws IOException, UserStopRequestException {
-        if (organisaatioResource == null) {
-            organisaatioResource = (OrganisaatioResource) appContext.getBean("organisaatioResource"); // Some problem with @Autowired copied from writeoptiyt
-        }
-
         HakukohteetKysely kysely = new HakukohteetKysely();
         HakukohteetVastaus vastaus = null;
         while (true) {

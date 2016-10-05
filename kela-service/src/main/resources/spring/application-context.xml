@@ -18,9 +18,9 @@
     <context:annotation-config/>
 
     <!-- Turn on @Autowired, @PostConstruct etc support -->
-    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+<!--    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
     <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
-
+-->
     <context:property-placeholder
             location="classpath:vtj-service.properties, file:///${user.home:''}/oph-configuration/common.properties, file:///${user.home:''}/oph-configuration/kela-opti.properties, file:///${user.home:''}/oph-configuration/override.properties"
             ignore-resource-not-found="true" properties-ref="defaultProps" />

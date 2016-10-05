@@ -34,12 +34,11 @@ import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
+import javax.annotation.Resource;
+
 @Component
 @Configurable
 public class WriteOPTIYT extends AbstractOPTIWriter {
-
-	@Autowired
-	private ApplicationContext appContext;
 
 	private String FILEIDENTIFIER;
 	private String ALKUTIETUE;
@@ -64,9 +63,6 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	}
 
 	public void composeRecords() throws IOException, UserStopRequestException {
-		if (organisaatioResource == null) {
-			organisaatioResource = (OrganisaatioResource) appContext.getBean("organisaatioResource"); // @Autowired did not work
-		}
 		for (OrganisaatioPerustieto curOppilaitos : this.orgContainer.getOppilaitokset()) {
 			try {
 				writeRecord(curOppilaitos);

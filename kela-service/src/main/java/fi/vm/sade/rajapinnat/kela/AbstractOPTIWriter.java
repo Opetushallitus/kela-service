@@ -53,6 +53,8 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 
+import javax.annotation.Resource;
+
 @Configurable
 public abstract class AbstractOPTIWriter {
 
@@ -127,6 +129,7 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected OrganisaatioContainer orgContainer;
 
+    @Resource
     protected OrganisaatioResource organisaatioResource;
 
     private String fileName = null;
@@ -376,9 +379,9 @@ public abstract class AbstractOPTIWriter {
     protected String getOppilaitosNro(OrganisaatioRDTO organisaatio) throws OPTFormatException {
         String oppil_nro = "";
         if (null != organisaatio.getTyypit()) {
-            if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.toString())) {
+            if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.value())) {
                 oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
-            } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.toString())) {
+            } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.value())) {
                 oppil_nro = getOppilaitosNro(organisaatio.getParentOidPath());
             }
         }
@@ -466,6 +469,7 @@ public abstract class AbstractOPTIWriter {
     public void setOrganisaatioResource(OrganisaatioResource organisaatioResource) {
         this.organisaatioResource = organisaatioResource;
     }
+
 
     public String getFileName() {
         if (fileName == null) {
