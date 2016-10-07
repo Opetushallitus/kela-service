@@ -51,12 +51,6 @@
     <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.HakukohdeSearchService"/>
     <bean scope="singleton" class="fi.vm.sade.tarjonta.service.search.SolrServerFactory"/>
 
-    <http-conf:conduit name="*">
-        <http-conf:client Connection="Keep-Alive"
-                          ConnectionTimeout="60000"
-                          ReceiveTimeout="60000" />
-    </http-conf:conduit>
-
     <jaxws:client id="koodiPublicService"
                 serviceClass="fi.vm.sade.koodisto.service.KoodiService"
                 address="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}"/>
@@ -65,15 +59,6 @@
                   serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
                   address="${koodisto.public.webservice.url.backend:http://NO_KOODISTO_WEBSERVICE_URL_CONFIGURED}"/>
 
-    <jaxrs:client id="organisaatioResource"
-                  address="${organisaatio.api.rest.url}"
-                  serviceClass="fi.vm.sade.organisaatio.resource.OrganisaatioResource"
-                  inheritHeaders="true">
-        <jaxrs:providers>
-            <bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
-        </jaxrs:providers>
-    </jaxrs:client>
-    
     <!-- Scheduling -->
     <task:annotation-driven executor="kelaExecutor" scheduler="kelaScheduler"/>
     <task:executor id="kelaExecutor" pool-size="5"/>

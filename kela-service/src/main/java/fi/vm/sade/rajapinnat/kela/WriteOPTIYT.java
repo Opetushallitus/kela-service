@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
@@ -33,6 +34,7 @@ import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 
@@ -83,9 +85,8 @@ public class WriteOPTIYT extends AbstractOPTIWriter {
 	@Override
 	public String composeRecord(Object... args) throws OPTFormatException {
 		OrganisaatioPerustieto organisaatio = (OrganisaatioPerustieto) args[0];
-		
-		OrganisaatioRDTO orgR = this.organisaatioResource.getOrganisaatioByOID(organisaatio.getOid(), false);
-		
+		OrganisaatioRDTO orgR = this.getOrganisaatio(organisaatio.getOid());
+
 		String record = String.format("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",// 16 fields
 				getYhtId(organisaatio),// YHT_ID
 				getPostinumero(orgR.getPostiosoite()),// POS_NUMERO

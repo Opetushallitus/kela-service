@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
@@ -40,6 +41,7 @@ import fi.vm.sade.tarjonta.service.search.HakukohdePerustieto;
 import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
 import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
 import fi.vm.sade.tarjonta.service.types.TarjontaTila;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 
@@ -226,7 +228,8 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                     if (komotos.size() == 0) {
                         error(5, curTulos.getOid() + " " + curTulos.getNimi());
                     }
-                    OrganisaatioRDTO organisaatioDTO = this.organisaatioResource.getOrganisaatioByOID(tarjoajaOid, false);
+
+                    OrganisaatioRDTO organisaatioDTO = this.getOrganisaatio(tarjoajaOid);
                     for (KoulutusmoduuliToteutus komoto : komotos) {
 
                         if (kmos.contains(komoto.getOid())) {

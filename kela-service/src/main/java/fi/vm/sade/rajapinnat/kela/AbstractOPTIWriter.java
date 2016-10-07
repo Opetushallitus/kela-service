@@ -52,6 +52,8 @@ import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 
@@ -129,8 +131,8 @@ public abstract class AbstractOPTIWriter {
     @Autowired
     protected OrganisaatioContainer orgContainer;
 
-    @Resource
-    protected OrganisaatioResource organisaatioResource;
+    @Value("${organisaatio.api.rest.url}")
+    protected String organisaatioRestUrl;
 
     private String fileName = null;
 
@@ -350,6 +352,14 @@ public abstract class AbstractOPTIWriter {
         return olKoodi;
     }
 
+    protected OrganisaatioRDTO getOrganisaatio(String orgOid) {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(60000);
+        factory.setConnectTimeout(60000);
+        RestTemplate restTemplate = new RestTemplate(factory);
+        return restTemplate.getForObject(organisaatioRestUrl + "/organisaatio/{id}?includeImage=false", OrganisaatioRDTO.class, orgOid);
+    }
+
     private String getOppilaitosNro(String parentOidPath) {
         String olKoodi = null;
         String[] parentsOids = parentOidPath.split("" + PARENTPATH_SEPARATOR);
@@ -465,11 +475,6 @@ public abstract class AbstractOPTIWriter {
     public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
         this.kelaDAO = hakukohdeDAO;
     }
-
-    public void setOrganisaatioResource(OrganisaatioResource organisaatioResource) {
-        this.organisaatioResource = organisaatioResource;
-    }
-
 
     public String getFileName() {
         if (fileName == null) {
