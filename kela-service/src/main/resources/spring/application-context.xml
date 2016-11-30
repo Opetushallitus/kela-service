@@ -42,6 +42,7 @@
 	</bean>
 
     <context:component-scan base-package="fi.vm.sade.rajapinnat.kela" />
+    <context:component-scan base-package="fi.vm.sade.rajapinnat.kela.config" />
     
     <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
 
