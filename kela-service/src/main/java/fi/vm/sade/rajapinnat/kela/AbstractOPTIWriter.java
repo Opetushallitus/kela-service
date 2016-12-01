@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
+import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
@@ -117,6 +118,9 @@ public abstract class AbstractOPTIWriter {
     protected final static String INFO_MESS_1 = "%s records written, %s skipped.";
 
     @Autowired
+    private UrlConfiguration urlConfiguration;
+
+    @Autowired
     protected HakukohdeSearchService hakukohdeSearchService;
 
     @Autowired
@@ -130,9 +134,6 @@ public abstract class AbstractOPTIWriter {
 
     @Autowired
     protected OrganisaatioContainer orgContainer;
-
-    @Value("${organisaatio.api.rest.url}")
-    protected String organisaatioRestUrl;
 
     private String fileName = null;
 
@@ -357,7 +358,8 @@ public abstract class AbstractOPTIWriter {
         factory.setReadTimeout(60000);
         factory.setConnectTimeout(60000);
         RestTemplate restTemplate = new RestTemplate(factory);
-        return restTemplate.getForObject(organisaatioRestUrl + "/organisaatio/{id}?includeImage=false", OrganisaatioRDTO.class, orgOid);
+        return restTemplate.getForObject(
+                urlConfiguration.url("organisaatio-service.organisaatio.noimage", orgOid), OrganisaatioRDTO.class);
     }
 
     private String getOppilaitosNro(String parentOidPath) {
