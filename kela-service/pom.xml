@@ -288,21 +288,10 @@
             <version>2.2.5</version>
         </dependency>
 
-        <!-- CAS ticket cache replication -->
+        <!-- CAS ticket cache -->
         <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-            <version>${ehcache.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-jgroupsreplication</artifactId>
-            <version>${ehcache-jgroupsreplication.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jgroups</groupId>
-            <artifactId>jgroups</artifactId>
-            <version>${jgroups.version}</version>
+            <groupId>org.jasig.cas.client</groupId>
+            <artifactId>cas-client-support-distributed-ehcache</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jasig.cas.client</groupId>
