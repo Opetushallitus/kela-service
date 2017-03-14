@@ -284,7 +284,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 StringUtils.leftPad("", 12),//Op. linjan tai koulutuksen jarjestysnro
                 getKoulutuslaji(),//Koulutuslaji
                 getHakukohteenNimi(curTulos),//Hakukohteen nimi
-                kelaDAO.getKKTutkinnonTaso(komoto),//TUT_TASO
+                kelaDAO.getKKTutkinnonTaso(komoto).getTasoCode(),//TUT_TASO
                 getTutkintotunniste(komoto.getKoulutusmoduuli()),//TUT_ID = koulutuskoodi
                 getOrgOid(curTulos), //hakukohde OID
                 StringUtils.leftPad("", 3), //filler

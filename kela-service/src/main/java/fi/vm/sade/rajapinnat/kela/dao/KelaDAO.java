@@ -17,6 +17,7 @@ package fi.vm.sade.rajapinnat.kela.dao;
 
 import java.util.List;
 
+import fi.vm.sade.rajapinnat.kela.dto.TasoJaLaajuusContainer;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
@@ -48,5 +49,5 @@ public interface KelaDAO {
 
 	List<OrganisaatioPerustieto> findToimipisteet(List<String> excludeOids);
 
-	String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto);
+	TasoJaLaajuusContainer getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto);
 }

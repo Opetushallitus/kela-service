@@ -12,7 +12,7 @@ public interface KelaResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/{hakukohdeOid}/tutkinnontaso")
-    public String tutkinnontaso(@PathParam("hakukohdeOid") String hakukohdeOid);
+    public TasoJaLaajuusDTO tutkinnontaso(@PathParam("hakukohdeOid") String hakukohdeOid);
     
     @GET
     @Produces(MediaType.TEXT_PLAIN)

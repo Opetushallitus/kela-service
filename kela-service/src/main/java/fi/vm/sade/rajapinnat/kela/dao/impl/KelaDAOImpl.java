@@ -22,6 +22,8 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
+
+import fi.vm.sade.rajapinnat.kela.dto.TasoJaLaajuusContainer;
 import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
@@ -398,12 +400,24 @@ public class KelaDAOImpl implements KelaDAO {
         return s != null && s.startsWith("koulutus_") && s.charAt(9) == '6';
     }
 
+
+    private boolean laakis(String s) {
+        return s != null && s.equals("koulutus_772101");
+    }
+
+    private boolean hammaslaakis(String s) {
+        return s != null && s.equals("koulutus_772201");
+    }
+
     private boolean kk_tut_taso(String s) {
-        return ylempi(s) || alempi(s);
+        return ylempi(s) || alempi(s) || laakis(s) || hammaslaakis(s);
     }
 
     @Override
-    public String getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto) {
+    public TasoJaLaajuusContainer getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto) {
+
+        TasoJaLaajuusContainer resp = new TasoJaLaajuusContainer();
+
         /*
          * 1) jos hakukohteen koulutusmoduulin toteutuksella on kandi_koulutus_uri tai koulutus_uri käytetään näitä koulutusmoduulin sijasta
          */
@@ -412,12 +426,19 @@ public class KelaDAOImpl implements KelaDAO {
         Koulutusmoduuli koulutusmoduuli = komoto.getKoulutusmoduuli();
 
         if (komoto == null || koulutusmoduuli == null) {
-            return "   "; //ei JULKAISTU
+            return resp.eiTasoa(); //ei JULKAISTU
         }
         koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
 
         if (!kk_tut_taso(koulutus_uri)) {
-            return "   "; //ei korkeakoulun ylempi eikä alempi
+            return resp.eiTasoa(); //ei korkeakoulun ylempi eikä alempi
+        }
+
+        if (laakis(koulutus_uri)) {
+            return resp.laakis(komoto.getKoulutusmoduuli().getOid());
+        }
+        if (hammaslaakis(koulutus_uri)) {
+            return resp.hammasLaakis(komoto.getKoulutusmoduuli().getOid());
         }
 
         boolean alempia_sisaltyy = false;
@@ -433,7 +454,7 @@ public class KelaDAOImpl implements KelaDAO {
          * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja siihen sisältyy jokin alempi koulutuskoodi => 060 = alempi+ylempi
          */
         if (ylempi(koulutus_uri) && alempia_sisaltyy) {
-            return "060";
+            return resp.onlyYlempi(komoto.getKoulutusmoduuli().getOid());
         }
 
         /*
@@ -444,19 +465,22 @@ public class KelaDAOImpl implements KelaDAO {
         relativesList.addAll(getParentOids(rootOid));
         relativesList.add(rootOid);
 
-        boolean ylempia = false;
-        boolean alempia = false;
+        Koulutusmoduuli ylempiKomo = null;
+        Koulutusmoduuli alempiKomo = null;
         for (String oid : relativesList) {
             koulutusmoduuli = getKoulutusmoduuli(oid);
             if (koulutusmoduuli != null) {
-                if (!ylempia) {
-                    ylempia = ylempi(koulutusmoduuli.getKoulutusUri());
+                if(laakis(koulutusmoduuli.getKoulutusUri())) {
+                    return resp.laakis(koulutusmoduuli.getOid());
                 }
-                if (!alempia) {
-                    alempia = alempi(koulutusmoduuli.getKoulutusUri());
+                if(hammaslaakis(koulutusmoduuli.getKoulutusUri())) {
+                    return resp.hammasLaakis(koulutusmoduuli.getOid());
                 }
-                if (ylempia && alempia) {
-                    break;
+                if (ylempiKomo == null && ylempi(koulutusmoduuli.getKoulutusUri())) {
+                    ylempiKomo = koulutusmoduuli;
+                }
+                if (alempiKomo == null && alempi(koulutusmoduuli.getKoulutusUri())) {
+                    alempiKomo = koulutusmoduuli;
                 }
             }
         }
@@ -464,25 +488,25 @@ public class KelaDAOImpl implements KelaDAO {
         /*
          * 4) jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
          */
-        if (ylempia && !alempia) {
-            return "061";
+        if (ylempiKomo != null && alempiKomo == null) {
+            return resp.onlyYlempi(ylempiKomo.getOid());
         }
         /*
          * 5) jos pelkkiä alempia => 050  (alempi kk.tutkinto)
          */
-        if (!ylempia && alempia) {
-            return "050";
+        if (ylempiKomo == null && alempiKomo != null) {
+            return resp.onlyAlempi(alempiKomo.getOid());
         }
         /*
          * 6) jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
          */
-        if (ylempia && alempia) {
-            return "060";
+        if (ylempiKomo != null && alempiKomo != null) {
+            return resp.ylempiAlempi(ylempiKomo.getOid(), alempiKomo.getOid());
         }
         /*
          * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä
          */
-        return "   ";
+        return resp.eiTasoa();
     }
 
     private EntityManager getTarjontaEntityManager() {
