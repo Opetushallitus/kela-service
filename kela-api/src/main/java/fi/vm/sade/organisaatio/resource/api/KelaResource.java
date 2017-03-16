@@ -10,7 +10,7 @@ import javax.ws.rs.core.MediaType;
 public interface KelaResource {
     public String OID_SEPARATOR = "/";
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{hakukohdeOid}/tutkinnontaso")
     public TasoJaLaajuusDTO tutkinnontaso(@PathParam("hakukohdeOid") String hakukohdeOid);
     

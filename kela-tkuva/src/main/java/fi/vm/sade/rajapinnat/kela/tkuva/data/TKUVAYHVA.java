@@ -52,6 +52,9 @@ public class TKUVAYHVA {
     private byte[] ajankohta;
     private byte[] lukukaudenAloituspaiva;
 
+    private byte[] tutkinnonLaajuus1;
+    private byte[] tutkinnonLaajuus2;
+
     private byte[] varatila3;
 
     public byte[] toByteArray() throws Exception {
@@ -79,7 +82,10 @@ public class TKUVAYHVA {
 	        buffer.put(tutkinnonTaso2);
 	        buffer.put(ajankohta);
 	        buffer.put(lukukaudenAloituspaiva);
-	
+
+            buffer.put(tutkinnonLaajuus1);
+            buffer.put(tutkinnonLaajuus2);
+
 	        buffer.put(varatila3);
 	        // buffer.compact(); no need for this as buffer is allocated 200 which
 	        // should be always the size
@@ -157,6 +163,15 @@ public class TKUVAYHVA {
     public void setVaratila3(byte[] varatila3) {
         this.varatila3 = varatila3;
     }
+
+    public void setTutkinnonLaajuus1(byte[] tutkinnonLaajuus1) {
+        this.tutkinnonLaajuus1 = tutkinnonLaajuus1;
+    }
+
+    public void setTutkinnonLaajuus2(byte[] tutkinnonLaajuus2) {
+        this.tutkinnonLaajuus2 = tutkinnonLaajuus2;
+    }
+
 
     public byte[] getAjankohta() {
         return ajankohta;
@@ -285,6 +300,9 @@ public class TKUVAYHVA {
 
         // private byte[] lukukaudenAloituspaiva;
 
+        private byte[] tutkinnonLaajuus1;
+        private byte[] tutkinnonLaajuus2;
+
         // private byte[] varatila3;
         
 
@@ -361,6 +379,17 @@ public class TKUVAYHVA {
             return this;
         }
 
+
+        public Builder setTutkinnonLaajuus1(String tutkinnonLaajuus1) {
+            this.tutkinnonLaajuus1 = toLatin1(tutkinnonLaajuus1, 3);
+            return this;
+        }
+
+        public Builder setTutkinnonLaajuus2(String tutkinnonLaajuus2) {
+            this.tutkinnonLaajuus2 = toLatin1(tutkinnonLaajuus2, 3);
+            return this;
+        }
+
         public Builder setValintapaivamaara(Date valintapaivamaara) {
             this.valintapaivamaara = toLatin1(poimintapaivamaaraJaValintapaivamaaraFormatter.format(valintapaivamaara),
                     8);
@@ -403,7 +432,11 @@ public class TKUVAYHVA {
                 t.setLukukaudenAloituspaiva(toLatin1(a.append("0101").append(aloitusvuosiFormatter.format(lukuvuosi))
                         .toString(), 8));
             }
-            t.setVaratila3(toLatin1("", 20));
+
+            t.setTutkinnonLaajuus1(this.tutkinnonLaajuus1);
+            t.setTutkinnonLaajuus2(this.tutkinnonLaajuus2);
+
+            t.setVaratila3(toLatin1("", 14));
             return t;
         }
 

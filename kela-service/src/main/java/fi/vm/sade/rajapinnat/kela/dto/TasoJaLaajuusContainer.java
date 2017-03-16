@@ -12,6 +12,13 @@ public class TasoJaLaajuusContainer {
 
     private static final Logger LOG = Logger.getLogger(TasoJaLaajuusContainer.class);
 
+    private static final String ONLYALEMPI = "050";
+    private static final String ALEMPIYLEMPI = "060";
+    private static final String ONLYYLEMPI = "061";
+    private static final String LAAKIS = "070";
+    private static final String HAMMASLAAKIS = "071";
+    private static final String EITASOA = "   ";
+
     private String tasoCode;
     private String komoId1;
     private String komoId2;
@@ -30,51 +37,51 @@ public class TasoJaLaajuusContainer {
 
 
     public TasoJaLaajuusContainer laakis(String komoId) {
-        tasoCode = "071";
+        tasoCode = LAAKIS;
         this.komoId1 = komoId;
         return this;
     }
 
     public TasoJaLaajuusContainer hammasLaakis(String komoId) {
-        tasoCode = "070";
+        tasoCode = HAMMASLAAKIS;
         this.komoId1 = komoId;
         return this;
     }
 
     public TasoJaLaajuusContainer onlyAlempi(String komoId) {
-        tasoCode = "050";
+        tasoCode = ONLYALEMPI;
         this.komoId1 = komoId;
         return this;
     }
 
     public TasoJaLaajuusContainer onlyYlempi(String komoId) {
-        tasoCode = "061";
+        tasoCode = ONLYYLEMPI;
         this.komoId1 = komoId;
         return this;
     }
 
-    public TasoJaLaajuusContainer ylempiAlempi(String komoId1, String komoId2) {
-        tasoCode = "060";
+    public TasoJaLaajuusContainer alempiYlempi(String komoId1, String komoId2) {
+        tasoCode = ALEMPIYLEMPI;
         this.komoId1 = komoId1;
         this.komoId2 = komoId2;
         return this;
     }
 
     public TasoJaLaajuusContainer eiTasoa() {
-        tasoCode = "   ";
+        tasoCode = EITASOA;
         return this;
     }
 
-    public boolean isYlempi() { return "061".equals(tasoCode); }
-    public boolean isLaakis() { return "071".equals(tasoCode); }
+    public boolean isYlempi() { return ONLYYLEMPI.equals(tasoCode); }
+    public boolean isLaakis() { return LAAKIS.equals(tasoCode); }
     public boolean isHammaslaakis() {
-        return "071".equals(tasoCode);
+        return HAMMASLAAKIS.equals(tasoCode);
     }
-    public boolean isAlempi() { return "050".equals(tasoCode); }
-    public boolean isYlempiAlempi() { return "060".equals(tasoCode); }
+    public boolean isAlempi() { return ONLYALEMPI.equals(tasoCode); }
+    public boolean isAlempiYlempi() { return ALEMPIYLEMPI.equals(tasoCode); }
 
     public boolean hasTaso() {
-        return this.tasoCode != null && "   ".equals(tasoCode) == false;
+        return this.tasoCode != null && EITASOA.equals(tasoCode) == false;
     }
 
     public TasoJaLaajuusDTO toDTO(UrlConfiguration urlConfiguration) {
@@ -89,7 +96,7 @@ public class TasoJaLaajuusContainer {
 
 
     private String getLaajuus(String komoId, UrlConfiguration urlConfiguration) {
-        if(komoId1 == null || "".equals(komoId1)) {
+        if(komoId == null || "".equals(komoId)) {
             return null;
         }
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
@@ -97,17 +104,17 @@ public class TasoJaLaajuusContainer {
         factory.setConnectTimeout(5000);
         RestTemplate restTemplate = new RestTemplate(factory);
         try {
-            TarjontaKomoDTO resp = restTemplate.getForObject(urlConfiguration.url("tarjonta-service.komo.byid", komoId), TarjontaKomoDTO.class);
-            if(resp.opintojenLaajuusarvo != null && resp.opintojenLaajuusarvo.arvo != null) {
-                return resp.opintojenLaajuusarvo.arvo;
+            TarjontaRespDTO resp = restTemplate.getForObject(urlConfiguration.url("tarjonta-service.komo.byid", komoId), TarjontaRespDTO.class);
+            if(resp.result != null && resp.result.opintojenLaajuusarvo != null && resp.result.opintojenLaajuusarvo.arvo != null) {
+                return resp.result.opintojenLaajuusarvo.arvo;
             } else {
                 LOG.info("Tarjonta Komo:" + komoId + " didnt return opintojenlaajuus.");
-                return "";
+                return null;
             }
         } catch (Exception e) {
             LOG.error("Error querying KOMO ID:" + komoId +" from tarjonta.", e);
         }
-        return "";
+        return null;
     }
 
 }

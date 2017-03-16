@@ -501,7 +501,7 @@ public class KelaDAOImpl implements KelaDAO {
          * 6) jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
          */
         if (ylempiKomo != null && alempiKomo != null) {
-            return resp.ylempiAlempi(ylempiKomo.getOid(), alempiKomo.getOid());
+            return resp.alempiYlempi(alempiKomo.getOid(), ylempiKomo.getOid());
         }
         /*
          * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä

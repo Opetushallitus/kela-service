@@ -200,7 +200,7 @@ public class KelaResourceImpl implements KelaResource {
                 if (komotoTutkinnonTaso.isAlempi()) {
                     alempiTaso = komotoTutkinnonTaso;
                 }
-                if(komotoTutkinnonTaso.isHammaslaakis() || komotoTutkinnonTaso.isLaakis() || komotoTutkinnonTaso.isYlempiAlempi()) {
+                if(komotoTutkinnonTaso.isHammaslaakis() || komotoTutkinnonTaso.isLaakis() || komotoTutkinnonTaso.isAlempiYlempi()) {
                     return komotoTutkinnonTaso.toDTO(urlConfiguration);
                 }
             }
@@ -222,7 +222,7 @@ public class KelaResourceImpl implements KelaResource {
          */
         if (ylempiTaso != null && alempiTaso != null) {
             TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
-            cont.ylempiAlempi(ylempiTaso.getKomoId1(), alempiTaso.getKomoId1());
+            cont.alempiYlempi(alempiTaso.getKomoId1(), ylempiTaso.getKomoId1());
             return cont.toDTO(urlConfiguration);
         }
         /*
