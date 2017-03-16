@@ -402,11 +402,11 @@ public class KelaDAOImpl implements KelaDAO {
 
 
     private boolean laakis(String s) {
-        return s != null && s.equals("koulutus_772101");
+        return s != null && s.startsWith("koulutus_772101");
     }
 
     private boolean hammaslaakis(String s) {
-        return s != null && s.equals("koulutus_772201");
+        return s != null && s.startsWith("koulutus_772201");
     }
 
     private boolean kk_tut_taso(String s) {
