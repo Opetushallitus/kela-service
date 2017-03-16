@@ -26,8 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import fi.vm.sade.organisaatio.resource.api.TasoJaLaajuusDTO;
-import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
-import fi.vm.sade.rajapinnat.kela.dto.TasoJaLaajuusContainer;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,7 +55,7 @@ public class KelaResourceImpl implements KelaResource {
     protected KelaDAO kelaDAO;
 
     @Autowired
-    private UrlConfiguration urlConfiguration;
+    private TarjontaClient tarjontaClient;
 
     public enum Command {
 
@@ -201,7 +199,7 @@ public class KelaResourceImpl implements KelaResource {
                     alempiTaso = komotoTutkinnonTaso;
                 }
                 if(komotoTutkinnonTaso.isHammaslaakis() || komotoTutkinnonTaso.isLaakis() || komotoTutkinnonTaso.isAlempiYlempi()) {
-                    return komotoTutkinnonTaso.toDTO(urlConfiguration);
+                    return komotoTutkinnonTaso.toDTO(tarjontaClient);
                 }
             }
         }
@@ -209,13 +207,13 @@ public class KelaResourceImpl implements KelaResource {
          * jos pelkkiä ylempiä => 061 (erillinen ylempi kk.tutkinto)
          */
         if (ylempiTaso != null && alempiTaso == null) {
-            return ylempiTaso.toDTO(urlConfiguration);
+            return ylempiTaso.toDTO(tarjontaClient);
         }
         /*
          * jos pelkkiä alempia => 050  (alempi kk.tutkinto)
          */
         if (ylempiTaso == null && alempiTaso != null) {
-            return alempiTaso.toDTO(urlConfiguration);
+            return alempiTaso.toDTO(tarjontaClient);
         }
         /*
          * jos väh. 1 ylempiä ja väh. 1 => 060 (alempi+ylempi)
@@ -223,12 +221,12 @@ public class KelaResourceImpl implements KelaResource {
         if (ylempiTaso != null && alempiTaso != null) {
             TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
             cont.alempiYlempi(alempiTaso.getKomoId1(), ylempiTaso.getKomoId1());
-            return cont.toDTO(urlConfiguration);
+            return cont.toDTO(tarjontaClient);
         }
         /*
          *  jos ei kumpiakaan : koulutuksen tasoa ei merkitä
          */
-        return new TasoJaLaajuusContainer().eiTasoa().toDTO(urlConfiguration);
+        return new TasoJaLaajuusContainer().eiTasoa().toDTO(tarjontaClient);
 
     }
 

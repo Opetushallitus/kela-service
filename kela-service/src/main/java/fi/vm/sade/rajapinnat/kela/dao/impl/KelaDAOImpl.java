@@ -23,7 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
-import fi.vm.sade.rajapinnat.kela.dto.TasoJaLaajuusContainer;
+import fi.vm.sade.rajapinnat.kela.TasoJaLaajuusContainer;
 import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;

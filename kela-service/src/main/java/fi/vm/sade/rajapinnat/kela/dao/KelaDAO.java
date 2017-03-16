@@ -17,7 +17,7 @@ package fi.vm.sade.rajapinnat.kela.dao;
 
 import java.util.List;
 
-import fi.vm.sade.rajapinnat.kela.dto.TasoJaLaajuusContainer;
+import fi.vm.sade.rajapinnat.kela.TasoJaLaajuusContainer;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;

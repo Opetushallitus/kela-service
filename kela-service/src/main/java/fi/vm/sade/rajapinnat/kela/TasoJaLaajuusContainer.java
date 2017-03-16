@@ -1,12 +1,7 @@
-package fi.vm.sade.rajapinnat.kela.dto;
+package fi.vm.sade.rajapinnat.kela;
 
 import fi.vm.sade.organisaatio.resource.api.TasoJaLaajuusDTO;
-import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
-import fi.vm.sade.rajapinnat.kela.KelaGenerator;
-import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import org.apache.log4j.Logger;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 public class TasoJaLaajuusContainer {
 
@@ -74,9 +69,7 @@ public class TasoJaLaajuusContainer {
 
     public boolean isYlempi() { return ONLYYLEMPI.equals(tasoCode); }
     public boolean isLaakis() { return LAAKIS.equals(tasoCode); }
-    public boolean isHammaslaakis() {
-        return HAMMASLAAKIS.equals(tasoCode);
-    }
+    public boolean isHammaslaakis() { return HAMMASLAAKIS.equals(tasoCode); }
     public boolean isAlempi() { return ONLYALEMPI.equals(tasoCode); }
     public boolean isAlempiYlempi() { return ALEMPIYLEMPI.equals(tasoCode); }
 
@@ -84,37 +77,55 @@ public class TasoJaLaajuusContainer {
         return this.tasoCode != null && EITASOA.equals(tasoCode) == false;
     }
 
-    public TasoJaLaajuusDTO toDTO(UrlConfiguration urlConfiguration) {
+    public TasoJaLaajuusDTO toDTO(TarjontaClient tarjontaClient) {
         TasoJaLaajuusDTO resp = new TasoJaLaajuusDTO();
         resp.setTasoCode(this.tasoCode);
-        resp.setLaajuus1(this.getLaajuus(this.komoId1, urlConfiguration));
-        resp.setLaajuus2(this.getLaajuus(this.komoId2, urlConfiguration));
+
+        String laajuus1 = tarjontaClient.getLaajuus(this.komoId1);
+        String laajuus2 = tarjontaClient.getLaajuus(this.komoId2);
+
+        if(laajuus1 != null && laajuus1.contains("+")) {
+            String[] vals = parseLaajuus(laajuus1);
+            resp.setLaajuus1(vals[0]);
+            resp.setLaajuus2(vals[1]);
+        } else if(laajuus2 != null && laajuus2.contains("+")) {
+            String[] vals = parseLaajuus(laajuus2);
+            resp.setLaajuus1(vals[0]);
+            resp.setLaajuus2(vals[1]);
+        } else {
+            resp.setLaajuus1(laajuus1);
+            resp.setLaajuus2(laajuus2);
+        }
+
         resp.setKomoId1(this.komoId1);
         resp.setKomoId2(this.komoId2);
         return resp;
     }
 
+    private String[] parseLaajuus(String laajuus) {
+        String[] str = new String[2];
 
-    private String getLaajuus(String komoId, UrlConfiguration urlConfiguration) {
-        if(komoId == null || "".equals(komoId)) {
-            return null;
-        }
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setReadTimeout(5000);
-        factory.setConnectTimeout(5000);
-        RestTemplate restTemplate = new RestTemplate(factory);
         try {
-            TarjontaRespDTO resp = restTemplate.getForObject(urlConfiguration.url("tarjonta-service.komo.byid", komoId), TarjontaRespDTO.class);
-            if(resp.result != null && resp.result.opintojenLaajuusarvo != null && resp.result.opintojenLaajuusarvo.arvo != null) {
-                return resp.result.opintojenLaajuusarvo.arvo;
-            } else {
-                LOG.info("Tarjonta Komo:" + komoId + " didnt return opintojenlaajuus.");
-                return null;
+            if (laajuus != null) {
+                if (laajuus.contains("/")) {
+                    // case: 180+120/150 = laajuus1 = 330
+                    String[] laajuusParts = laajuus.split("/");
+                    int sum = new Integer(laajuusParts[0].substring(0, laajuusParts[0].indexOf('+'))).intValue() + new Integer(laajuusParts[1]).intValue();
+                    str[0] = "" + sum;
+                } else {
+                    String[] laajuusParts = laajuus.split("\\+");
+                    str[0] = laajuusParts[0];
+                    if (laajuusParts.length > 1) {
+                        // case: 180+120
+                        str[1] = laajuusParts[1];
+                    }
+                }
             }
         } catch (Exception e) {
-            LOG.error("Error querying KOMO ID:" + komoId +" from tarjonta.", e);
+            LOG.error("Bad opintojen laajuus value:" + laajuus, e);
         }
-        return null;
+
+        return str;
     }
 
 }
