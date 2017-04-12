@@ -86,20 +86,31 @@ public class TasoJaLaajuusContainer {
 
         if(laajuus1 != null && laajuus1.contains("+")) {
             String[] vals = parseLaajuus(laajuus1);
-            resp.setLaajuus1(vals[0]);
-            resp.setLaajuus2(vals[1]);
+            resp.setLaajuus1(prefixLaajuus(vals[0]));
+            resp.setLaajuus2(prefixLaajuus(vals[1]));
         } else if(laajuus2 != null && laajuus2.contains("+")) {
             String[] vals = parseLaajuus(laajuus2);
-            resp.setLaajuus1(vals[0]);
-            resp.setLaajuus2(vals[1]);
+            resp.setLaajuus1(prefixLaajuus(vals[0]));
+            resp.setLaajuus2(prefixLaajuus(vals[1]));
         } else {
-            resp.setLaajuus1(laajuus1);
-            resp.setLaajuus2(laajuus2);
+            resp.setLaajuus1(prefixLaajuus(laajuus1));
+            resp.setLaajuus2(prefixLaajuus(laajuus2));
         }
 
         resp.setKomoId1(this.komoId1);
         resp.setKomoId2(this.komoId2);
         return resp;
+    }
+
+    private String prefixLaajuus(String laajuus) {
+        try {
+            if (laajuus != null && "".equals(laajuus) == false) {
+                return String.format("%03d", new Integer(laajuus));
+            }
+        } catch (Exception e) {
+            LOG.error("Could not format with leading zeros. Laajuus:" + laajuus, e);
+        }
+        return null;
     }
 
     private String[] parseLaajuus(String laajuus) {

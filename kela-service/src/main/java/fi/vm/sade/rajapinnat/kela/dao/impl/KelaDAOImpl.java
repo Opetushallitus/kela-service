@@ -458,11 +458,10 @@ public class KelaDAOImpl implements KelaDAO {
         }
 
         /*
-         * 3) haetaan lapsi- ja emokoulutusmoduulit (ei sisaruksia l. toteutuksia) yo. lisäksi:
+         * 3) haetaan lapsikoulutusmoduulit (ei sisaruksia l. toteutuksia tai emomoduuleita) yo. lisäksi:
          */
         String rootOid = koulutusmoduuli.getOid();
         List<String> relativesList = getChildrenOids(rootOid);
-        relativesList.addAll(getParentOids(rootOid));
         relativesList.add(rootOid);
 
         Koulutusmoduuli ylempiKomo = null;

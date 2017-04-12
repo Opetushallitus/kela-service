@@ -18,6 +18,9 @@ public class TasoJaLaajuusContainerTest {
         when(tarjontaMock.getLaajuus("3")).thenReturn("180+120");
         when(tarjontaMock.getLaajuus("4")).thenReturn("180+120/150");
         when(tarjontaMock.getLaajuus("5")).thenReturn(null);
+        when(tarjontaMock.getLaajuus("6")).thenReturn("80");
+        when(tarjontaMock.getLaajuus("7")).thenReturn("7");
+        when(tarjontaMock.getLaajuus("8")).thenReturn("");
 
         cont.laakis("2");
         TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
@@ -53,6 +56,15 @@ public class TasoJaLaajuusContainerTest {
         Assert.assertEquals(resp.getLaajuus1(), "130");
         Assert.assertEquals(resp.getLaajuus2(), null);
 
+        cont.alempiYlempi("6", "7");
+        resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals(resp.getLaajuus1(), "080");
+        Assert.assertEquals(resp.getLaajuus2(), "007");
+
+        cont.alempiYlempi("7", "8");
+        resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals(resp.getLaajuus1(), "007");
+        Assert.assertEquals(resp.getLaajuus2(), null);
 
     }
 
