@@ -442,19 +442,21 @@ public class KelaDAOImpl implements KelaDAO {
         }
 
         boolean alempia_sisaltyy = false;
+        boolean ylempia_sisaltyy = false;
 
         for (KoodistoUri koulutusUri : komoto.getSisaltyvatKoulutuskoodit()) {
             if (alempi(koulutusUri.getKoodiUri())) {
                 alempia_sisaltyy = true;
-                break;
+            } else if(ylempi(koulutusUri.getKoodiUri())) {
+                ylempia_sisaltyy = true;
             }
         }
         
         /*
-         * 2) jos koulutusmoduulilla sekä koulutus_uri (ylempi) ja siihen sisältyy jokin alempi koulutuskoodi => 060 = alempi+ylempi
+         * 2) jos koulutusmoduulilla sekä koulutus_uri että sisältyvällä koulutuskoodi yhdistelmällä (ylempi+alempi tai alempi+ylempi) => 060 = alempi+ylempi
          */
-        if (ylempi(koulutus_uri) && alempia_sisaltyy) {
-            return resp.onlyYlempi(komoto.getKoulutusmoduuli().getOid());
+        if ((ylempi(koulutus_uri) && alempia_sisaltyy) || (alempi(koulutus_uri) && ylempia_sisaltyy)) {
+            return resp.alempiYlempi(komoto.getKoulutusmoduuli().getOid(), null);
         }
 
         /*

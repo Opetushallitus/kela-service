@@ -14,6 +14,9 @@ public class TasoJaLaajuusContainer {
     private static final String HAMMASLAAKIS = "071";
     private static final String EITASOA = "   ";
 
+    private static final String ALEMPI_DEFAULT_LAAJUUS = "180";
+    private static final String YLEMPI_DEFAULT_LAAJUUS = "120";
+
     private String tasoCode;
     private String komoId1;
     private String komoId2;
@@ -85,13 +88,9 @@ public class TasoJaLaajuusContainer {
         String laajuus2 = tarjontaClient.getLaajuus(this.komoId2);
 
         if(laajuus1 != null && laajuus1.contains("+")) {
-            String[] vals = parseLaajuus(laajuus1);
-            resp.setLaajuus1(prefixLaajuus(vals[0]));
-            resp.setLaajuus2(prefixLaajuus(vals[1]));
+            parseSumLaajuus(laajuus1, resp);
         } else if(laajuus2 != null && laajuus2.contains("+")) {
-            String[] vals = parseLaajuus(laajuus2);
-            resp.setLaajuus1(prefixLaajuus(vals[0]));
-            resp.setLaajuus2(prefixLaajuus(vals[1]));
+            parseSumLaajuus(laajuus2, resp);
         } else {
             resp.setLaajuus1(prefixLaajuus(laajuus1));
             resp.setLaajuus2(prefixLaajuus(laajuus2));
@@ -100,6 +99,19 @@ public class TasoJaLaajuusContainer {
         resp.setKomoId1(this.komoId1);
         resp.setKomoId2(this.komoId2);
         return resp;
+    }
+
+    private void parseSumLaajuus(String laajuus, TasoJaLaajuusDTO resp) {
+        // Check for faulty input by user, taso code should be something else than simple alempi or ylempi with a laajuus that has a sum.
+        if(ONLYALEMPI.equals(tasoCode)) {
+            resp.setLaajuus1(ALEMPI_DEFAULT_LAAJUUS);
+        } else if(ONLYYLEMPI.equals(tasoCode)) {
+            resp.setLaajuus1(YLEMPI_DEFAULT_LAAJUUS);
+        } else {
+            String[] vals = parseLaajuus(laajuus);
+            resp.setLaajuus1(prefixLaajuus(vals[0]));
+            resp.setLaajuus2(prefixLaajuus(vals[1]));
+        }
     }
 
     private String prefixLaajuus(String laajuus) {

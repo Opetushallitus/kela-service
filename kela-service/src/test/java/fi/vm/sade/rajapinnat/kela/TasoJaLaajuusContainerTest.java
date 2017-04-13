@@ -66,6 +66,12 @@ public class TasoJaLaajuusContainerTest {
         Assert.assertEquals(resp.getLaajuus1(), "007");
         Assert.assertEquals(resp.getLaajuus2(), null);
 
+        cont.onlyAlempi("3");
+        resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals(resp.getLaajuus1(), "180");
+        Assert.assertEquals(resp.getLaajuus2(), null);
+
+
     }
 
 }
