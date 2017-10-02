@@ -15,11 +15,7 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,6 +23,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.amazonaws.services.s3.model.*;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
@@ -56,10 +53,27 @@ import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 
 @Configurable
 public abstract class AbstractOPTIWriter {
+
+
+    public AbstractOPTIWriter( ) {
+        if(isS3enabled()){
+            BasicAWSCredentials awsCreds = new BasicAWSCredentials(s3accessKeyID, s3secretAccessKey);
+            this.s3client = AmazonS3ClientBuilder.standard()
+                    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                    .withRegion(Regions.EU_WEST_1).build();
+            if(!s3client.doesBucketExistV2(s3bucketName)){
+                s3client.createBucket(s3bucketName);
+            }
+        }
+    }
 
     protected enum OrgType {
 
@@ -116,6 +130,7 @@ public abstract class AbstractOPTIWriter {
     protected final static String WARN_MESS_3 = "Got exception: %s. Retry in %s seconds...";
 
     protected final static String INFO_MESS_1 = "%s records written, %s skipped.";
+    protected final static String INFO_MESS_2 = "%s records pushed into S3.";
 
     @Autowired
     private UrlConfiguration urlConfiguration;
@@ -138,6 +153,12 @@ public abstract class AbstractOPTIWriter {
     private String fileName = null;
 
     private String path = null;
+
+    private boolean s3enabled = false;
+    private String s3accessKeyID = null;
+    private String s3secretAccessKey = null;
+    private String s3bucketName = null;
+    private AmazonS3 s3client = null;
 
     private int errorLimit = 0;
     private int errorCoolDown = 10;
@@ -219,10 +240,26 @@ public abstract class AbstractOPTIWriter {
     }
 
     private void createFileNames(String suffix) {
-        String path = createPath();
+        String path = (isS3enabled()) ? createS3Path() : createPath();
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN_FILE);
         fileLocalName = NAMEPREFIX + sdf.format(startDate) + suffix;
         fileName = path + fileLocalName;//NAMEPREFIX + sdf.format(new Date()) + name;
+    }
+
+    private String createS3Path(){
+        if(!s3client.doesObjectExist(s3bucketName, path + DIR_SEPARATOR)) {
+            // create meta-data for your folder and set content-length to 0
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(0);
+            // create empty content
+            InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
+            // create a PutObjectRequest passing the folder name suffixed by /
+            PutObjectRequest putObjectRequest = new PutObjectRequest(s3bucketName,
+                    path + DIR_SEPARATOR, emptyContent, metadata);
+            // send request to S3 to create folder
+            s3client.putObject(putObjectRequest);
+        }
+        return this.path + DIR_SEPARATOR;
     }
 
     private String createPath() {
@@ -247,6 +284,26 @@ public abstract class AbstractOPTIWriter {
     @Value("${exportdir}")
     public void setPath(String path) {
         this.path = path;
+    }
+
+    @Value("${s3-enabled}")
+    public void setS3enabled(boolean s3enabled) {
+        this.s3enabled = s3enabled;
+    }
+    public boolean isS3enabled(){
+        return this.s3enabled;
+    }
+    @Value("${s3-access-key}")
+    public void setS3accessKeyID(String s3accessKeyID) {
+        this.s3accessKeyID = s3accessKeyID;
+    }
+    @Value("${s3-secret-access-key}")
+    public void setS3secretAccessKey(String s3secretAccessKey) {
+        this.s3secretAccessKey = s3secretAccessKey;
+    }
+    @Value("${s3-bucket-name}")
+    public void setS3bucketName(String s3bucketName) {
+        this.s3bucketName = s3bucketName;
     }
 
     @Value("${fi-uri}")
@@ -478,6 +535,12 @@ public abstract class AbstractOPTIWriter {
         this.kelaDAO = hakukohdeDAO;
     }
 
+    public File getS3File(){
+        String s3file = s3client.getObjectAsString(s3bucketName, getFileLocalName());
+        File file = new File(s3file);
+        return file;
+    }
+
     public String getFileName() {
         if (fileName == null) {
             createFileName();
@@ -535,6 +598,12 @@ public abstract class AbstractOPTIWriter {
             bostr.flush();
             bostr.close();
             LOG.info(String.format(INFO_MESS_1, writes, writesTries - writes));
+            // push to S3
+            if(isS3enabled()) {
+                s3client.putObject(new PutObjectRequest(s3bucketName, getFileLocalName(), new File(getFileName())).withCannedAcl(CannedAccessControlList.Private));
+                LOG.info(String.format(INFO_MESS_2, getFileLocalName()));
+            }
+
         } catch (FileNotFoundException e) {
             LOG.error(String.format(ERR_MESS_3, getFileName()));
             e.printStackTrace();

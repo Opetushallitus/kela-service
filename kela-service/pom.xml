@@ -28,6 +28,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>${s3.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>fi.vm.sade</groupId>
             <artifactId>embedded-tomcat</artifactId>
             <version>1.0-SNAPSHOT</version>

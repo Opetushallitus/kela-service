@@ -167,7 +167,11 @@ public class KelaGenerator implements Runnable {
         }
         inTurn = writer;
         LOG.info("Sending: " + writer.getFileName() + "...");
-        producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
+        if(writer.isS3enabled()){
+            producerTemplate.sendBodyAndHeader(targetUrl, writer.getS3File(), Exchange.FILE_NAME, writer.getFileLocalName());
+        } else {
+            producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
+        }
         LOG.info("Done.");
     }
 
