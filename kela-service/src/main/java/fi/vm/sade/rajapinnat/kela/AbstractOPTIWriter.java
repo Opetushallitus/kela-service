@@ -65,10 +65,9 @@ public abstract class AbstractOPTIWriter {
 
     public AbstractOPTIWriter( ) {
         if(isS3enabled()){
-            BasicAWSCredentials awsCreds = new BasicAWSCredentials(s3accessKeyID, s3secretAccessKey);
             this.s3client = AmazonS3ClientBuilder.standard()
-                    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                    .withRegion(Regions.EU_WEST_1).build();
+                    .withRegion(Regions.EU_WEST_1)
+                    .build();
             if(!s3client.doesBucketExistV2(s3bucketName)){
                 s3client.createBucket(s3bucketName);
             }
@@ -155,8 +154,6 @@ public abstract class AbstractOPTIWriter {
     private String path = null;
 
     private boolean s3enabled = false;
-    private String s3accessKeyID = null;
-    private String s3secretAccessKey = null;
     private String s3bucketName = null;
     private AmazonS3 s3client = null;
 
@@ -286,22 +283,14 @@ public abstract class AbstractOPTIWriter {
         this.path = path;
     }
 
-    @Value("${s3-enabled}")
+    @Value("${rajapinnat-s3-enabled}")
     public void setS3enabled(boolean s3enabled) {
         this.s3enabled = s3enabled;
     }
     public boolean isS3enabled(){
         return this.s3enabled;
     }
-    @Value("${s3-access-key}")
-    public void setS3accessKeyID(String s3accessKeyID) {
-        this.s3accessKeyID = s3accessKeyID;
-    }
-    @Value("${s3-secret-access-key}")
-    public void setS3secretAccessKey(String s3secretAccessKey) {
-        this.s3secretAccessKey = s3secretAccessKey;
-    }
-    @Value("${s3-bucket-name}")
+    @Value("${rajapinnat-s3-bucket-name}")
     public void setS3bucketName(String s3bucketName) {
         this.s3bucketName = s3bucketName;
     }
@@ -535,10 +524,9 @@ public abstract class AbstractOPTIWriter {
         this.kelaDAO = hakukohdeDAO;
     }
 
-    public File getS3File(){
-        String s3file = s3client.getObjectAsString(s3bucketName, getFileLocalName());
-        File file = new File(s3file);
-        return file;
+    public S3Object getS3File(){
+        S3Object s3Object = s3client.getObject(s3bucketName, getFileLocalName());
+        return s3Object;
     }
 
     public String getFileName() {
