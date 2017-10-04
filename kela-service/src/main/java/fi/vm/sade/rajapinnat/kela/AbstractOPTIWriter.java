@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.*;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
@@ -53,25 +54,30 @@ import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.AmazonClientException;
+
 
 @Configurable
 public abstract class AbstractOPTIWriter {
 
 
-    public AbstractOPTIWriter( ) {
-        if(isS3enabled()){
-            this.s3client = AmazonS3ClientBuilder.standard()
-                    .withRegion(Regions.EU_WEST_1)
-                    .build();
-            if(!s3client.doesBucketExistV2(s3bucketName)){
-                s3client.createBucket(s3bucketName);
+    private AmazonS3 getS3client(){
+        if(s3client == null){
+            try {
+                InstanceProfileCredentialsProvider ipcp = InstanceProfileCredentialsProvider.createAsyncRefreshingProvider(true);
+                s3client = AmazonS3ClientBuilder.standard()
+                        .withCredentials(ipcp)
+                        .withRegion(Regions.EU_WEST_1)
+                        .build();
+                LOG.info("S3client initialized");
+            } catch(AmazonClientException e){
+                LOG.error(e.getMessage());
             }
         }
+        return s3client;
     }
 
     protected enum OrgType {
@@ -129,7 +135,7 @@ public abstract class AbstractOPTIWriter {
     protected final static String WARN_MESS_3 = "Got exception: %s. Retry in %s seconds...";
 
     protected final static String INFO_MESS_1 = "%s records written, %s skipped.";
-    protected final static String INFO_MESS_2 = "%s records pushed into S3.";
+    protected final static String INFO_MESS_2 = "file %s in %s pushed into S3 bucket %s.";
 
     @Autowired
     private UrlConfiguration urlConfiguration;
@@ -244,18 +250,6 @@ public abstract class AbstractOPTIWriter {
     }
 
     private String createS3Path(){
-        if(!s3client.doesObjectExist(s3bucketName, path + DIR_SEPARATOR)) {
-            // create meta-data for your folder and set content-length to 0
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(0);
-            // create empty content
-            InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
-            // create a PutObjectRequest passing the folder name suffixed by /
-            PutObjectRequest putObjectRequest = new PutObjectRequest(s3bucketName,
-                    path + DIR_SEPARATOR, emptyContent, metadata);
-            // send request to S3 to create folder
-            s3client.putObject(putObjectRequest);
-        }
         return this.path + DIR_SEPARATOR;
     }
 
@@ -287,8 +281,11 @@ public abstract class AbstractOPTIWriter {
     public void setS3enabled(boolean s3enabled) {
         this.s3enabled = s3enabled;
     }
-    public boolean isS3enabled(){
+    public boolean isS3enabled() {
         return this.s3enabled;
+    }
+    public String getS3bucketName() {
+        return this.s3bucketName;
     }
     @Value("${rajapinnat-s3-bucket-name}")
     public void setS3bucketName(String s3bucketName) {
@@ -525,7 +522,7 @@ public abstract class AbstractOPTIWriter {
     }
 
     public S3Object getS3File(){
-        S3Object s3Object = s3client.getObject(s3bucketName, getFileLocalName());
+        S3Object s3Object = this.getS3client().getObject(getS3bucketName(), getFileLocalName());
         return s3Object;
     }
 
@@ -588,8 +585,13 @@ public abstract class AbstractOPTIWriter {
             LOG.info(String.format(INFO_MESS_1, writes, writesTries - writes));
             // push to S3
             if(isS3enabled()) {
-                s3client.putObject(new PutObjectRequest(s3bucketName, getFileLocalName(), new File(getFileName())).withCannedAcl(CannedAccessControlList.Private));
-                LOG.info(String.format(INFO_MESS_2, getFileLocalName()));
+                try {
+                    this.getS3client().putObject(new PutObjectRequest(getS3bucketName(), getFileLocalName(), new File(getFileName())));
+                } catch(Exception e){
+                    e.printStackTrace();
+                    throw e;
+                }
+                LOG.info(String.format(INFO_MESS_2, getFileName(), getFileLocalName(), getS3bucketName()));
             }
 
         } catch (FileNotFoundException e) {
