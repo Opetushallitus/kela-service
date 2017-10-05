@@ -28,9 +28,14 @@ import com.amazonaws.services.s3.model.*;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
 import org.apache.cxf.jaxrs.client.ServerWebApplicationException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -51,6 +56,8 @@ import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -70,7 +77,7 @@ public abstract class AbstractOPTIWriter {
                 InstanceProfileCredentialsProvider ipcp = InstanceProfileCredentialsProvider.createAsyncRefreshingProvider(true);
                 s3client = AmazonS3ClientBuilder.standard()
                         .withCredentials(ipcp)
-                        .withRegion(Regions.EU_WEST_1)
+                        .withRegion(Regions.fromName(s3region))
                         .build();
                 LOG.info("S3client initialized");
             } catch(AmazonClientException e){
@@ -162,6 +169,7 @@ public abstract class AbstractOPTIWriter {
     private boolean s3enabled = false;
     private String s3bucketName = null;
     private AmazonS3 s3client = null;
+    private String s3region = null;
 
     private int errorLimit = 0;
     private int errorCoolDown = 10;
@@ -292,6 +300,11 @@ public abstract class AbstractOPTIWriter {
         this.s3bucketName = s3bucketName;
     }
 
+    @Value("${rajapinnat-s3-region}")
+    public void setS3region(String s3region) {
+        this.s3region = s3region;
+    }
+
     @Value("${fi-uri}")
     public void setKieliFi(String kieliFi) {
         this.kieliFi = kieliFi;
@@ -400,6 +413,14 @@ public abstract class AbstractOPTIWriter {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setReadTimeout(60000);
         factory.setConnectTimeout(60000);
+
+        HttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                .setCookieSpec(CookieSpecs.STANDARD).build())
+                .build();
+
+        factory.setHttpClient(httpClient);
+
         RestTemplate restTemplate = new RestTemplate(factory);
         return restTemplate.getForObject(
                 urlConfiguration.url("organisaatio-service.organisaatio.noimage", orgOid), OrganisaatioRDTO.class);
@@ -521,9 +542,16 @@ public abstract class AbstractOPTIWriter {
         this.kelaDAO = hakukohdeDAO;
     }
 
-    public S3Object getS3File(){
-        S3Object s3Object = this.getS3client().getObject(getS3bucketName(), getFileLocalName());
-        return s3Object;
+    public File getS3File() throws IOException{
+        try {
+            S3Object s3Object = this.getS3client().getObject(getS3bucketName(), getFileLocalName());
+            IOUtils.copy(s3Object.getObjectContent(), new FileOutputStream(this.fileLocalName));
+            return new File(this.fileLocalName);
+        } catch (IOException e) {
+            LOG.error(String.format(ERR_MESS_4, getFileName()));
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public String getFileName() {
@@ -591,7 +619,7 @@ public abstract class AbstractOPTIWriter {
                     e.printStackTrace();
                     throw e;
                 }
-                LOG.info(String.format(INFO_MESS_2, getFileName(), getFileLocalName(), getS3bucketName()));
+                LOG.info(String.format(INFO_MESS_2, getFileLocalName(), getFileName(), getS3bucketName()));
             }
 
         } catch (FileNotFoundException e) {

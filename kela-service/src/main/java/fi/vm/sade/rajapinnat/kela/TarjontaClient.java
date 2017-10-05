@@ -2,6 +2,10 @@ package fi.vm.sade.rajapinnat.kela;
 
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import fi.vm.sade.rajapinnat.kela.dto.TarjontaRespDTO;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -23,6 +27,13 @@ public class TarjontaClient {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setReadTimeout(5000);
         factory.setConnectTimeout(5000);
+        HttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.STANDARD).build())
+                .build();
+
+        factory.setHttpClient(httpClient);
+
         RestTemplate restTemplate = new RestTemplate(factory);
         try {
             TarjontaRespDTO resp = restTemplate.getForObject(urlConfiguration.url("tarjonta-service.komo.byid", komoId), TarjontaRespDTO.class);

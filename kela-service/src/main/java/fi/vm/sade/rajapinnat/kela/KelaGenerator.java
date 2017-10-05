@@ -168,7 +168,13 @@ public class KelaGenerator implements Runnable {
         inTurn = writer;
         LOG.info("Sending: " + writer.getFileName() + "...");
         if(writer.isS3enabled()){
-            producerTemplate.sendBodyAndHeader(targetUrl, writer.getS3File(), Exchange.FILE_NAME, writer.getFileLocalName());
+            try {
+                File uploadFile = writer.getS3File();
+                producerTemplate.sendBodyAndHeader(targetUrl, uploadFile, Exchange.FILE_NAME, writer.getFileLocalName());
+                uploadFile.delete();
+            } catch (Exception e){
+                LOG.error("Error sending file to ftp .", e);
+            }
         } else {
             producerTemplate.sendBodyAndHeader(targetUrl, new File(writer.getFileName()), Exchange.FILE_NAME, writer.getFileLocalName());
         }
