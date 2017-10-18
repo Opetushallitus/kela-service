@@ -194,7 +194,9 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         HakukohteetVastaus vastaus = null;
         while (true) {
             try {
+                LOG.info("starting haeHakukohteet");
                 vastaus = hakukohdeSearchService.haeHakukohteet(kysely);
+                LOG.info("got haeHakukohteet");
                 break;
             } catch (org.apache.solr.common.SolrException e) {
                 handleException(e);
