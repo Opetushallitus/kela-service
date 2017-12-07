@@ -223,7 +223,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
                 if (TarjontaTila.JULKAISTU.equals(curTulos.getTila()) && isHakukohdeOppilaitos(tarjoajaOid)) {
                     Hakukohde hakukohde = kelaDAO.findHakukohdeByOid(curTulos.getOid());
                     if (hakukohde == null) {
-                        error(11, curTulos.getOid() + " " + curTulos.getNimi());
+                        error(11, curTulos.getOid(), curTulos.getNimi());
                     }
                     List<KoulutusmoduuliToteutus> komotos = hakukohde.getKoulutukset();
 
