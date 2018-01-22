@@ -2,6 +2,7 @@ package fi.vm.sade.rajapinnat.kela;
 
 import fi.vm.sade.organisaatio.resource.api.TasoJaLaajuusDTO;
 import junit.framework.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -9,69 +10,117 @@ import static org.mockito.Mockito.when;
 
 public class TasoJaLaajuusContainerTest {
 
+    private TarjontaClient tarjontaMock = Mockito.mock(TarjontaClient.class);
+
+    private String komoIdLaajuus130 = "1";
+    private String komoIdLaajuus170 = "2";
+    private String komoIdLaajuus180Plus170 = "3";
+    private String komoIdLaajuus180Plus120Kautta150 = "4";
+    private String komoIdLaajuusNull = "5";
+    private String komoIdLaajuusLaajuus80 = "6";
+    private String komoIdLaajuus7 = "7";
+    private String komoIdLaajuusTyhjä = "8";
+
+
+    @Before
+    public void setup() {
+        when(tarjontaMock.getLaajuus(komoIdLaajuus130)).thenReturn("130");
+        when(tarjontaMock.getLaajuus(komoIdLaajuus170)).thenReturn("170");
+        when(tarjontaMock.getLaajuus(komoIdLaajuus180Plus170)).thenReturn("180+120");
+        when(tarjontaMock.getLaajuus(komoIdLaajuus180Plus120Kautta150)).thenReturn("180+120/150");
+        when(tarjontaMock.getLaajuus(komoIdLaajuusNull)).thenReturn(null);
+        when(tarjontaMock.getLaajuus(komoIdLaajuusLaajuus80)).thenReturn("80");
+        when(tarjontaMock.getLaajuus(komoIdLaajuus7)).thenReturn(komoIdLaajuus7);
+        when(tarjontaMock.getLaajuus(komoIdLaajuusTyhjä)).thenReturn("");
+    }
+
     @Test
-    public void toDTOTest() {
+    public void testLääkis170() {
         TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
-        TarjontaClient tarjontaMock = Mockito.mock(TarjontaClient.class);
-        when(tarjontaMock.getLaajuus("1")).thenReturn("130");
-        when(tarjontaMock.getLaajuus("2")).thenReturn("170");
-        when(tarjontaMock.getLaajuus("3")).thenReturn("180+120");
-        when(tarjontaMock.getLaajuus("4")).thenReturn("180+120/150");
-        when(tarjontaMock.getLaajuus("5")).thenReturn(null);
-        when(tarjontaMock.getLaajuus("6")).thenReturn("80");
-        when(tarjontaMock.getLaajuus("7")).thenReturn("7");
-        when(tarjontaMock.getLaajuus("8")).thenReturn("");
-
-        cont.laakis("2");
+        cont.laakis(komoIdLaajuus170);
         TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "170");
+        Assert.assertEquals("170", resp.getLaajuus1());
+    }
 
-        cont.laakis("3");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "180");
-        Assert.assertEquals(resp.getLaajuus2(), "120");
+    @Test
+    public void TestLääkis180plus120() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.laakis(komoIdLaajuus180Plus170);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("180", resp.getLaajuus1());
+        Assert.assertEquals("120", resp.getLaajuus2());
+    }
 
-        cont.laakis("4");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "330");
-        Assert.assertEquals(resp.getLaajuus2(), null);
+    @Test
+    public void testLääkis330() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.laakis(komoIdLaajuus180Plus120Kautta150);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("330", resp.getLaajuus1());
+        Assert.assertEquals(null, resp.getLaajuus2());
+    }
 
-        cont.alempiYlempi("1", "2");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "130");
-        Assert.assertEquals(resp.getLaajuus2(), "170");
+    @Test
+    public void testAlempiYlempi130plus170() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.alempiYlempi(komoIdLaajuus130, komoIdLaajuus170);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("130", resp.getLaajuus1());
+        Assert.assertEquals("170", resp.getLaajuus2());
+    }
 
-        cont.alempiYlempi("3", "1");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "180");
-        Assert.assertEquals(resp.getLaajuus2(), "120");
+    @Test
+    public void testYlempiAlempi180plus120() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.alempiYlempi(komoIdLaajuus180Plus170, komoIdLaajuus130);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("180", resp.getLaajuus1());
+        Assert.assertEquals("120", resp.getLaajuus2());
+    }
 
-        cont.alempiYlempi("1", "3");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "180");
-        Assert.assertEquals(resp.getLaajuus2(), "120");
+    @Test
+    public void testAlempiYlempi180plus120() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.alempiYlempi(komoIdLaajuus130, komoIdLaajuus180Plus170);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("180", resp.getLaajuus1());
+        Assert.assertEquals("120", resp.getLaajuus2());
+    }
 
-        cont.alempiYlempi("1", "5");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "130");
-        Assert.assertEquals(resp.getLaajuus2(), null);
+    @Test
+    public void testAlempiYlempi() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.alempiYlempi(komoIdLaajuus130, komoIdLaajuusNull);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("130", resp.getLaajuus1());
+        Assert.assertEquals(null, resp.getLaajuus2());
+    }
 
-        cont.alempiYlempi("6", "7");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "080");
-        Assert.assertEquals(resp.getLaajuus2(), "007");
+    @Test
+    public void testAlempiYlempi80Plus7() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.alempiYlempi(komoIdLaajuusLaajuus80, komoIdLaajuus7);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("080", resp.getLaajuus1());
+        Assert.assertEquals("007", resp.getLaajuus2());
+    }
 
-        cont.alempiYlempi("7", "8");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "007");
-        Assert.assertEquals(resp.getLaajuus2(), null);
+    @Test
+    public void testEmptyString() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.alempiYlempi(komoIdLaajuus7, komoIdLaajuusTyhjä);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("007", resp.getLaajuus1());
+        Assert.assertEquals(null, resp.getLaajuus2());
+    }
 
-        cont.onlyAlempi("3");
-        resp = cont.toDTO(tarjontaMock);
-        Assert.assertEquals(resp.getLaajuus1(), "180");
-        Assert.assertEquals(resp.getLaajuus2(), null);
-
-
+    @Test
+    public void testOnlyAlempi() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.onlyAlempi(komoIdLaajuus180Plus170);
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals("180", resp.getLaajuus1());
+        Assert.assertEquals(null, resp.getLaajuus2());
     }
 
 }
