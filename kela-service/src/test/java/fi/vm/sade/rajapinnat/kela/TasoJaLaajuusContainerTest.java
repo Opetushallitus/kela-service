@@ -19,7 +19,7 @@ public class TasoJaLaajuusContainerTest {
     private String komoIdLaajuusNull = "5";
     private String komoIdLaajuusLaajuus80 = "6";
     private String komoIdLaajuus7 = "7";
-    private String komoIdLaajuusTyhjä = "8";
+    private String komoIdLaajuusTyhja = "8";
 
 
     @Before
@@ -31,11 +31,11 @@ public class TasoJaLaajuusContainerTest {
         when(tarjontaMock.getLaajuus(komoIdLaajuusNull)).thenReturn(null);
         when(tarjontaMock.getLaajuus(komoIdLaajuusLaajuus80)).thenReturn("80");
         when(tarjontaMock.getLaajuus(komoIdLaajuus7)).thenReturn(komoIdLaajuus7);
-        when(tarjontaMock.getLaajuus(komoIdLaajuusTyhjä)).thenReturn("");
+        when(tarjontaMock.getLaajuus(komoIdLaajuusTyhja)).thenReturn("");
     }
 
     @Test
-    public void testLääkis170() {
+    public void testLaakis170() {
         TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
         cont.laakis(komoIdLaajuus170);
         TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
@@ -43,7 +43,7 @@ public class TasoJaLaajuusContainerTest {
     }
 
     @Test
-    public void TestLääkis180plus120() {
+    public void TestLaakis180plus120() {
         TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
         cont.laakis(komoIdLaajuus180Plus170);
         TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
@@ -52,7 +52,7 @@ public class TasoJaLaajuusContainerTest {
     }
 
     @Test
-    public void testLääkis330() {
+    public void testLaakis330() {
         TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
         cont.laakis(komoIdLaajuus180Plus120Kautta150);
         TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
@@ -108,7 +108,7 @@ public class TasoJaLaajuusContainerTest {
     @Test
     public void testEmptyString() {
         TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
-        cont.alempiYlempi(komoIdLaajuus7, komoIdLaajuusTyhjä);
+        cont.alempiYlempi(komoIdLaajuus7, komoIdLaajuusTyhja);
         TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
         Assert.assertEquals("007", resp.getLaajuus1());
         Assert.assertEquals(null, resp.getLaajuus2());
