@@ -36,7 +36,9 @@ public class Koulutusmoduuli {
     private String koulutusUri;
     @Column(name = "koulutusaste_uri")
     private String koulutusaste_uri;
-    
+    @Column(name = "koulutustyyppi_uri")
+    private String koulutustyyppi_uri;
+
     public String getOid() {
         return oid;
     }
@@ -68,4 +70,12 @@ public class Koulutusmoduuli {
 	public void setKoulutusaste_uri(String koulutusaste_uri) {
 		this.koulutusaste_uri = koulutusaste_uri;
 	}
+
+    public String getKoulutustyyppi_uri() {
+        return koulutustyyppi_uri;
+    }
+
+    public void setKoulutustyyppi_uri(String koulutustyyppi_uri) {
+        this.koulutustyyppi_uri = koulutustyyppi_uri;
+    }
 }

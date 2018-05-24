@@ -5,22 +5,31 @@
  */
 package fi.vm.sade.rajapinnat.kela.dao.impl;
 
+import fi.vm.sade.rajapinnat.kela.TasoJaLaajuusContainer;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doReturn;
+
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 
 /**
  * Tests for KelaDAOImpl.
@@ -38,6 +47,8 @@ public class KelaDAOImplITest {
     @Inject
     @Named("kelaDAO")
     private KelaDAOImpl testDao;
+
+    private KelaDAOImpl partiallyMockedDao = Mockito.spy(KelaDAOImpl.class);
     
     public KelaDAOImplITest() {
     }
@@ -78,5 +89,44 @@ public class KelaDAOImplITest {
         Hakukohde result = testDao.findHakukohdeByOid(oid);
         assertNotNull(result);
         assertEquals("Y15", result.getKelaLinjaKoodi());
+    }
+
+
+    @org.junit.Test
+    public void testLukioTutkinnonTaso() {
+        String komotoOid = "kmt1";
+        String komoOid = "km1";
+
+        KoulutusmoduuliToteutus komoto = new KoulutusmoduuliToteutus();
+        komoto.setOid(komotoOid);
+        Koulutusmoduuli komo = new Koulutusmoduuli();
+        komo.setOid(komoOid);
+        komo.setKoulutustyyppi_uri("|koulutustyyppi_2|");
+        komoto.setKoulutusmoduuli(komo);
+
+        doReturn(new ArrayList<String>()).when(partiallyMockedDao).getChildrenOids(komoOid);
+        doReturn(komo).when(partiallyMockedDao).getKoulutusmoduuli(komoOid);
+
+        TasoJaLaajuusContainer tutkinnonTaso = partiallyMockedDao.getKKTutkinnonTaso(komoto);
+        assertEquals("001", tutkinnonTaso.getTasoCode());
+    }
+
+    @org.junit.Test
+    public void testAmmatillinenPerustutkintoTutkinnonTaso() {
+        String komotoOid = "kmt2";
+        String komoOid = "km2";
+
+        KoulutusmoduuliToteutus komoto = new KoulutusmoduuliToteutus();
+        komoto.setOid(komotoOid);
+        Koulutusmoduuli komo = new Koulutusmoduuli();
+        komo.setOid(komoOid);
+        komo.setKoulutustyyppi_uri("|koulutustyyppi_26|koulutustyyppi_4|koulutustyyppi_1|");
+        komoto.setKoulutusmoduuli(komo);
+
+        doReturn(new ArrayList<String>()).when(partiallyMockedDao).getChildrenOids(komoOid);
+        doReturn(komo).when(partiallyMockedDao).getKoulutusmoduuli(komoOid);
+
+        TasoJaLaajuusContainer tutkinnonTaso = partiallyMockedDao.getKKTutkinnonTaso(komoto);
+        assertEquals("002", tutkinnonTaso.getTasoCode());
     }
 }

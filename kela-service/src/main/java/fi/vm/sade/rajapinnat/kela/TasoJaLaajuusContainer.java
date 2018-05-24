@@ -3,6 +3,9 @@ package fi.vm.sade.rajapinnat.kela;
 import fi.vm.sade.organisaatio.resource.api.TasoJaLaajuusDTO;
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TasoJaLaajuusContainer {
 
     private static final Logger LOG = Logger.getLogger(TasoJaLaajuusContainer.class);
@@ -12,6 +15,12 @@ public class TasoJaLaajuusContainer {
     private static final String ONLYYLEMPI = "061";
     private static final String LAAKIS = "070";
     private static final String HAMMASLAAKIS = "071";
+    private static final String LUKIO = "001";
+    private static final String AMMATILLINENPERUSTUTKINTO = "002";
+    private static final String AMMATTITUTKINTO = "003";
+    private static final String ERIKOISAMMATTITUTKINTO = "004";
+    private static final String VALMA = "005";
+    private static final String TELMA = "006";
     private static final String EITASOA = "   ";
 
     private static final String ALEMPI_DEFAULT_LAAJUUS = "180";
@@ -65,6 +74,36 @@ public class TasoJaLaajuusContainer {
         return this;
     }
 
+    public TasoJaLaajuusContainer lukio() {
+        tasoCode = LUKIO;
+        return this;
+    }
+
+    public TasoJaLaajuusContainer ammatillinenPerustutkinto() {
+        tasoCode = AMMATILLINENPERUSTUTKINTO;
+        return this;
+    }
+
+    public TasoJaLaajuusContainer ammattitutkinto() {
+        tasoCode = AMMATTITUTKINTO;
+        return this;
+    }
+
+    public TasoJaLaajuusContainer erikoisammattitutkinto() {
+        tasoCode = ERIKOISAMMATTITUTKINTO;
+        return this;
+    }
+
+    public TasoJaLaajuusContainer valma() {
+        tasoCode = VALMA;
+        return this;
+    }
+
+    public TasoJaLaajuusContainer telma() {
+        tasoCode = TELMA;
+        return this;
+    }
+
     public TasoJaLaajuusContainer eiTasoa() {
         tasoCode = EITASOA;
         return this;
@@ -75,6 +114,18 @@ public class TasoJaLaajuusContainer {
     public boolean isHammaslaakis() { return HAMMASLAAKIS.equals(tasoCode); }
     public boolean isAlempi() { return ONLYALEMPI.equals(tasoCode); }
     public boolean isAlempiYlempi() { return ALEMPIYLEMPI.equals(tasoCode); }
+
+    public boolean isToinenAste() {
+        List<String> toinenAsteTasoCodes = Arrays.asList(
+                LUKIO,
+                AMMATILLINENPERUSTUTKINTO,
+                AMMATTITUTKINTO,
+                ERIKOISAMMATTITUTKINTO,
+                VALMA,
+                TELMA
+        );
+        return toinenAsteTasoCodes.contains(tasoCode);
+    }
 
     public boolean hasTaso() {
         return this.tasoCode != null && EITASOA.equals(tasoCode) == false;

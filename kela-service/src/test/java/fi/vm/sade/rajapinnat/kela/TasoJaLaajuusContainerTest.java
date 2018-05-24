@@ -123,4 +123,24 @@ public class TasoJaLaajuusContainerTest {
         Assert.assertEquals(null, resp.getLaajuus2());
     }
 
+    @Test
+    public void testLukio() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.lukio();
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals(null, resp.getLaajuus1());
+        Assert.assertEquals(null, resp.getLaajuus2());
+        Assert.assertEquals("001", resp.getTasoCode());
+    }
+
+    @Test
+    public void testAmmatillinenPerustutkinto() {
+        TasoJaLaajuusContainer cont = new TasoJaLaajuusContainer();
+        cont.ammatillinenPerustutkinto();
+        TasoJaLaajuusDTO resp = cont.toDTO(tarjontaMock);
+        Assert.assertEquals(null, resp.getLaajuus1());
+        Assert.assertEquals(null, resp.getLaajuus2());
+        Assert.assertEquals("002", resp.getTasoCode());
+    }
+
 }

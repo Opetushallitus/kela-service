@@ -24,6 +24,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
 import fi.vm.sade.rajapinnat.kela.TasoJaLaajuusContainer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
@@ -409,10 +410,6 @@ public class KelaDAOImpl implements KelaDAO {
         return s != null && s.startsWith("koulutus_772201");
     }
 
-    private boolean kk_tut_taso(String s) {
-        return ylempi(s) || alempi(s) || laakis(s) || hammaslaakis(s);
-    }
-
     @Override
     public TasoJaLaajuusContainer getKKTutkinnonTaso(KoulutusmoduuliToteutus komoto) {
 
@@ -429,10 +426,6 @@ public class KelaDAOImpl implements KelaDAO {
             return resp.eiTasoa(); //ei JULKAISTU
         }
         koulutus_uri = emptyString(komoto.getKoulutusUri()) ? koulutusmoduuli.getKoulutusUri() : komoto.getKoulutusUri();
-
-        if (!kk_tut_taso(koulutus_uri)) {
-            return resp.eiTasoa(); //ei korkeakoulun ylempi eikä alempi
-        }
 
         if (laakis(koulutus_uri)) {
             return resp.laakis(komoto.getKoulutusmoduuli().getOid());
@@ -505,9 +498,58 @@ public class KelaDAOImpl implements KelaDAO {
             return resp.alempiYlempi(alempiKomo.getOid(), ylempiKomo.getOid());
         }
         /*
-         * 7) jos ei kumpiakaan : koulutuksen tasoa ei merkitä
+         * 7) jos ei kumpiakaan : tarkistetaan oinen aste koulutustyypin perusteella
+         */
+
+        String koulutustyyppi = getFirstKoulutustyyppikoodi(koulutusmoduuli);
+        if (koulutustyyppi != null) {
+            switch (koulutustyyppi) {
+                case "1": case "4": case "26":
+                    return resp.ammatillinenPerustutkinto();
+                case "2": case "14": case "21":
+                    return resp.lukio();
+                case "5":
+                    return resp.telma();
+                case "11":
+                    return resp.ammattitutkinto();
+                case "12":
+                    return resp.erikoisammattitutkinto();
+                case "18": case "19":
+                    return resp.valma();
+                default:
+                    return resp.eiTasoa();
+                }
+        }
+
+        /*
+         * muussa tapauksessa: koulutuksen tasoa ei merkitä
          */
         return resp.eiTasoa();
+    }
+
+    String getFirstKoulutustyyppikoodi(Koulutusmoduuli koulutusmoduuli) {
+        if (koulutusmoduuli == null) {
+            return null;
+        }
+
+        String koulutustyyppikoodi = null;
+
+        String koulutustyyppiUris = koulutusmoduuli.getKoulutustyyppi_uri(); // Format: |uri_x|uri_y|...|
+
+        if (koulutustyyppiUris != null && !koulutustyyppiUris.isEmpty()) {
+            String uriSeparator = "|";
+            String[] split = StringUtils.split(koulutustyyppiUris, uriSeparator);
+
+            if (split.length > 0) {
+                String uri = split[0];
+                String koodiSeparator = "_";
+                String[] parts = StringUtils.split(uri, koodiSeparator);
+                if (parts.length >= 2) {
+                    koulutustyyppikoodi = parts[1];
+                }
+            }
+        }
+        return koulutustyyppikoodi;
     }
 
     private EntityManager getTarjontaEntityManager() {

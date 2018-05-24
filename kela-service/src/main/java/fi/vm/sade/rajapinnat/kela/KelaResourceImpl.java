@@ -189,6 +189,7 @@ public class KelaResourceImpl implements KelaResource {
         Hakukohde hakukohde = haeHakukohde(hakukohdeOid);
         TasoJaLaajuusContainer ylempiTaso = null;
         TasoJaLaajuusContainer alempiTaso = null;
+        TasoJaLaajuusContainer toinenAsteTaso = null;
         for (KoulutusmoduuliToteutus komoto : hakukohde.getKoulutukset()) {
             TasoJaLaajuusContainer komotoTutkinnonTaso = kelaDAO.getKKTutkinnonTaso(komoto);
             if (komotoTutkinnonTaso.hasTaso()) {
@@ -197,6 +198,9 @@ public class KelaResourceImpl implements KelaResource {
                 }
                 if (komotoTutkinnonTaso.isAlempi()) {
                     alempiTaso = komotoTutkinnonTaso;
+                }
+                if (komotoTutkinnonTaso.isToinenAste()) {
+                    toinenAsteTaso = komotoTutkinnonTaso;
                 }
                 if(komotoTutkinnonTaso.isHammaslaakis() || komotoTutkinnonTaso.isLaakis() || komotoTutkinnonTaso.isAlempiYlempi()) {
                     return komotoTutkinnonTaso.toDTO(tarjontaClient);
@@ -224,8 +228,17 @@ public class KelaResourceImpl implements KelaResource {
             return cont.toDTO(tarjontaClient);
         }
         /*
-         *  jos ei kumpiakaan : koulutuksen tasoa ei merkitä
+         *  jos ei kumpiakaan : tarkistetaan toinen aste
          */
+
+        if (toinenAsteTaso != null) {
+            return toinenAsteTaso.toDTO(tarjontaClient);
+        }
+
+        /*
+         *  muussa tapauksessa: koulutuksen tasoa ei merkitä
+         */
+
         return new TasoJaLaajuusContainer().eiTasoa().toDTO(tarjontaClient);
 
     }
