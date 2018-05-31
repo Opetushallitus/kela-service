@@ -27,6 +27,8 @@ import javax.ws.rs.QueryParam;
 
 import fi.vm.sade.organisaatio.resource.api.TasoJaLaajuusDTO;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,7 +48,7 @@ import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 @Component
 @Api(value = "/kela", description = "Kelan operaatiot")
 public class KelaResourceImpl implements KelaResource {
-
+    private static final Logger LOG = LoggerFactory.getLogger(KelaResourceImpl.class);
     @Autowired
     @Qualifier("kelaTask")
     private TaskExecutor taskExecutor;
@@ -232,6 +234,7 @@ public class KelaResourceImpl implements KelaResource {
          */
 
         if (toinenAsteTaso != null) {
+            LOG.info("Hakukohde {} oli toinen aste tutkinnontasolla {}", hakukohdeOid, toinenAsteTaso.getTasoCode());
             return toinenAsteTaso.toDTO(tarjontaClient);
         }
 
@@ -239,6 +242,7 @@ public class KelaResourceImpl implements KelaResource {
          *  muussa tapauksessa: koulutuksen tasoa ei merkitä
          */
 
+        LOG.info("Ei tutkinnon tasoa hakukohteelle {}", hakukohdeOid);
         return new TasoJaLaajuusContainer().eiTasoa().toDTO(tarjontaClient);
 
     }

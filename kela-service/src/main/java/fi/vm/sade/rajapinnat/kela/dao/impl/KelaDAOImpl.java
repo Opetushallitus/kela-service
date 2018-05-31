@@ -25,6 +25,8 @@ import javax.persistence.NonUniqueResultException;
 
 import fi.vm.sade.rajapinnat.kela.TasoJaLaajuusContainer;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
@@ -50,7 +52,7 @@ import javax.persistence.PersistenceUnit;
  */
 @Repository
 public class KelaDAOImpl implements KelaDAO {
-
+    private static final Logger LOG = LoggerFactory.getLogger(KelaDAOImpl.class);
     private EntityManager tarjontaEm;
     private EntityManager organisaatioEm;
 
@@ -498,9 +500,10 @@ public class KelaDAOImpl implements KelaDAO {
             return resp.alempiYlempi(alempiKomo.getOid(), ylempiKomo.getOid());
         }
         /*
-         * 7) jos ei kumpiakaan : tarkistetaan oinen aste koulutustyypin perusteella
+         * 7) jos ei kumpiakaan : tarkistetaan toinen aste koulutustyypin perusteella
          */
 
+        LOG.info("Komoto {} mahdollisesti toinen aste, tarkistetaan koulutustyyppi", komoto.getOid());
         String koulutustyyppi = getFirstKoulutustyyppikoodi(koulutusmoduuli);
         if (koulutustyyppi != null) {
             switch (koulutustyyppi) {
@@ -524,6 +527,7 @@ public class KelaDAOImpl implements KelaDAO {
         /*
          * muussa tapauksessa: koulutuksen tasoa ei merkitä
          */
+        LOG.info("Ei tutkinnon tasoa komotolle {}", komoto.getOid());
         return resp.eiTasoa();
     }
 
@@ -549,6 +553,8 @@ public class KelaDAOImpl implements KelaDAO {
                 }
             }
         }
+
+        LOG.info("Komon {} koulutustyyppi-urit olivat {} josta koulutustyyppikoodiksi luettiin " + koulutustyyppikoodi, koulutusmoduuli.getOid(), koulutustyyppiUris);
         return koulutustyyppikoodi;
     }
 
