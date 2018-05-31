@@ -504,10 +504,9 @@ public class KelaDAOImpl implements KelaDAO {
          */
 
         LOG.info("Komoto {} mahdollisesti toinen aste, tarkistetaan koulutustyyppi", komoto.getOid());
-        String koulutustyyppi = getFirstKoulutustyyppikoodi(koulutusmoduuli);
-        if (koulutustyyppi != null) {
+        for (String koulutustyyppi : getKoulutustyyppikoodis(koulutusmoduuli)) {
             switch (koulutustyyppi) {
-                case "1": case "4": case "26":
+                case "1": case "4": case "13": case "26":
                     return resp.ammatillinenPerustutkinto();
                 case "2": case "14": case "21":
                     return resp.lukio();
@@ -519,8 +518,7 @@ public class KelaDAOImpl implements KelaDAO {
                     return resp.erikoisammattitutkinto();
                 case "18": case "19":
                     return resp.valma();
-                default:
-                    return resp.eiTasoa();
+                // in any other case, keep looping
                 }
         }
 
@@ -531,31 +529,28 @@ public class KelaDAOImpl implements KelaDAO {
         return resp.eiTasoa();
     }
 
-    String getFirstKoulutustyyppikoodi(Koulutusmoduuli koulutusmoduuli) {
-        if (koulutusmoduuli == null) {
-            return null;
-        }
+    List<String> getKoulutustyyppikoodis(Koulutusmoduuli koulutusmoduuli) {
+        List<String> koulutustyyppikoodis = new ArrayList<>();
 
-        String koulutustyyppikoodi = null;
+        if (koulutusmoduuli != null) {
+            String koulutustyyppiUris = koulutusmoduuli.getKoulutustyyppi_uri(); // Format: |uri_x|uri_y|...|
 
-        String koulutustyyppiUris = koulutusmoduuli.getKoulutustyyppi_uri(); // Format: |uri_x|uri_y|...|
-
-        if (koulutustyyppiUris != null && !koulutustyyppiUris.isEmpty()) {
-            String uriSeparator = "|";
-            String[] split = StringUtils.split(koulutustyyppiUris, uriSeparator);
-
-            if (split.length > 0) {
-                String uri = split[0];
+            if (koulutustyyppiUris != null) {
+                String uriSeparator = "|";
+                String[] splitUris = StringUtils.split(koulutustyyppiUris, uriSeparator);
                 String koodiSeparator = "_";
-                String[] parts = StringUtils.split(uri, koodiSeparator);
-                if (parts.length >= 2) {
-                    koulutustyyppikoodi = parts[1];
+
+                for (String uri : splitUris) {
+                    String[] parts = StringUtils.split(uri, koodiSeparator);
+                    if (parts.length >= 2) {
+                        koulutustyyppikoodis.add(parts[1]);
+                    }
                 }
             }
+            LOG.info("Komon {} koulutustyyppi-urit olivat {} josta koulutustyyppikoodeiksi luettiin " + koulutustyyppikoodis, koulutusmoduuli.getOid(), koulutustyyppiUris);
         }
 
-        LOG.info("Komon {} koulutustyyppi-urit olivat {} josta koulutustyyppikoodiksi luettiin " + koulutustyyppikoodi, koulutusmoduuli.getOid(), koulutustyyppiUris);
-        return koulutustyyppikoodi;
+        return koulutustyyppikoodis;
     }
 
     private EntityManager getTarjontaEntityManager() {
