@@ -70,34 +70,12 @@
             <type>jar</type>
         </dependency>
 
-        <dependency>
-            <groupId>fi.vm.sade.koodisto</groupId>
-            <artifactId>koodisto-api</artifactId>
-            <version>${koodisto.api.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>fi.vm.sade.organisaatio</groupId>
-            <artifactId>organisaatio-api</artifactId>
-            <version>${organisaatio.api.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>fi.vm.sade.organisaatio</groupId>
-            <artifactId>organisaatio-solr-client</artifactId>
-            <version>${organisaatio.api.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>fi.vm.sade.rajapinnat</groupId>
             <artifactId>kela-api</artifactId>
             <version>${rajapinnat.kela-opti.version}</version>
         </dependency>
-        <!--  <dependency>
-            <groupId>fi.vm.sade.rajapinnat</groupId>
-            <artifactId>kela-opti</artifactId>
-            <version>${rajapinnat.kela-opti.version}</version>
-        </dependency>   -->
         <dependency>
             <groupId>fi.vm.sade.organisaatio</groupId>
             <artifactId>organisaatio-api</artifactId>
