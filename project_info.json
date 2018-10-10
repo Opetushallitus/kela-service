@@ -1,0 +1,20 @@
+{
+  "projects": [
+    {
+      "name": "kela-service",
+      "includes": [
+        "OrganisaatioSearchService",
+        "organisaatio-solr-client",
+        "rajapinnat"
+      ],
+      "uses": [
+        "tarjonta-db",
+        "organisaatio-db"
+      ],
+      "spring": {
+        "xml": "kela-service/src/main/resources/spring/application-context.xml",
+        "properties": "src/main/resources/oph-configuration/kela-service.properties.template"
+      }
+    }
+  ]
+}
