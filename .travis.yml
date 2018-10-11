@@ -7,6 +7,10 @@ cache:
 
 env:
   global:
+  # ARTIFACTORY_USERNAME
+  - secure: "ASjewJdI4fN3o/HXYLzHBMinh6U+dqvRywCo/nmlAz2Co01buyTTgurMOd5Rz2cQqG1mxDhpaLl8Fp7UUaUuYQH5lrq17eFm2Gys989D0ZrqLlcJoP1LZZvLl2NqPeUEtA1oqMvqi7FzHafaQVjqDrDt7TTYp0qTanfyzGjhKkizkTdpHAjH5O2ch0rK2YuiLDZDAaxxABcB9N1E/Z0AuX1QpdMvUtS0TezRYOYmAmVCaJssYILLakYTZceRXPe7414mPMTQfmQ+E6h7JEbh/SuHkvvpb5k/8+iLEqSDcoL4Nox9VtnpXdchCCVLruhCQm/3JkFcrfC+l9grT/oWhA6L1qsPXZQvncJkTkH2lyC5UPsMgsrd0A6Lg+FPIsx03Q5AaFaDAdFeg6v0sGFl5j2bvMvJK9HsK/Vb+CMZLLauZ7cGdlB+w7x45K7LD4WmJ1rUEmCgikqS5w/s/SQZ0NApjsQcRWcypmvoPBCovA4DsAsm+aeVn9eGzrO3GSR3YFTOISLxs5Ng+PbkGEndj7zRBBdQS4i2c8nS8vE6HFUlj4VEhdF+uRJ0pD8FMyPTscqhV8j+GVa4bFxZQtYD6BbWOHJ1DC5fKI+vWKb11heWJjF9qGhBU7TaCCPSwdHaBTeNdvcc6pk6vThcGdqMAa/5PDn30Fxtz84MMzjMnPk="
+  # ARTIFACTORY_PASSWORD
+  - secure: "o4tAz5ymHTcdH1O8N3a8l0xlP4SbIrEyWrdudkN11AyRs6DnFF2ZghMNJwuQOjymzqYg9g+mv0MChkk1X41xV4IIamYBY651s9KRxvACuivKAodRLVLkZDuntb153ZlJuTq4M1EfEFtq6bq6t/uBPhuVK/mvPM+F3UYoAzhBMdG3eVayN//T57mgjyqi4vtF7PZmJxTDgg+G7sTxKDhv6p6c0MVoYo0raL2tAglRjVIbXFTEzeSCFdlO0w5lLg8ga+0q8C3rq6l38XOk8VNtCyWrhYtWjVJHoebM1TRD0hGE0yuVexa4K5gKgBfjsed+rI7Zz8kp7cfP9smFTN1HEnl+DfKPA77Tp0GS1A+QJbLvjzWaSUGBMRGYmRGYFKLdVHnxM5IY8XRgLYiE0dybUTFeRITMAPxiARNpXtjahlY7eldxMozS4MABOF2Fvk8CC6MuKQB5Y+ftB8URT5O5yE8ItEWzExC1JRTXJE+rzyyh6WOkKeKJI8psvpZqGzWBaDVgLiPmI6D+U7/qPowH0eK2yVpjdXodmabkVng8IymYRvpvIUSzOvhsjBpa5BtR1hY93SKvLgNtGlEE3ilKTmRB0atjdf3nK+oPdgifAzSEMgL4Ks/fJ2rY4Ml4Ysar206A/vMV99uy8hW9d/kS6b9+4132p9+90MOSj1HVxfY="
   # AWS_ACCESS_KEY_ID
   - secure: "M683CmWKc+++hOj+aV1aNSD45BVZziYDLzeeUlLFAtquQmmbEJmYnRTvfxYybF3BluKpNDyxv4dHWuLS1fw+pvnLY+E7vYp5jzhWqChDDx2J1fL+0YduFoVcMs7IgKGCi9yxOi72BWrmIRtYASuIm71Zi2lx/hdK7o8mova3IyitTwtYHUxWBuHbqTWNVeuwWFnd1f5iQG8ReN+0phtY2B3nN+XdFUuKhWohwI+zC4FathdyqrTDobmtcNDBkjWmHVLdUEYuySgeN5/UJ9YreQJNYIDFJJrXN2dBGzqxAZ3iGuhcOB/WheJ07/Wk/vYM0I6Nto4vo80D+nw293+nm349CL4sq1fz0NW5+OfgXS6vCL3QnesQhJOfb80EMNcl7ADz/r+AWBzTMr0Jb7D4ajacWsJy8d2NPRGm2EYRMURlXuLwqtE51tjS0NYOUe3igmeTOG2fK9N0WW8P1Aq9tqZ0cbh14BBDlwU0+Ffw5KRIjdac5urU+i/oZaz99/OBns/+LoD8oRq11EtdR6cbyjTCmmupbWNBNim8AkpNbVDWC/pFVPpQq7mXXdBEs6MOpd+ltHBLY4M53BKYboMh0Bf63P3m4vCVp8TtbkauCoAX4lqyYALNNCJ+xkyLbY58Q12EZaHREFgHjFtpUhYSy1lnFTttA/dwPIHF9njxzt8="
   # AWS_SECRET_ACCESS_KEY
@@ -28,6 +32,11 @@ script:
 - ./ci-tools/build/build-war.sh $ARTIFACT_NAME
 
 deploy:
+- provider: script
+  script: mvn deploy -pl kela-api -DskipTests --settings ci-tools/common/maven-settings.xml
+  skip_cleanup: true
+  on:
+    branch: master
 - provider: script
   script: ./ci-tools/build/upload-image.sh $ARTIFACT_NAME
   on:
