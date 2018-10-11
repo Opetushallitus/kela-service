@@ -1,0 +1,34 @@
+services:
+- docker
+
+cache:
+  directories:
+  - $HOME/.m2
+
+env:
+  global:
+  # AWS_ACCESS_KEY_ID
+  - secure: "M683CmWKc+++hOj+aV1aNSD45BVZziYDLzeeUlLFAtquQmmbEJmYnRTvfxYybF3BluKpNDyxv4dHWuLS1fw+pvnLY+E7vYp5jzhWqChDDx2J1fL+0YduFoVcMs7IgKGCi9yxOi72BWrmIRtYASuIm71Zi2lx/hdK7o8mova3IyitTwtYHUxWBuHbqTWNVeuwWFnd1f5iQG8ReN+0phtY2B3nN+XdFUuKhWohwI+zC4FathdyqrTDobmtcNDBkjWmHVLdUEYuySgeN5/UJ9YreQJNYIDFJJrXN2dBGzqxAZ3iGuhcOB/WheJ07/Wk/vYM0I6Nto4vo80D+nw293+nm349CL4sq1fz0NW5+OfgXS6vCL3QnesQhJOfb80EMNcl7ADz/r+AWBzTMr0Jb7D4ajacWsJy8d2NPRGm2EYRMURlXuLwqtE51tjS0NYOUe3igmeTOG2fK9N0WW8P1Aq9tqZ0cbh14BBDlwU0+Ffw5KRIjdac5urU+i/oZaz99/OBns/+LoD8oRq11EtdR6cbyjTCmmupbWNBNim8AkpNbVDWC/pFVPpQq7mXXdBEs6MOpd+ltHBLY4M53BKYboMh0Bf63P3m4vCVp8TtbkauCoAX4lqyYALNNCJ+xkyLbY58Q12EZaHREFgHjFtpUhYSy1lnFTttA/dwPIHF9njxzt8="
+  # AWS_SECRET_ACCESS_KEY
+  - secure: "Ss+2EOe8P5lbRXmW+OrTGMxUt+So/EPtGbyANHUleTnBBYaj1zPs9mlhZ9GP7L1V7zUcFmWjIKogtzRVAz+OxGnuIKZMEkVXnV3UOSHfQ7HsHV41EH6lM3TUVITDrRntUpPyft+ysudgpoW+qlwGUJQQMTxqiW4+wikFykepmfPnBlllIgPqtyyM+BPESw8b9G3E0dPySlTQz9BOjG7XdnBL37GDFF0+159phk7zwTP60RyY3xUOSfSrAnEwLj0u5AzOwrilby0AUbH8m5gCGURCpnKkq4ZhbswI1duoVIYQHRtnsjqyvfAANH3Cb9jPoh2rlOZmpd5wdNswqhtVakwtVZxdeMntM6rtiv5PKS4I6aYexZooJdZ/FZpJvfnCOlxclb9nopYo8SMmRs/+sdyBr8qhCroYB3SrrD8XhkUKV190WMpMbzh1QQWElVk6WxUgaXcJAT+FBH4yK+TA8LPFHOK5AWDafRKz8+HTQ3dA7uuv0KoDe4jrqJj76g0kPktVEmoyYShIytMscBJmO+58YFyIJAgCq0hykH5aSUzwU56YjvaO6Hhacdc0t3APWwU6H+2PzUl9wFjx5kCsQBSjfXqtclEXHHdAbZukBk1bVlpqU5gk5Mi2LdmiFOSYdje0blryq/9X7mtJO+ThU1ACuDTyMqdqIaysSqVhTLw="
+
+install:
+- git clone https://github.com/Opetushallitus/ci-tools.git
+- source ci-tools/common/setup-tools.sh
+- export ARTIFACT_NAME="kela-service"
+
+script:
+- mvn clean package -B -Dbranch=${TRAVIS_BRANCH} -Drevision=${TRAVIS_COMMIT} -DbuildNumber=${TRAVIS_BUILD_NUMBER}
+
+- mv -v kela-service/target/kela-service.war $DOCKER_BUILD_DIR/artifact/kela-service.war
+- cp -vr src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
+
+- export BASE_IMAGE="base-legacy:0.1"
+- ./ci-tools/common/pull-image.sh
+- ./ci-tools/build/build-war.sh $ARTIFACT_NAME
+
+deploy:
+- provider: script
+  script: ./ci-tools/build/upload-image.sh $ARTIFACT_NAME
+  on:
+    all_branches: true
