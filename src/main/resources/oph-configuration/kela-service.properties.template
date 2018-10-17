@@ -1,6 +1,6 @@
 #
 # TÄHÄN TIEDOSTOON EI SAA TALLENTAA YMPÄRISTÖKOHTAISIA ARVOJA MUUTOIN KUIN MUUTTUJINA!!!
-# 
+#
 # Tämä tiedosto toimii pohjana oph-configuration/common.properties tiedostolle,
 # joka asettaa tomcatin ympäristökohtaiset arvot.
 #
@@ -36,9 +36,9 @@ vtj.truststore.password={{vtj_truststore_password}}
 
 #KELA-OPTI
 exportdir={{kela_opti_exportdir}}
-rajapinnat-s3-enabled={{rajapinnat_s3_enabled}}
-rajapinnat-s3-bucket-name={{rajapinnat_s3_bucket_name}}
-rajapinnat-s3-region={{rajapinnat_s3_region}}
+kela-service-s3-enabled={{kela_service_s3_enabled}}
+kela-service-s3-bucket-name={{kela_service_s3_bucket_name}}
+kela-service-s3-region={{kela_service_s3_region}}
 transferprotocol={{kela_opti_transferprotocol}}
 transferhost={{kela_opti_transferhost}}
 transferuser={{kela_opti_transferuser}}
@@ -151,4 +151,3 @@ cas.service.kela-service=https://${host.cas}/kela-service
 koodi.public.webservice.url.backend=https://${host.virkailija}/koodisto-service/services/koodiService
 koodisto.public.webservice.url.backend=https://${host.virkailija}/koodisto-service/services/koodistoService
 organisaatio.webservice.url.backend=https://${host.virkailija}/organisaatio-service/services/organisaatioService
-

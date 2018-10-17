@@ -285,7 +285,7 @@ public abstract class AbstractOPTIWriter {
         this.path = path;
     }
 
-    @Value("${rajapinnat-s3-enabled}")
+    @Value("${kela-service-s3-enabled}")
     public void setS3enabled(boolean s3enabled) {
         this.s3enabled = s3enabled;
     }
@@ -295,12 +295,12 @@ public abstract class AbstractOPTIWriter {
     public String getS3bucketName() {
         return this.s3bucketName;
     }
-    @Value("${rajapinnat-s3-bucket-name}")
+    @Value("${kela-service-s3-bucket-name}")
     public void setS3bucketName(String s3bucketName) {
         this.s3bucketName = s3bucketName;
     }
 
-    @Value("${rajapinnat-s3-region}")
+    @Value("${kela-service-s3-region}")
     public void setS3region(String s3region) {
         this.s3region = s3region;
     }

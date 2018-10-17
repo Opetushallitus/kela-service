@@ -4,8 +4,7 @@
       "name": "kela-service",
       "includes": [
         "OrganisaatioSearchService",
-        "organisaatio-solr-client",
-        "rajapinnat"
+        "organisaatio-solr-client"
       ],
       "uses": [
         "tarjonta-db",
