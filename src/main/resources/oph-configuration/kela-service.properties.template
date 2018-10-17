@@ -36,9 +36,9 @@ vtj.truststore.password={{vtj_truststore_password}}
 
 #KELA-OPTI
 exportdir={{kela_opti_exportdir}}
-kela-service-s3-enabled={{kela-service_s3_enabled}}
-kela-service-s3-bucket-name={{kela-service_s3_bucket_name}}
-kela-service-s3-region={{kela-service_s3_region}}
+kela-service-s3-enabled={{kela_service_s3_enabled}}
+kela-service-s3-bucket-name={{kela_service_s3_bucket_name}}
+kela-service-s3-region={{kela_service_s3_region}}
 transferprotocol={{kela_opti_transferprotocol}}
 transferhost={{kela_opti_transferhost}}
 transferuser={{kela_opti_transferuser}}
