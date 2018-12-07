@@ -28,9 +28,9 @@
         <oid.api.version>8.0-SNAPSHOT</oid.api.version>
         <rajapinnat.ytj.version>11.0-SNAPSHOT</rajapinnat.ytj.version>
         <rajapinnat.kela-opti.version>11.0-SNAPSHOT</rajapinnat.kela-opti.version>
-        <organisaatio.api.version>2015-05</organisaatio.api.version>
+        <organisaatio.api.version>2018-6-SNAPSHOT</organisaatio.api.version>
         <koodisto.api.version>10.2-SNAPSHOT</koodisto.api.version>
-        <tarjonta.api.version>2016-07-SNAPSHOT</tarjonta.api.version>
+        <tarjonta.api.version>2017-40-SNAPSHOT</tarjonta.api.version>
         <auditlog.api.version>7.2.0-SNAPSHOT</auditlog.api.version>
 
         <maven.war.plugin.version>2.4</maven.war.plugin.version>
