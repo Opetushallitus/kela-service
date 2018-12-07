@@ -101,19 +101,6 @@
         </dependency>
 
         <dependency>
-            <groupId>fi.vm.sade.generic</groupId>
-            <artifactId>dependencies-service</artifactId>
-            <type>pom</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-aop</artifactId>
-                </exclusion>
-            </exclusions>
-            <version>${generic.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>fi.vm.sade.log</groupId>
             <artifactId>log-client</artifactId>
             <exclusions>
@@ -198,11 +185,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>jta</artifactId>
-            <version>${jta.version}</version>
-        </dependency>
-        <dependency>
             <groupId>fi.vm.sade.koodisto</groupId>
             <artifactId>koodisto-api</artifactId>
             <version>10.0-SNAPSHOT</version>
@@ -211,11 +193,6 @@
             <groupId>fi.vm.sade.koodisto</groupId>
             <artifactId>koodisto-common</artifactId>
             <version>10.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-api</artifactId>
-            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -258,14 +235,10 @@
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>2.2.5</version>
+            <version>2.2.11</version>
         </dependency>
 
         <!-- CAS ticket cache -->
-        <dependency>
-            <groupId>org.jasig.cas.client</groupId>
-            <artifactId>cas-client-support-distributed-ehcache</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.jasig.cas.client</groupId>
             <artifactId>cas-client-support-distributed-ehcache</artifactId>
@@ -292,6 +265,11 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
             <version>${servlet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
         </dependency>
 
         <!-- Jersey -->
@@ -333,6 +311,11 @@
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-xc</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                </exclusion>
+
             </exclusions>
         </dependency>
         <dependency>
@@ -402,9 +385,25 @@
             <version>${hibernate.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.10</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -447,8 +446,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.0</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>

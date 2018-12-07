@@ -30,8 +30,6 @@ import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
-import org.apache.cxf.jaxrs.client.ServerWebApplicationException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -65,6 +63,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.AmazonClientException;
+
+import javax.ws.rs.WebApplicationException;
 
 
 @Configurable
@@ -658,9 +658,7 @@ public abstract class AbstractOPTIWriter {
             try {
                 line = composeRecord(args);
                 break;
-            } catch (ServerWebApplicationException e /*CXF may throw*/) {
-                handleException(e);
-            } catch (ClientWebApplicationException e /*CXF may throw*/) {
+            } catch (WebApplicationException e /*CXF may throw*/) {
                 handleException(e);
             }
         }
