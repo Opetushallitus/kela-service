@@ -20,7 +20,7 @@
 	<dependencies>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-api</artifactId>
+            <artifactId>cxf-tools-common</artifactId>
             <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
@@ -83,12 +83,6 @@
 					<groupId>commons-logging</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<artifactId>spring-asm</artifactId>
-			<groupId>org.springframework</groupId>
-			<version>${spring.asm.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>spring-aop</artifactId>
@@ -158,12 +152,6 @@
             <groupId>org.mockftpserver</groupId>
             <artifactId>MockFtpServer</artifactId>
             <version>2.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-core</artifactId>
-            <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
