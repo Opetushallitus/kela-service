@@ -2,10 +2,6 @@
   "projects": [
     {
       "name": "kela-service",
-      "includes": [
-        "OrganisaatioSearchService",
-        "organisaatio-solr-client"
-      ],
       "uses": [
         "tarjonta-db",
         "organisaatio-db"
