@@ -323,7 +323,7 @@ public class KelaDAOImpl implements KelaDAO {
                 + " left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
                 + " left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
                 + " left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
-                + " where position('Oppilaitos' in o.organisaatiotyypitstr)>0 "
+                + " where (position('organisaatiotyyppi_02' in o.organisaatiotyypitstr)>0 or position('Oppilaitos' in o.organisaatiotyypitstr)>0)"
                 + " and not o.organisaatiopoistettu=true "
                 + " and oppilaitostyyppi in (" + csvWithQuote + ")";
 
@@ -346,7 +346,7 @@ public class KelaDAOImpl implements KelaDAO {
                 + " from organisaatio o "
                 + " where not o.organisaatiopoistettu=true "
                 + " and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='" + oid + "')"
-                + " and position('Oppilaitos' in o.organisaatiotyypitstr)>0";
+                + " and (position('organisaatiotyyppi_02' in o.organisaatiotyypitstr)>0 or position('Oppilaitos' in o.organisaatiotyypitstr)>0)";
 
         @SuppressWarnings("unchecked")
         List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
@@ -373,7 +373,7 @@ public class KelaDAOImpl implements KelaDAO {
                 + " left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
                 + " left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
                 + " left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
-                + " where position('Toimipiste' in o.organisaatiotyypitstr)>0 "
+                + " where (position('organisaatiotyyppi_03' in o.organisaatiotyypitstr)>0 or position('Toimipiste' in o.organisaatiotyypitstr)>0)"
                 + " and not o.organisaatiopoistettu=true ";
 
         @SuppressWarnings("unchecked")
