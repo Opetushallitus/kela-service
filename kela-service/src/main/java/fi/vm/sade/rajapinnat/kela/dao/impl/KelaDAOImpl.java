@@ -287,7 +287,7 @@ public class KelaDAOImpl implements KelaDAO {
         if (values != null) {
             for (String value : values) {
                 if (value.length() > 0) {
-                    if("organisaatiotyyppi_02".equals(value) || "organisaatiotyyppi_03".equals(value)) {
+                    if(value.startsWith("organisaatiotyyppi")) {
                         result.getOrganisaatiotyypit().add(OrganisaatioTyyppi.fromKoodiValue((String) value));
                     } else {
                         result.getOrganisaatiotyypit().add(OrganisaatioTyyppi.fromValue((String) value));
