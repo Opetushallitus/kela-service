@@ -49,6 +49,7 @@ kela-organisaatiodb.url=jdbc:postgresql://{{ host_postgresql_organisaatio }}:{{ 
 kela-organisaatiodb.username={{ host_postgresql_organisaatio_user }}
 kela-organisaatiodb.password={{ host_postgresql_organisaatio_password }}
 kela-organisaatiodb.max-size={{ host_postgresql_organisaatio_max_active }}
+organisaatio.solr.url={{ organisaatio_solr_url }}
 tarjonta.solr.baseurl={{ tarjonta_solr_baseurl }}
 kela.scheduler.cron.expression={{ kela_scheduler_cron_expression }}
 kela.scheduler.enabled={{ kela_scheduler_enabled }}
