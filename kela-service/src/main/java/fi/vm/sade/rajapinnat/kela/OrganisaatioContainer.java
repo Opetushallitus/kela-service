@@ -35,16 +35,12 @@ import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.koodisto.service.types.common.KoodistoType;
 import fi.vm.sade.koodisto.util.KoodiServiceSearchCriteriaBuilder;
 import fi.vm.sade.koodisto.util.KoodistoServiceSearchCriteriaBuilder;
-import fi.vm.sade.organisaatio.service.search.OrganisaatioSearchService;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
 
 @Component
 @Configurable
 public class OrganisaatioContainer {
-    
-    @Autowired
-    protected OrganisaatioSearchService organisaatioSearchService;
 
     @Autowired
     protected KelaDAO kelaDAO;
@@ -220,12 +216,7 @@ public class OrganisaatioContainer {
         this.koodistoService = koodistoService;
     }
 
-    public void setOrganisaatioSearchService(
-            OrganisaatioSearchService organisaatioSearchService) {
-        this.organisaatioSearchService = organisaatioSearchService;
-        
-    }
-    
+
     protected void error(int i, Object... args) {
     	KelaGenerator.error("(INIT"+i+") : "+errors[i-1], args);
 	}

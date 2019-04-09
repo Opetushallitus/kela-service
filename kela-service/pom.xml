@@ -65,9 +65,23 @@
 
         <dependency>
             <groupId>fi.vm.sade.tarjonta</groupId>
-            <artifactId>tarjonta-shared</artifactId>
+            <artifactId>tarjonta-api</artifactId>
             <version>${tarjonta.api.version}</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-json-provider</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 

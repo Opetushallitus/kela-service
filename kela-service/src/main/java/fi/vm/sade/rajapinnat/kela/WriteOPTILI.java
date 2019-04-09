@@ -21,29 +21,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
+import fi.vm.sade.tarjonta.service.resources.v1.dto.KelaHakukohdeV1RDTO;
+import fi.vm.sade.tarjonta.service.resources.v1.dto.KelaHakukohteetV1RDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.koodisto.service.types.common.KoodiType;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-import fi.vm.sade.tarjonta.service.search.HakukohdePerustieto;
-import fi.vm.sade.tarjonta.service.search.HakukohteetKysely;
-import fi.vm.sade.tarjonta.service.search.HakukohteetVastaus;
 import fi.vm.sade.tarjonta.service.types.TarjontaTila;
-import org.springframework.web.client.RestTemplate;
-
-import javax.annotation.Resource;
 
 @Component
 @Configurable
@@ -105,13 +98,6 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return DEFAULT_DATE;
     }
 
-    @SuppressWarnings("unused")
-    private Object getHakukohdeKoodi(HakukohdePerustieto curTulos) {
-        String koodiUri = curTulos.getKoodistoNimi();
-        List<KoodiType> koodis = getKoodisByUriAndVersio(koodiUri);
-        return (koodis.isEmpty()) ? StringUtils.leftPad("", 3) : koodis.get(0).getKoodiArvo();
-    }
-
     private Object getTutkintotunniste(Koulutusmoduuli koulutusmoduuli) throws OPTFormatException {
         if (koulutusmoduuli == null) {
             error(8);
@@ -153,7 +139,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return strFormatter(oppil_nro, 5, "OPPIL_NRO");
     }
 
-    private Hakukohde getHakukohde(HakukohdePerustieto curTulos) throws OPTFormatException {
+    private Hakukohde getHakukohde(KelaHakukohdeV1RDTO curTulos) throws OPTFormatException {
         Hakukohde hk = kelaDAO.findHakukohdeByOid(curTulos.getOid());
 
         if (hk == null) {
@@ -190,29 +176,15 @@ public class WriteOPTILI extends AbstractOPTIWriter {
 
     @Override
     public void composeRecords() throws IOException, UserStopRequestException {
-        HakukohteetKysely kysely = new HakukohteetKysely();
-        HakukohteetVastaus vastaus = null;
-        while (true) {
-            try {
-                LOG.info("starting haeHakukohteet");
-                vastaus = hakukohdeSearchService.haeHakukohteet(kysely);
-                LOG.info("got haeHakukohteet");
-                break;
-            } catch (org.apache.solr.common.SolrException e) {
-                handleException(e);
-            } catch (RuntimeException e) {
-                if (e.getMessage().equals("haku.error")) {
-                    handleException(e);
-                } else {
-                    throw e;
-                }
-            }
-        }
+
+        LOG.info("starting haeHakukohteet");
+        KelaHakukohteetV1RDTO vastaus = tarjontaClient.getHakukohteet();
+        LOG.info("got haeHakukohteet");
 
         Set<String> hakukohteet = new HashSet<String>();
         Set<String> kmos = new HashSet<String>();
 
-        for (HakukohdePerustieto curTulos : vastaus.getHakukohteet()) {
+        for (KelaHakukohdeV1RDTO curTulos : vastaus.getHakukohteet()) {
             String tarjoajaOid = curTulos.getTarjoajaOid();
             try {
                 if (hakukohteet.contains(curTulos.getOid())) {
@@ -258,7 +230,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         if (isInteger == null) {
             isInteger = Pattern.compile("\\d+");
         }
-        HakukohdePerustieto curTulos = (HakukohdePerustieto) args[0];
+        KelaHakukohdeV1RDTO curTulos = (KelaHakukohdeV1RDTO) args[0];
         OrganisaatioRDTO tarjoajaOrganisaatioDTO = (OrganisaatioRDTO) args[1];
         KoulutusmoduuliToteutus komoto = (KoulutusmoduuliToteutus) args[2];
         String komoto_oid = "";
@@ -363,7 +335,7 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return strFormatter(oid, 22, "OID");
     }
 
-    private String getOrgOid(HakukohdePerustieto pt) throws OPTFormatException {
+    private String getOrgOid(KelaHakukohdeV1RDTO pt) throws OPTFormatException {
         if (null == pt.getOid()) {
             error(4);
         }
@@ -377,14 +349,14 @@ public class WriteOPTILI extends AbstractOPTIWriter {
         return strFormatter(oid, 22, "OID");
     }
 
-    private String getHakukohteenNimi(HakukohdePerustieto curTulos) throws OPTFormatException {
+    private String getHakukohteenNimi(KelaHakukohdeV1RDTO curTulos) throws OPTFormatException {
 
-        String hakNimi = curTulos.getNimi("fi");
+        String hakNimi = curTulos.getNimiLocale("fi");
         if (StringUtils.isEmpty(hakNimi)) {
-            hakNimi = curTulos.getNimi("sv");
+            hakNimi = curTulos.getNimiLocale("sv");
         }
         if (StringUtils.isEmpty(hakNimi)) {
-            hakNimi = curTulos.getNimi("en");
+            hakNimi = curTulos.getNimiLocale("en");
         }
         if (StringUtils.isEmpty(hakNimi)) {
             error(9, curTulos.getOid() + " " + curTulos.getNimi());

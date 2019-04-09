@@ -2,6 +2,7 @@ package fi.vm.sade.rajapinnat.kela;
 
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
 import fi.vm.sade.rajapinnat.kela.dto.TarjontaRespDTO;
+import fi.vm.sade.tarjonta.service.resources.v1.dto.KelaHakukohteetV1RDTO;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -48,5 +49,26 @@ public class TarjontaClient {
         }
         return null;
     }
+
+
+    public KelaHakukohteetV1RDTO getHakukohteet() {
+
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(30000);
+        factory.setConnectTimeout(5000);
+        HttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.STANDARD).build())
+                .build();
+
+        factory.setHttpClient(httpClient);
+
+        RestTemplate restTemplate = new RestTemplate(factory);
+        String reqUrl = urlConfiguration.url("tarjonta-service.kela.export");
+        KelaHakukohteetV1RDTO resp = restTemplate.getForObject(reqUrl, KelaHakukohteetV1RDTO.class);
+        return resp;
+
+    }
+
 
 }

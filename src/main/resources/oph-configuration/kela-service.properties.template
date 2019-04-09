@@ -58,17 +58,6 @@ kela.scheduler.reportlist={{ kela_scheduler_reportlist }}
 accessRight.webservice.url.backend=https\://${host.virkailija}/authentication-service/services/accessRightService
 accessRightAdmin.webservice.url.backend=https\://${host.virkailija}/authentication-service/services/accessRightAdminService
 accessRightHistory.webservice.url.backend=https\://${host.virkailija}/authentication-service/services/accessRightHistoryService
-activemq.queue.name.log.error=Sade.Log_Error
-activemq.queue.name.log=Sade.Log
-activemq.queue.name.mail=Sade.Email
-activeMq.queueName.organisaatio=fi.vm.sade.organisaatio.service
-activeMq.queueNameHaku=fi.vm.sade.tarjonta.haku.service
-activeMq.queueNameTarjontaAdmin=fi.vm.sade.tarjonta.admin.service
-activeMq.queueNameTarjontaPublic=fi.vm.sade.tarjonta.public.service
-activeMq.targetDestination.learningopportunityprovider.public=fi.vm.sade.learningopportunityprovider.public.service
-activeMq.targetDestination.organisaatio=fi.vm.sade.organisaatio.service
-activeMq.targetDestinationAdmin.tarjonta=fi.vm.sade.tarjonta.admin.service
-activeMq.targetDestinationPublic.tarjonta=fi.vm.sade.tarjonta.public.service
 cas.group-role-attribute=cn
 cas.group-search-base=ou\=groups
 cas.group-search-filter=(uniqueMember\={0})

@@ -27,7 +27,6 @@ import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.*;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
-import fi.vm.sade.tarjonta.service.search.HakukohdeSearchService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -49,13 +48,9 @@ import fi.vm.sade.koodisto.service.types.common.KoodiUriAndVersioType;
 import fi.vm.sade.koodisto.service.types.common.SuhteenTyyppiType;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
-import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
 import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
 import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
-import fi.vm.sade.tarjonta.service.search.KoodistoKoodi;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -148,7 +143,7 @@ public abstract class AbstractOPTIWriter {
     private UrlConfiguration urlConfiguration;
 
     @Autowired
-    protected HakukohdeSearchService hakukohdeSearchService;
+    protected TarjontaClient tarjontaClient;
 
     @Autowired
     protected KoodiService koodiService;
@@ -534,10 +529,6 @@ public abstract class AbstractOPTIWriter {
         return kmdt;
     }
 
-    public void setHakukohdeSearchService(HakukohdeSearchService hakukohdeSearchService) {
-        this.hakukohdeSearchService = hakukohdeSearchService;
-    }
-
     public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
         this.kelaDAO = hakukohdeDAO;
     }
@@ -795,15 +786,6 @@ public abstract class AbstractOPTIWriter {
         }
         return lopputietueToConvert.substring(0, lopputietueToConvert.length() - numOfQuestionMarks)
                 + StringUtils.leftPad("" + numOfRecords, numOfQuestionMarks, '0');
-    }
-
-    protected String getTutkintotunniste(KoodistoKoodi koodistoKoodi, String humanname) throws OPTFormatException {
-        String koodiUri = koodistoKoodi.getUri();
-        if (koodiUri == null) {
-            warn(String.format(ERR_MESS_11, koodistoKoodi.getNimi(), humanname));
-            return "";
-        }
-        return getTutkintotunniste(koodiUri, humanname);
     }
 
     protected String getTutkintotunniste(String koodiUri, String humanname) throws OPTFormatException {
