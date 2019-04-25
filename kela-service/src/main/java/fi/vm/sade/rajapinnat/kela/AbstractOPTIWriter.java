@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.*;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import fi.vm.sade.rajapinnat.kela.config.UrlConfiguration;
@@ -69,9 +68,7 @@ public abstract class AbstractOPTIWriter {
     private AmazonS3 getS3client(){
         if(s3client == null){
             try {
-                InstanceProfileCredentialsProvider ipcp = InstanceProfileCredentialsProvider.createAsyncRefreshingProvider(true);
                 s3client = AmazonS3ClientBuilder.standard()
-                        .withCredentials(ipcp)
                         .withRegion(Regions.fromName(s3region))
                         .build();
                 LOG.info("S3client initialized");
