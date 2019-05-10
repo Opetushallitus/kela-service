@@ -15,20 +15,8 @@
  */
 package fi.vm.sade.rajapinnat.kela.tarjonta.model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.*;
 
 @Entity
 @Table(name="organisaatio")
@@ -66,8 +54,9 @@ public class Organisaatio {
     @Column(name="oppilaitoskoodi")
     private String oppilaitoskoodi;
 
-    @Column(name="organisaatiotyypitstr")
-    private String organisaatiotyypitstr;
+    @ElementCollection
+    @CollectionTable(name = "organisaatio_tyypit", joinColumns = @JoinColumn(name = "organisaatio_id"))
+    private Set<String> tyypit = new HashSet<>();
     
     @Column(name="ytunnus")
     private String ytunnus;
@@ -181,12 +170,12 @@ public class Organisaatio {
 		this.yhteishaunkoulukoodi = yhteishaunkoulukoodi;
 	}
 
-	public String getOrganisaatiotyypitstr() {
-		return organisaatiotyypitstr;
+	public Set<String> getTyypit() {
+		return tyypit;
 	}
 
-	public void setOrganisaatiotyypitstr(String organisaatiotyypitstr) {
-		this.organisaatiotyypitstr = organisaatiotyypitstr;
+	public void setTyypit(Set<String> tyypit) {
+		this.tyypit = tyypit;
 	}
 
 	public Date getAlkupvm() {
