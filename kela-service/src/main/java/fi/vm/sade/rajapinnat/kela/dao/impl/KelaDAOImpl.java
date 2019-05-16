@@ -15,37 +15,21 @@
  */
 package fi.vm.sade.rajapinnat.kela.dao.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-
+import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.rajapinnat.kela.TasoJaLaajuusContainer;
+import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.*;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
-import fi.vm.sade.rajapinnat.kela.dao.KelaDAO;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Hakukohde;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoodistoUri;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Koulutusmoduuli;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.KoulutusmoduuliToteutus;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatiosuhde.OrganisaatioSuhdeTyyppi;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Yhteystieto;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import javax.persistence.*;
+import java.util.*;
 
 /**
  *
@@ -271,7 +255,7 @@ public class KelaDAOImpl implements KelaDAO {
         /*+"o.oid, " 0 
          +"o.oppilaitostyyppi, " 1
          +"o.oppilaitoskoodi, " 2
-         +"o.organisaatiotyypitstr, " 3
+         +"string_agg(ot.tyypit, '|') || '|' as organisaatiotyypitstr, " 3
          +"o.ytunnus, " 4
          +"mktv_fi.value as nimi_fi, " 5 
          +"mktv_sv.value as nimi_sv, " 6
@@ -318,18 +302,20 @@ public class KelaDAOImpl implements KelaDAO {
                 + "o.oid, "
                 + "o.oppilaitostyyppi, "
                 + "o.oppilaitoskoodi, "
-                + "o.organisaatiotyypitstr, "
+                + "string_agg(ot.tyypit, '|') || '|' as organisaatiotyypitstr, "
                 + "o.ytunnus, "
                 + "mktv_fi.value as nimi_fi, "
                 + "mktv_sv.value as nimi_sv, "
                 + "mktv_en.value as nimi_en "
                 + " from organisaatio o "
+                + " left join organisaatio_tyypit ot on ot.organisaatio_id = o.id"
                 + " left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
                 + " left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
                 + " left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
-                + " where (position('organisaatiotyyppi_02' in o.organisaatiotyypitstr)>0 or position('Oppilaitos' in o.organisaatiotyypitstr)>0)"
+                + " where o.id in (select organisaatio_id from organisaatio_tyypit where tyypit = 'organisaatiotyyppi_02')"
                 + " and not o.organisaatiopoistettu=true "
-                + " and oppilaitostyyppi in (" + csvWithQuote + ")";
+                + " and oppilaitostyyppi in (" + csvWithQuote + ")"
+                + " group by o.oid, o.oppilaitostyyppi, o.oppilaitoskoodi, o.ytunnus, mktv_fi.value, mktv_sv.value, mktv_en.value";
 
         @SuppressWarnings("unchecked")
         List<Object[]> organisaatiot = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
@@ -350,7 +336,7 @@ public class KelaDAOImpl implements KelaDAO {
                 + " from organisaatio o "
                 + " where not o.organisaatiopoistettu=true "
                 + " and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='" + oid + "')"
-                + " and (position('organisaatiotyyppi_02' in o.organisaatiotyypitstr)>0 or position('Oppilaitos' in o.organisaatiotyypitstr)>0)";
+                + " and o.id in (select organisaatio_id from organisaatio_tyypit where tyypit = 'organisaatiotyyppi_02')";
 
         @SuppressWarnings("unchecked")
         List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
@@ -368,17 +354,19 @@ public class KelaDAOImpl implements KelaDAO {
                 + "o.oid, "
                 + "o.oppilaitostyyppi, "
                 + "o.oppilaitoskoodi, "
-                + "o.organisaatiotyypitstr, "
+                + "string_agg(ot.tyypit, '|') || '|' as organisaatiotyypitstr, "
                 + "o.ytunnus, "
                 + "mktv_fi.value as nimi_fi, "
                 + "mktv_sv.value as nimi_sv, "
                 + "mktv_en.value as nimi_en "
                 + " from organisaatio o "
+                + " left join organisaatio_tyypit ot on ot.organisaatio_id = o.id"
                 + " left join monikielinenteksti_values mktv_fi on o.nimi_mkt = mktv_fi.id and mktv_fi.key='fi' "
                 + " left join monikielinenteksti_values mktv_sv on o.nimi_mkt = mktv_sv.id and mktv_sv.key='sv' "
                 + " left join monikielinenteksti_values mktv_en on o.nimi_mkt = mktv_en.id and mktv_en.key='en' "
-                + " where (position('organisaatiotyyppi_03' in o.organisaatiotyypitstr)>0 or position('Toimipiste' in o.organisaatiotyypitstr)>0)"
-                + " and not o.organisaatiopoistettu=true ";
+                + " where o.id in (select organisaatio_id from organisaatio_tyypit where tyypit = 'organisaatiotyyppi_03')"
+                + " and not o.organisaatiopoistettu=true "
+                + " group by o.oid, o.oppilaitostyyppi, o.oppilaitoskoodi, o.ytunnus, mktv_fi.value, mktv_sv.value, mktv_en.value";
 
         @SuppressWarnings("unchecked")
         List<Object[]> organisaatiot = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
