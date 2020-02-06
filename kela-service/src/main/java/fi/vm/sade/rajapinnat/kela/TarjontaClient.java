@@ -13,6 +13,8 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import static fi.vm.sade.rajapinnat.kela.util.RestTemplateUtil.addCallerIdInterceptor;
+
 @Component
 public class TarjontaClient {
 
@@ -36,6 +38,7 @@ public class TarjontaClient {
         factory.setHttpClient(httpClient);
 
         RestTemplate restTemplate = new RestTemplate(factory);
+        addCallerIdInterceptor(restTemplate);
         try {
             TarjontaRespDTO resp = restTemplate.getForObject(urlConfiguration.url("tarjonta-service.komo.byid", komoId), TarjontaRespDTO.class);
             if(resp.result != null && resp.result.opintojenLaajuusarvo != null && resp.result.opintojenLaajuusarvo.arvo != null) {
@@ -64,6 +67,7 @@ public class TarjontaClient {
         factory.setHttpClient(httpClient);
 
         RestTemplate restTemplate = new RestTemplate(factory);
+        addCallerIdInterceptor(restTemplate);
         String reqUrl = urlConfiguration.url("tarjonta-service.kela.export");
         KelaHakukohteetV1RDTO resp = restTemplate.getForObject(reqUrl, KelaHakukohteetV1RDTO.class);
         return resp;
