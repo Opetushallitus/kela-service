@@ -15,28 +15,20 @@
  */
 package fi.vm.sade.rajapinnat.kela;
 
+import fi.vm.sade.koodisto.service.types.common.KoodiType;
+import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
+import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.stereotype.Component;
-
-import fi.vm.sade.koodisto.service.types.common.KoodiType;
-import fi.vm.sade.organisaatio.resource.OrganisaatioResource;
-import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.Organisaatio;
-import fi.vm.sade.rajapinnat.kela.tarjonta.model.OrganisaatioPerustieto;
-import org.springframework.web.client.RestTemplate;
-
-import javax.annotation.Resource;
 
 @Component
 @Configurable
