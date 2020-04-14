@@ -185,7 +185,7 @@ public class KelaDAOImpl implements KelaDAO {
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
         try {
-            return (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentIdPath like ? ")
+            return (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
         } catch (NoResultException ex) {
@@ -335,7 +335,7 @@ public class KelaDAOImpl implements KelaDAO {
                 + " o.oid "
                 + " from organisaatio o "
                 + " where not o.organisaatiopoistettu=true "
-                + " and o.oid in (select regexp_split_to_table(parentidpath, E'\\\\|') from organisaatio where oid='" + oid + "')"
+                + " and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='" + oid + "')"
                 + " and o.id in (select organisaatio_id from organisaatio_tyypit where tyypit = 'organisaatiotyyppi_02')";
 
         @SuppressWarnings("unchecked")

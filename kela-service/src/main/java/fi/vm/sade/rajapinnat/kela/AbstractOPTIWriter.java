@@ -387,10 +387,10 @@ public abstract class AbstractOPTIWriter {
             if (org.getOppilaitoskoodi() != null) {
                 warn(String.format(WARN_MESS_2, org.getOid() + " " + org.getNimi(), org.getOppilaitoskoodi()));
             } else {
-                if (null == org.getParentIdPath() || org.getParentIdPath().length() == 0) {
+                if (null == org.getParentOidPath() || org.getParentOidPath().length() == 0) {
                     error(String.format(ERR_MESS_12, org.getOid() + " " + org.getNimi()));
                 }
-                olKoodi = getOppilaitosNro(org.getParentIdPath());
+                olKoodi = getOppilaitosNro(org.getParentOidPath());
             }
         }
         return olKoodi;
