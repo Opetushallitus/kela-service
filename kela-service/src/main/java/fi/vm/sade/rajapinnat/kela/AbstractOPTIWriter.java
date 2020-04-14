@@ -25,6 +25,8 @@ import fi.vm.sade.koodisto.service.KoodiService;
 import fi.vm.sade.koodisto.service.KoodistoService;
 import fi.vm.sade.koodisto.service.types.SearchKoodisCriteriaType;
 import fi.vm.sade.koodisto.service.types.common.*;
+import fi.vm.sade.koodisto.util.CachingKoodistoClient;
+import fi.vm.sade.koodisto.util.KoodistoClient;
 import fi.vm.sade.koodisto.util.KoodistoHelper;
 import fi.vm.sade.organisaatio.api.model.types.OrganisaatioTyyppi;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
@@ -138,10 +140,7 @@ public abstract class AbstractOPTIWriter {
     protected TarjontaClient tarjontaClient;
 
     @Autowired
-    protected KoodiService koodiService;
-
-    @Autowired
-    protected KoodistoService koodistoService;
+    protected KoodistoClient koodistoClient;
 
     @Autowired
     protected KelaDAO kelaDAO;
@@ -343,36 +342,21 @@ public abstract class AbstractOPTIWriter {
     }
 
     protected List<KoodiType> getKoodisByUriAndVersio(String koodiUri) {
-        return this.koodiService.searchKoodis(createUriVersioCriteria(koodiUri));
+        return koodistoClient.searchKoodis(createUriVersioCriteria(koodiUri));
     }
 
     protected KoodiType getRinnasteinenKoodi(KoodiType koulutuskoodi, String targetKoodisto) {
-        KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
-        uriAndVersio.setKoodiUri(koulutuskoodi.getKoodiUri());
-        uriAndVersio.setVersio(koulutuskoodi.getVersio());
-        List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.RINNASTEINEN);
-        KoodiType targetKoodi = null;
+        List<KoodiType> relatedKoodis = koodistoClient.getRinnasteiset(koulutuskoodi.getKoodiUri());
         for (KoodiType curKoodi : relatedKoodis) {
             if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
-                targetKoodi = curKoodi;
+                return curKoodi;
             }
         }
-        if (targetKoodi == null) {
-            relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, true, SuhteenTyyppiType.RINNASTEINEN);
-            for (KoodiType curKoodi : relatedKoodis) {
-                if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
-                    targetKoodi = curKoodi;
-                }
-            }
-        }
-        return targetKoodi;
+        return null;
     }
 
     protected KoodiType getSisaltyvaKoodi(KoodiType sourcekoodi, String targetKoodisto) {
-        KoodiUriAndVersioType uriAndVersio = new KoodiUriAndVersioType();
-        uriAndVersio.setKoodiUri(sourcekoodi.getKoodiUri());
-        uriAndVersio.setVersio(sourcekoodi.getVersio());
-        List<KoodiType> relatedKoodis = koodiService.listKoodiByRelation(uriAndVersio, false, SuhteenTyyppiType.SISALTYY);
+        List<KoodiType> relatedKoodis = koodistoClient.getYlakoodis(sourcekoodi.getKoodiUri());
         for (KoodiType curKoodi : relatedKoodis) {
             if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
                 return curKoodi;
@@ -549,7 +533,7 @@ public abstract class AbstractOPTIWriter {
         this.organisaatiot = organisaatiot;
     }
 
-    private SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
+    protected SearchKoodisCriteriaType createUriVersioCriteria(String koodiUri) {
         SearchKoodisCriteriaType criteria = new SearchKoodisCriteriaType();
         int versio = -1;
         if (koodiUri.contains("#")) {

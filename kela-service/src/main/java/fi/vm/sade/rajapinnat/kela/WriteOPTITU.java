@@ -65,11 +65,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException {
-        SearchKoodisByKoodistoCriteriaType criteria = new SearchKoodisByKoodistoCriteriaType();
-        criteria.setKoodistoUri(koulutuskoodisto);
-        criteria.setKoodistoVersioSelection(SearchKoodisByKoodistoVersioSelectionType.LATEST);
-
-        List<KoodiType> koulutuskoodit = this.koodiService.searchKoodisByKoodisto(criteria);
+        List<KoodiType> koulutuskoodit = koodistoClient.searchKoodis(createUriVersioCriteria(koulutuskoodisto));
 
         for (KoodiType curKoulutuskoodi : koulutuskoodit) {
 			KoodiType koulutusasteoph =getSisaltyvaKoodi(curKoulutuskoodi, ophKoulutusastekoodisto);
