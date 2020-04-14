@@ -47,7 +47,11 @@
 
     <jaxws:client id="koodiPublicService"
                 serviceClass="fi.vm.sade.koodisto.service.KoodiService"
-                address="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}"/>
+                address="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}">
+        <jaxws:inInterceptors>
+            <bean class="fi.vm.sade.rajapinnat.kela.util.CallerIdUtil$JaxWsInterceptor" />
+        </jaxws:inInterceptors>
+    </jaxws:client>
 
     <jaxws:client id="koodistoPublicService"
                   serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
