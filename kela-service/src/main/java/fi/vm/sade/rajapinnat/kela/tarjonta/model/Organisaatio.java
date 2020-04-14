@@ -34,8 +34,8 @@ public class Organisaatio {
     @Column(name = "oid")
     private String oid;
     
-    @Column(name = "parentoidpath")
-    private String parentOidPath;
+    @Column(name = "parentidpath")
+    private String parentIdPath;
     
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "nimi_mkt")
@@ -122,12 +122,12 @@ public class Organisaatio {
         this.opetuspisteenJarjNro = opetuspisteenJarjNro;
     }
 
-    public String getParentOidPath() {
-        return parentOidPath;
+    public String getParentIdPath() {
+        return parentIdPath;
     }
 
-    public void setParentOidPath(String parentOidPath) {
-        this.parentOidPath = parentOidPath;
+    public void setParentIdPath(String parentOidPath) {
+        this.parentIdPath = parentOidPath;
     }
 
     public String getKotipaikka() {
