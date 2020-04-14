@@ -356,7 +356,7 @@ public abstract class AbstractOPTIWriter {
     }
 
     protected KoodiType getSisaltyvaKoodi(KoodiType sourcekoodi, String targetKoodisto) {
-        List<KoodiType> relatedKoodis = koodistoClient.getYlakoodis(sourcekoodi.getKoodiUri());
+        List<KoodiType> relatedKoodis = koodistoClient.getAlakoodis(sourcekoodi.getKoodiUri());
         for (KoodiType curKoodi : relatedKoodis) {
             if (curKoodi.getKoodisto().getKoodistoUri().equals(targetKoodisto)) {
                 return curKoodi;
