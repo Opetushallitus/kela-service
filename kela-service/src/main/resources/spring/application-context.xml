@@ -46,7 +46,7 @@
     <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
 
     <bean id="koodistoClient" class="fi.vm.sade.koodisto.util.CachingKoodistoClient">
-        <constructor-arg value="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}"/>
+        <constructor-arg value="https://${host.virkailija}"/>
         <property name="callerId" value="1.2.246.562.10.00000000001.kela-service" />
     </bean>
 
