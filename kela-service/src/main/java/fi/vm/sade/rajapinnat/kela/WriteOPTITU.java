@@ -25,8 +25,6 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoCriteriaType;
-import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoVersioSelectionType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
 
 @Component
@@ -65,20 +63,20 @@ public class WriteOPTITU extends AbstractOPTIWriter {
     
 	@Override
 	public void composeRecords() throws IOException, UserStopRequestException {
-        List<KoodiType> koulutuskoodit = koodistoClient.searchKoodis(createUriVersioCriteria(koulutuskoodisto));
+        List<KoodiType> koulutuskoodit = koodistoClient.getKoodisForKoodisto(koulutuskoodisto, null, false);
 
         for (KoodiType curKoulutuskoodi : koulutuskoodit) {
 			KoodiType koulutusasteoph =getSisaltyvaKoodi(curKoulutuskoodi, ophKoulutusastekoodisto);
 			if (null == koulutusasteoph) {
 				debug(1,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophKoulutusastekoodisto);
 				continue;
-			}			
+			}
 			KoodiType koulutusastekela = getRinnasteinenKoodi(koulutusasteoph, kelaKoulutusastekoodisto);
 			if (null == koulutusastekela) {
 				debug(4,ophKoulutusastekoodisto,koulutusasteoph.getKoodiArvo(), kelaKoulutusastekoodisto);
 				continue;
 			}
-			
+
 			KoodiType koulutusalaoph = getSisaltyvaKoodi(curKoulutuskoodi, ophOpintoalakoodisto);
         	if (null == koulutusalaoph) {
         		debug(2,koulutuskoodisto,curKoulutuskoodi.getKoodiArvo(), ophOpintoalakoodisto);
@@ -93,7 +91,7 @@ public class WriteOPTITU extends AbstractOPTIWriter {
 				writeRecord(curKoulutuskoodi, koulutusastekela, koulutusalakela);
 			} catch (OPTFormatException e) {
 				LOG.error(String.format(errors[0], curKoulutuskoodi.getKoodiArvo(),curKoulutuskoodi.getKoodiArvo()));
-			} 
+			}
         }
 	}
 
