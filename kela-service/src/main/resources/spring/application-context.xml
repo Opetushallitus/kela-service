@@ -45,21 +45,10 @@
 
     <bean id="kelaDAO" class="fi.vm.sade.rajapinnat.kela.dao.impl.KelaDAOImpl"/>
 
-    <jaxws:client id="koodiPublicService"
-                serviceClass="fi.vm.sade.koodisto.service.KoodiService"
-                address="${koodi.public.webservice.url.backend:http://NO_KOODI_WEBSERVICE_URL_CONFIGURED}">
-        <jaxws:inInterceptors>
-            <bean class="fi.vm.sade.rajapinnat.kela.util.CallerIdUtil$JaxWsInterceptor" />
-        </jaxws:inInterceptors>
-    </jaxws:client>
-
-    <jaxws:client id="koodistoPublicService"
-                  serviceClass="fi.vm.sade.koodisto.service.KoodistoService"
-                  address="${koodisto.public.webservice.url.backend:http://NO_KOODISTO_WEBSERVICE_URL_CONFIGURED}">
-        <jaxws:inInterceptors>
-            <bean class="fi.vm.sade.rajapinnat.kela.util.CallerIdUtil$JaxWsInterceptor" />
-        </jaxws:inInterceptors>
-    </jaxws:client>
+    <bean id="koodistoClient" class="fi.vm.sade.koodisto.util.CachingKoodistoClient">
+        <constructor-arg value="https://${host.virkailija}"/>
+        <property name="callerId" value="1.2.246.562.10.00000000001.kela-service" />
+    </bean>
 
     <!-- Scheduling -->
     <task:annotation-driven executor="kelaExecutor" scheduler="kelaScheduler"/>

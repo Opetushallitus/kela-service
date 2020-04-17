@@ -22,13 +22,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import fi.vm.sade.koodisto.util.KoodistoClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fi.vm.sade.koodisto.service.KoodiService;
-import fi.vm.sade.koodisto.service.KoodistoService;
 import fi.vm.sade.koodisto.service.types.SearchKoodisByKoodistoCriteriaType;
 import fi.vm.sade.koodisto.service.types.SearchKoodistosCriteriaType;
 import fi.vm.sade.koodisto.service.types.common.KoodiType;
@@ -44,13 +43,7 @@ public class OrganisaatioContainer {
 
     @Autowired
     protected KelaDAO kelaDAO;
-    
-    @Autowired
-    protected KoodiService koodiService;
-    
-    @Autowired
-    protected KoodistoService koodistoService;
-    
+
     private List<OrganisaatioPerustieto> oppilaitokset;
     private Map<String,OrganisaatioPerustieto> oppilaitosoidOppilaitosMap;
     private List<OrganisaatioPerustieto> toimipisteet;
@@ -177,45 +170,9 @@ public class OrganisaatioContainer {
         info("Accepting korkeakoulu -uris: "+Arrays.toString(this.korkeakouluUris));
     }
 
-    private  List<KoodistoType> cachedKoodistoResult;
-    private String cachedKoodistoUri;
-    private List<KoodistoType> searchKoodistos(String koodistoUri) {
-    	if(cachedKoodistoResult==null || !cachedKoodistoUri.equals(koodistoUri)) {
-    		cachedKoodistoUri=koodistoUri;
-    		SearchKoodistosCriteriaType koodistoSearchCriteria = KoodistoServiceSearchCriteriaBuilder.latestKoodistoByUri(cachedKoodistoUri);
-    		cachedKoodistoResult = koodistoService.searchKoodistos(koodistoSearchCriteria);;
-            if(cachedKoodistoResult.size() != 1) {
-                // FIXME: Throw something other than RuntimeException?
-                throw new RuntimeException("No koodisto found for koodisto URI " + koodistoUri);
-            }
-    	}
-    	 return cachedKoodistoResult;
-    }
-
-    public List<KoodiType> getKoodisByArvoAndKoodisto(String arvo, String koodistoUri) {
-        try {
-            KoodistoType koodisto = searchKoodistos(koodistoUri).get(0);
-
-            SearchKoodisByKoodistoCriteriaType koodiSearchCriteria = KoodiServiceSearchCriteriaBuilder.koodisByArvoAndKoodistoUriAndKoodistoVersio(arvo,
-                    koodistoUri, koodisto.getVersio());
-            return koodiService.searchKoodisByKoodisto(koodiSearchCriteria);
-        } catch (Exception exp) {
-            return null;
-        }
-    }
-
     public void setHakukohdeDAO(KelaDAO hakukohdeDAO) {
         this.kelaDAO = hakukohdeDAO;
     }
-
-    public void setKoodiService(KoodiService koodiService) {
-        this.koodiService = koodiService;
-    }
-
-    public void setKoodistoService(KoodistoService koodistoService) {
-        this.koodistoService = koodistoService;
-    }
-
 
     protected void error(int i, Object... args) {
     	KelaGenerator.error("(INIT"+i+") : "+errors[i-1], args);
