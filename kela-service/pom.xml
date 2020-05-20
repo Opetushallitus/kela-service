@@ -15,6 +15,8 @@
     <packaging>war</packaging>
 
     <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
         <deploy.to.server>tomcat</deploy.to.server>
         <webapp.port>7003</webapp.port>
         <skipDbDiagramGenerate>false</skipDbDiagramGenerate>
@@ -418,84 +420,6 @@
     </dependencies>
     <build>
         <finalName>kela-service</finalName>
-        <plugins>
-            <plugin>
-                <groupId>de.smartics.maven.plugin</groupId>
-                <artifactId>hibernate4-maven-plugin</artifactId>
-                <version>0.1.1</version>
-                <executions>
-                    <execution>
-                        <id>export</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>hbm2ddl</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <unitName>tarjontaKela</unitName>
-                    <createOutputFile>${project.build.directory}/hibernate3/sql/schema.ddl</createOutputFile>
-                    <dropOutputFile>${project.build.directory}/hibernate3/sql/drop.ddl</dropOutputFile>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                        <version>${hibernate.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-ehcache</artifactId>
-                        <version>${hibernate.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>smartics</id>
-            <url>https://www.smartics.eu/nexus/content/groups/public-group</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>codehaus</id>
-            <name>Maven Codehaus repository</name>
-            <url>http://repository.codehaus.org/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>smartics</id>
-            <url>https://www.smartics.eu/nexus/content/groups/public-group</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
 </project>
