@@ -184,15 +184,8 @@ public class KelaDAOImpl implements KelaDAO {
 
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
-        try {
-            // moi, olen ollut kaiken aikaa rikki ja tosiallisesti toiminut näin:
-            return null;
-        } catch (NoResultException ex) {
-            return null;
-
-        } catch (NonUniqueResultException ex) {
-            return null;
-        }
+        // moi, olen ollut kaiken aikaa rikki ja tosiasiallisesti toiminut näin:
+        return null;
     }
 
     private Long _getKayntiosoiteIdForOrganisaatio(Long id, String osoiteTyyppi) {
@@ -341,11 +334,12 @@ public class KelaDAOImpl implements KelaDAO {
         List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery)
                 .setParameter("oid", oid)
                 .getResultList();
-
-        if (parentOids.size() != 1) {
-            return null;
+        String result = null;
+        if (parentOids.size() == 1) {
+            result = parentOids.get(0);
         }
-        return parentOids.get(0);
+        LOG.info("findParentOppilaitosOid({}): {}", oid, result);
+        return result;
     }
 
     @Override
