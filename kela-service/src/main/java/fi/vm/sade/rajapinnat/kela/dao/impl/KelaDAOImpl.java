@@ -189,9 +189,10 @@ public class KelaDAOImpl implements KelaDAO {
                     .setParameter(1, oid)
                     .getSingleResult();
         } catch (NoResultException ex) {
+            LOG.warn("No child organization found!", ex);
             return null;
-
         } catch (NonUniqueResultException ex) {
+            LOG.warn("Multiple child organizations found!", ex);
             return null;
         }
     }
