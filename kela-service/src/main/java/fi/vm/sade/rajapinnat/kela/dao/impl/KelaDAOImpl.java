@@ -184,17 +184,18 @@ public class KelaDAOImpl implements KelaDAO {
 
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
+        Organisaatio result = null;
         try {
-            return (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
+            result = (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
                     .setParameter(1, oid)
                     .getSingleResult();
+            LOG.info("First child organization for {}: {}", oid, result.getOid());
         } catch (NoResultException ex) {
             LOG.warn("No child organization found!", ex);
-            return null;
         } catch (NonUniqueResultException ex) {
             LOG.warn("Multiple child organizations found!", ex);
-            return null;
         }
+        return result;
     }
 
     private Long _getKayntiosoiteIdForOrganisaatio(Long id, String osoiteTyyppi) {
@@ -341,11 +342,12 @@ public class KelaDAOImpl implements KelaDAO {
 
         @SuppressWarnings("unchecked")
         List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
-
-        if (parentOids.size() != 1) {
-            return null;
+        String result = null;
+        if (parentOids.size() == 1) {
+            result = parentOids.get(0);
         }
-        return parentOids.get(0);
+        LOG.info("findParentOppilaitosOid for {}: {}", oid, result);
+        return result;
     }
 
     @Override
