@@ -184,16 +184,8 @@ public class KelaDAOImpl implements KelaDAO {
 
     @Override
     public Organisaatio findFirstChildOrganisaatio(String oid) {
-        try {
-            return (Organisaatio) getOrganisaatioEntityManager().createQuery("FROM " + Organisaatio.class.getName() + " WHERE parentOidPath like ? ")
-                    .setParameter(1, oid)
-                    .getSingleResult();
-        } catch (NoResultException ex) {
-            return null;
-
-        } catch (NonUniqueResultException ex) {
-            return null;
-        }
+        // moi, olen ollut kaiken aikaa rikki ja tosiasiallisesti toiminut näin:
+        return null;
     }
 
     private Long _getKayntiosoiteIdForOrganisaatio(Long id, String osoiteTyyppi) {
@@ -330,21 +322,24 @@ public class KelaDAOImpl implements KelaDAO {
     }
 
     private String findParentOppilaitosOid(String oid) {
-        String sQuery
-                = " select "
-                + " o.oid "
-                + " from organisaatio o "
-                + " where not o.organisaatiopoistettu=true "
-                + " and o.oid in (select regexp_split_to_table(parentoidpath, E'\\\\|') from organisaatio where oid='" + oid + "')"
-                + " and o.id in (select organisaatio_id from organisaatio_tyypit where tyypit = 'organisaatiotyyppi_02')";
+        String sQuery = "SELECT p.oid FROM organisaatio c " +
+                "JOIN organisaatio_parent_oids po " +
+                    "ON (c.oid = :oid AND po.organisaatio_id = c.id) " +
+                "JOIN organisaatio p " +
+                    "ON (p.oid = po.parent_oid AND p.organisaatiopoistettu <> true) " +
+                "JOIN organisaatio_tyypit ot " +
+                    "ON (ot.organisaatio_id = p.id AND tyypit = 'organisaatiotyyppi_02')";
 
         @SuppressWarnings("unchecked")
-        List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery).getResultList();
-
-        if (parentOids.size() != 1) {
-            return null;
+        List<String> parentOids = getOrganisaatioEntityManager().createNativeQuery(sQuery)
+                .setParameter("oid", oid)
+                .getResultList();
+        String result = null;
+        if (parentOids.size() == 1) {
+            result = parentOids.get(0);
         }
-        return parentOids.get(0);
+        LOG.info("findParentOppilaitosOid({}): {}", oid, result);
+        return result;
     }
 
     @Override

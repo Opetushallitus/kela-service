@@ -51,10 +51,13 @@ import javax.ws.rs.WebApplicationException;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static fi.vm.sade.rajapinnat.kela.util.RestTemplateUtil.addCallerIdInterceptor;
 
@@ -371,10 +374,10 @@ public abstract class AbstractOPTIWriter {
             if (org.getOppilaitoskoodi() != null) {
                 warn(String.format(WARN_MESS_2, org.getOid() + " " + org.getNimi(), org.getOppilaitoskoodi()));
             } else {
-                if (null == org.getParentOidPath() || org.getParentOidPath().length() == 0) {
+                if (null == org.getParentOids() || org.getParentOids().size() == 0) {
                     error(String.format(ERR_MESS_12, org.getOid() + " " + org.getNimi()));
                 }
-                olKoodi = getOppilaitosNro(org.getParentOidPath());
+                olKoodi = getOppilaitosNro(org.getParentOids());
             }
         }
         return olKoodi;
@@ -398,10 +401,9 @@ public abstract class AbstractOPTIWriter {
                 urlConfiguration.url("organisaatio-service.organisaatio.noimage", orgOid), OrganisaatioRDTO.class);
     }
 
-    private String getOppilaitosNro(String parentOidPath) {
+    private String getOppilaitosNro(List<String> parentOids) {
         String olKoodi = null;
-        String[] parentsOids = parentOidPath.split("" + PARENTPATH_SEPARATOR);
-        for (String parentOID : parentsOids) {
+        for (String parentOID : parentOids) {
             if (parentOID.length() > 0 && this.orgContainer.getOppilaitosoidOppilaitosMap().containsKey(parentOID)) {
                 olKoodi = this.orgContainer.getOppilaitosoidOppilaitosMap().get(parentOID).getOppilaitosKoodi();
                 break;
@@ -430,10 +432,17 @@ public abstract class AbstractOPTIWriter {
             if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.OPPILAITOS.value())) {
                 oppil_nro = String.format("%s", organisaatio.getOppilaitosKoodi());
             } else if (organisaatio.getTyypit().contains(OrganisaatioTyyppi.TOIMIPISTE.value())) {
-                oppil_nro = getOppilaitosNro(organisaatio.getParentOidPath());
+                oppil_nro = getOppilaitosNro(getParentOids(organisaatio.getParentOidPath()));
             }
         }
         return oppil_nro;
+    }
+
+    private List<String> getParentOids(String parentOidPath) {
+        String[] parts = parentOidPath.split("\\|");
+        List<String> oids = Arrays.stream(parts).filter(part -> part.length() > 0).collect(Collectors.toList());
+        Collections.reverse(oids);
+        return oids;
     }
 
     protected String getToimipisteenJarjNro(Organisaatio orgE) {

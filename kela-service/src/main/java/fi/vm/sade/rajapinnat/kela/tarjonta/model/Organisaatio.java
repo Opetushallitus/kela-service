@@ -33,9 +33,14 @@ public class Organisaatio {
     
     @Column(name = "oid")
     private String oid;
-    
-    @Column(name = "parentoidpath")
-    private String parentOidPath;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "organisaatio_parent_oids",
+            joinColumns = @JoinColumn(name = "organisaatio_id"))
+    @Column(name = "parent_oid", nullable = false)
+    @OrderColumn(name = "parent_position")
+    private List<String> parentOids = new ArrayList<>();
     
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "nimi_mkt")
@@ -122,12 +127,12 @@ public class Organisaatio {
         this.opetuspisteenJarjNro = opetuspisteenJarjNro;
     }
 
-    public String getParentOidPath() {
-        return parentOidPath;
+    public List<String> getParentOids() {
+        return parentOids;
     }
 
-    public void setParentOidPath(String parentOidPath) {
-        this.parentOidPath = parentOidPath;
+    public void setParentOids(List<String> parentOids) {
+        this.parentOids = parentOids;
     }
 
     public String getKotipaikka() {
