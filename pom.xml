@@ -17,7 +17,7 @@
         <revision/>
         <buildversiontxt/>
 
-        <spring.version>4.3.27.RELEASE</spring.version>
+        <spring.version>4.3.29.RELEASE</spring.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
@@ -191,8 +191,7 @@
                     buildTtime=${maven.build.timestamp}
                     ]]>
                                 </echo>
-                                <loadfile property="buildversiontxt"
-                                          srcFile="target/${project.build.finalName}/buildversion.txt"/>
+                                <loadfile property="buildversiontxt" srcFile="target/${project.build.finalName}/buildversion.txt"/>
                                 <echo message="${buildversiontxt}"/>
                                 <echo file="target/mavenversion.txt">${project.version}</echo>
                             </target>
