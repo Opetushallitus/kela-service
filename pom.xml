@@ -37,7 +37,7 @@
         <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
 
         <cxf.version>3.2.0</cxf.version>
-        <hibernate.version>4.3.11.Final</hibernate.version>
+        <hibernate.version>5.4.24.Final</hibernate.version>
         <hibernate.validator.version>4.3.2.Final</hibernate.validator.version>
         <servlet.version>3.0.1</servlet.version>
         <camel.version>2.15.6</camel.version>
@@ -191,8 +191,7 @@
                     buildTtime=${maven.build.timestamp}
                     ]]>
                                 </echo>
-                                <loadfile property="buildversiontxt"
-                                          srcFile="target/${project.build.finalName}/buildversion.txt"/>
+                                <loadfile property="buildversiontxt" srcFile="target/${project.build.finalName}/buildversion.txt"/>
                                 <echo message="${buildversiontxt}"/>
                                 <echo file="target/mavenversion.txt">${project.version}</echo>
                             </target>
