@@ -50,7 +50,7 @@
         <solr.version>4.2.0</solr.version>
         <modelmapper.version>0.6.3</modelmapper.version>
         <ehcache.version>2.5.2</ehcache.version>
-        <s3.version>1.11.205</s3.version>
+        <s3.version>1.12.265</s3.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -191,8 +191,7 @@
                     buildTtime=${maven.build.timestamp}
                     ]]>
                                 </echo>
-                                <loadfile property="buildversiontxt"
-                                          srcFile="target/${project.build.finalName}/buildversion.txt"/>
+                                <loadfile property="buildversiontxt" srcFile="target/${project.build.finalName}/buildversion.txt"/>
                                 <echo message="${buildversiontxt}"/>
                                 <echo file="target/mavenversion.txt">${project.version}</echo>
                             </target>
