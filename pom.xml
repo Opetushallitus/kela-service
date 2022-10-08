@@ -17,7 +17,7 @@
         <revision/>
         <buildversiontxt/>
 
-        <spring.version>4.3.27.RELEASE</spring.version>
+        <spring.version>4.3.29.RELEASE</spring.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
@@ -31,16 +31,16 @@
         <koodisto.api.version>2019-09-SNAPSHOT</koodisto.api.version>
         <tarjonta.api.version>2017-40-SNAPSHOT</tarjonta.api.version>
         <auditlog.api.version>7.2.0-SNAPSHOT</auditlog.api.version>
-        <postgresql.version>42.2.5</postgresql.version>
+        <postgresql.version>42.3.3</postgresql.version>
         <slf4j.version>1.7.5</slf4j.version>
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
         <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
 
-        <cxf.version>3.2.0</cxf.version>
-        <hibernate.version>4.3.11.Final</hibernate.version>
-        <hibernate.validator.version>4.3.2.Final</hibernate.validator.version>
+        <cxf.version>3.2.11</cxf.version>
+        <hibernate.version>5.4.24.Final</hibernate.version>
+        <hibernate.validator.version>6.0.23.Final</hibernate.validator.version>
         <servlet.version>3.0.1</servlet.version>
-        <camel.version>2.15.6</camel.version>
+        <camel.version>3.11.7</camel.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.9.0</mockito.version>
         <commons-lang.version>2.6</commons-lang.version>
@@ -50,7 +50,7 @@
         <solr.version>4.2.0</solr.version>
         <modelmapper.version>0.6.3</modelmapper.version>
         <ehcache.version>2.5.2</ehcache.version>
-        <s3.version>1.11.205</s3.version>
+        <s3.version>1.12.319</s3.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -58,7 +58,7 @@
             <dependency>
                 <groupId>org.jasig.cas.client</groupId>
                 <artifactId>cas-client-support-distributed-ehcache</artifactId>
-                <version>3.1.12</version>
+                <version>3.6.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>net.sf.ehcache</groupId>
@@ -191,8 +191,7 @@
                     buildTtime=${maven.build.timestamp}
                     ]]>
                                 </echo>
-                                <loadfile property="buildversiontxt"
-                                          srcFile="target/${project.build.finalName}/buildversion.txt"/>
+                                <loadfile property="buildversiontxt" srcFile="target/${project.build.finalName}/buildversion.txt"/>
                                 <echo message="${buildversiontxt}"/>
                                 <echo file="target/mavenversion.txt">${project.version}</echo>
                             </target>
