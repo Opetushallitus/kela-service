@@ -40,7 +40,7 @@
         <hibernate.version>4.3.11.Final</hibernate.version>
         <hibernate.validator.version>4.3.2.Final</hibernate.validator.version>
         <servlet.version>3.0.1</servlet.version>
-        <camel.version>2.15.6</camel.version>
+        <camel.version>3.20.0</camel.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.9.0</mockito.version>
         <commons-lang.version>2.6</commons-lang.version>
@@ -191,8 +191,7 @@
                     buildTtime=${maven.build.timestamp}
                     ]]>
                                 </echo>
-                                <loadfile property="buildversiontxt"
-                                          srcFile="target/${project.build.finalName}/buildversion.txt"/>
+                                <loadfile property="buildversiontxt" srcFile="target/${project.build.finalName}/buildversion.txt"/>
                                 <echo message="${buildversiontxt}"/>
                                 <echo file="target/mavenversion.txt">${project.version}</echo>
                             </target>
