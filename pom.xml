@@ -31,7 +31,7 @@
         <koodisto.api.version>2019-09-SNAPSHOT</koodisto.api.version>
         <tarjonta.api.version>2017-40-SNAPSHOT</tarjonta.api.version>
         <auditlog.api.version>7.2.0-SNAPSHOT</auditlog.api.version>
-        <postgresql.version>42.2.5</postgresql.version>
+        <postgresql.version>42.3.3</postgresql.version>
         <slf4j.version>1.7.5</slf4j.version>
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
         <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
@@ -191,8 +191,7 @@
                     buildTtime=${maven.build.timestamp}
                     ]]>
                                 </echo>
-                                <loadfile property="buildversiontxt"
-                                          srcFile="target/${project.build.finalName}/buildversion.txt"/>
+                                <loadfile property="buildversiontxt" srcFile="target/${project.build.finalName}/buildversion.txt"/>
                                 <echo message="${buildversiontxt}"/>
                                 <echo file="target/mavenversion.txt">${project.version}</echo>
                             </target>
